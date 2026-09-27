@@ -1,0 +1,14 @@
+# Optional: one-click deploy of the shared Last Heist server on Render (render.com).
+# Free instances sleep and their SQLite file resets on redeploy; use a disk for persistence.
+services:
+  - type: web
+    name: rare-heist
+    runtime: node
+    plan: free
+    buildCommand: node build.mjs
+    startCommand: node server/app.mjs
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PUBLIC_ORIGIN
+        sync: false

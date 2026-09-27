@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Rare Heist card</title>
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block;width:100vw;height:100vh;image-rendering:pixelated}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script src="../src/pixel-font.js"></script><script src="../src/art.js"></script>
+<script>
+// Title cards for the trailer, in the game's own 5x7 pixel font and palette. Params in the hash:
+// #mode=intro|section|outro&title=..&sub=..&kicker=..&hero=3412
+const q=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+const c=document.getElementById('c').getContext('2d'),W=1920,H=1080,SIG='#ccff00';
+const G=HeistPixel.glyphs,T0=performance.now();
+function text(s,x,y,k,col,align='left',count=Infinity){s=String(s).toUpperCase();const w=s.length*6*k-k;if(align==='center')x-=w/2;let i=0;for(const ch of s){if(i++>=count)break;const g=(G[ch]||G['?']||'').split('/');c.fillStyle=col;for(let r=0;r<g.length;r++)for(let j=0;j<g[r].length;j++)if(g[r][j]==='1')c.fillRect(Math.round(x+j*k),Math.round(y+r*k),k,k);x+=6*k;}return w;}
+function sprite(sample,x,foot,k,clip,f){const list=sample.clips[clip],n=BigInt(sample.frames[list[f%list.length]]),px=[];for(let i=0;i<256;i++)if((n>>BigInt(i))&1n)px.push([i&15,i>>4]);const L=Math.round(x-8*k),T=Math.round(foot-15*k);c.fillStyle='#fff';for(const [a,b] of px)c.fillRect(L+(a-1)*k,T+(b-1)*k,3*k,3*k);c.fillStyle='#000';for(const [a,b] of px)c.fillRect(L+a*k,T+b*k,k,k);}
+function stipple(x,y,w,h,step,col){c.fillStyle=col;for(let yy=y;yy<y+h;yy+=step)for(let xx=x+((yy/step)%2?step/2:0);xx<x+w;xx+=step)c.fillRect(xx,yy,3,3);}
+const hero=RF_ART.find(a=>a.tokenId===(q.hero||'3412'))||RF_ART[0],other=RF_ART.find(a=>a!==hero);
+function frame(){const t=(performance.now()-T0)/1000;c.fillStyle='#000';c.fillRect(0,0,W,H);
+ stipple(0,H-120,W,120,12,'#2a2a2a');c.fillStyle=SIG;c.fillRect(0,H-124,W,4);
+ const title=q.title||'RARE HEIST',sub=q.sub||'',kick=q.kicker||'RARE FRIENDS VIBEATHON 2026';
+ text(kick,80,70,4,'#9a9a9a');
+ if(q.mode==='intro'||q.mode==='outro'){
+  const k=q.mode==='intro'?26:18,reveal=Math.floor(t*14);
+  const parts=title.split(' ');let y=q.mode==='intro'?250:230;
+  text(parts[0],W/2,y,k,'#fff','center',reveal);
+  if(parts[1]){const w=parts[1].length*6*k-k;c.fillStyle=SIG;const shown=Math.max(0,Math.min(parts[1].length,reveal-parts[0].length));if(shown)c.fillRect(W/2-w/2-k,y+8*k+30-k,(shown*6*k)+k,7*k+2*k);text(parts[1],W/2,y+8*k+30,k,'#000','center',shown);}
+  if(t>0.9)text(sub,W/2,q.mode==='intro'?760:700,6,'#fff','center',Math.floor((t-0.9)*40));
+  if(q.mode==='outro'&&q.url&&t>1.2){const w=text(q.url,W/2,800,5,SIG,'center');}
+  // two Friends walk across the ground line
+  const x=((t*260)%(W+300))-150;sprite(hero,x,H-124,8,'walk-right',Math.floor(t*9));if(q.mode==='outro')sprite(other,x-220,H-124,8,'walk-right',Math.floor(t*9)+3);
+ }else{
+  const k=14,reveal=Math.floor(t*22);
+  const lines=title.split('|');lines.forEach((ln,i)=>text(ln,120,330+i*(8*k+28),k,i===lines.length-1&&lines.length>1?SIG:'#fff','left',Math.max(0,reveal-lines.slice(0,i).join('').length)));
+  if(t>0.5)text(sub,124,330+lines.length*(8*k+28)+30,5,'#bdbdbd','left',Math.floor((t-0.5)*60));
+  if(!q.nohero)sprite(hero,W-330,H-124,14,'idle-down',Math.floor(t*8));
+ }
+ requestAnimationFrame(frame);}
+frame();
+</script></body></html>

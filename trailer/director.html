@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Rare Heist director</title>
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas#c{display:block;width:100vw;height:100vh}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script src="../src/pixel-font.js"></script><script src="../src/engine.js"></script><script src="../src/art.js"></script>
+<script src="../src/cutaway-render.js"></script><script src="data.js"></script>
+<script>
+// Trailer scenes rendered with the game's own engine and renderer. #scene=<name>
+// Time comes from performance.now() so Playwright's clock gives exact 30 fps frames.
+'use strict';
+const q=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+const C=document.getElementById('c'),c=C.getContext('2d'),W=1920,H=1080,SIG='#ccff00',E=HeistEngine,P=HeistPixels,D=window.TRAILER;
+c.imageSmoothingEnabled=false;
+const G=HeistPixel.glyphs,T0=performance.now(),BEAT=60/128,BAR=BEAT*4,STEP=BEAT/2;
+const F={a:RF_ART.find(x=>x.tokenId==='3412'),b:RF_ART.find(x=>x.tokenId==='7730')};
+const ease=t=>t<0?0:t>1?1:1-Math.pow(1-t,3),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function txt(s,x,y,k,col,align='left',count=Infinity,ctx=c){s=String(s).toUpperCase();const w=s.length*6*k-k;if(align==='center')x-=w/2;else if(align==='right')x-=w;let i=0;for(const ch of s){if(i++>=count)break;const g=(G[ch]||G['?']||'').split('/');ctx.fillStyle=col;for(let r=0;r<g.length;r++)for(let j=0;j<g[r].length;j++)if(g[r][j]==='1')ctx.fillRect(Math.round(x+j*k),Math.round(y+r*k),k,k);x+=6*k;}return w;}
+function stipple(x,y,w,h,step,col){c.fillStyle=col;for(let yy=y;yy<y+h;yy+=step)for(let xx=x+((yy/step)%2?step/2:0);xx<x+w;xx+=step)c.fillRect(xx,yy,3,3);}
+function ground(){stipple(0,H-110,W,110,12,'#262626');c.fillStyle=SIG;c.fillRect(0,H-114,W,4);}
+function shake(t,dur,amp){if(t<0||t>dur)return[0,0];const k=(1-t/dur)*amp;return[Math.round(Math.sin(t*90)*k),Math.round(Math.cos(t*70)*k*.6)];}
+function flash(t,dur,col='#fff',max=.85){if(t<0||t>dur)return;c.globalAlpha=max*(1-t/dur);c.fillStyle=col;c.fillRect(0,0,W,H);c.globalAlpha=1;}
+function slam(t,draw){const s=1+.45*(1-ease(t/.16));c.save();c.translate(W/2,H/2);c.scale(s,s);c.translate(-W/2,-H/2);draw();c.restore();}
+function letterbox(){c.fillStyle='#000';c.fillRect(0,0,W,70);c.fillRect(0,H-70,W,70);}
+function sheet(level,route,mode='operative'){const l=E.normalize(level),st=[E.create(l,mode)];for(const a of route){const r=E.step(l,st.at(-1),a);if(!r.changed)break;st.push(r.state);}return {l,st};}
+// Game view with a following camera. Returns the hero's on-screen position.
+function playView(view,t,{zoom=1,sample=F.b,step=STEP,ox=0,oy=0,trace=false,mutation=null,frameH=1000}={}){
+ const i=clamp(Math.floor(t/step),0,view.st.length-1),s=view.st[i],prev=view.st[Math.max(0,i-1)],ms=t*1000,start=i*step*1000;
+ if(view.last!==i){view.last=i;if(i>0)view.r.pulse(s.events,ms);}
+ view.r.render(view.l,s,{sample,time:ms,width:W,height:frameH,anim:i>0?{from:{x:prev.x,y:prev.y},start,end:start+140}:null,forecast:false,trace:trace?view.st.slice(0,i+1):null,mutation});
+ const g=view.r.metrics(),u=clamp((ms-start)/140,0,1),fx=g.x0+((prev.x+(s.x-prev.x)*u)+.5)*g.cw,fy=g.top[s.y]+g.hh[s.y]/2;
+ view.cx=view.cx==null?fx:view.cx+(fx-view.cx)*.12;view.cy=view.cy==null?fy:view.cy+(fy-view.cy)*.12;
+ const sw=W/zoom,sh=H/zoom,sx=clamp(view.cx-sw/2,0,W-sw),sy=clamp(view.cy-sh/2,-(H-frameH)/2,frameH-sh+(H-frameH)/2);
+ c.fillStyle='#fff';c.fillRect(0,0,W,H);c.drawImage(view.cv,sx,sy,sw,sh,ox,oy,W,H);return {s,i,done:i>=view.st.length-1};
+}
+function makeView(level,route,mode){const v=sheet(level,route,mode);v.cv=document.createElement('canvas');v.r=HeistCutawayRenderer.create(v.cv);return v;}
+const byId=id=>D.grid.find(g=>g.id===id);
+const scenes={
+ intro(t){c.fillStyle='#000';c.fillRect(0,0,W,H);
+  if(!this.v){this.v=makeView(byId('cut-10').level,[]);}
+  this.v.r.render(this.v.l,this.v.st[0],{sample:F.a,time:0,width:W,height:1000,reduced:true});
+  const z=1.25+t*.05;c.globalAlpha=Math.min(.22,t*.12);c.filter='invert(1) grayscale(1)';c.drawImage(this.v.cv,(W-W*z)/2,(H-H*z)/2,W*z,H*z);c.filter='none';c.globalAlpha=1;
+  const a='EVERY BUILDING',b='HAS A WAY IN.',n=Math.floor(t*16);txt(a,W/2,390,16,'#fff','center',n);txt(b,W/2,560,16,SIG,'center',Math.max(0,n-a.length-3));
+  if(Math.floor(t*2.4)%2===0&&n>a.length+b.length)c.fillRect(W/2+b.length*48+20,560,16*5,16*7);
+ },
+ logo(t){const [sx,sy]=shake(t,.35,18);c.fillStyle='#000';c.fillRect(0,0,W,H);c.save();c.translate(sx,sy);ground();
+  slam(t,()=>{const k=26;txt('RARE',W/2,210,k,'#fff','center');const w=5*6*k-k;c.fillStyle=SIG;c.fillRect(W/2-w/2-k,210+8*k+20,w+2*k,9*k);txt('HEIST',W/2,210+8*k+20+k,k,'#000','center');});
+  if(t>.5)txt('A STEALTH HEIST STARRING YOUR RARE FRIEND',W/2,790,6,'#fff','center',Math.floor((t-.5)*50));
+  const x=(t*300)%(W+400)-200;P.sprite(c,F.a,x,H-114,8,'right',true,Math.floor(t*9));P.sprite(c,F.b,x-260,H-114,8,'right',true,Math.floor(t*9)+3);
+  c.restore();flash(t,.3);
+ },
+ friend(t){c.fillStyle='#000';c.fillRect(0,0,W,H);ground();const second=t>=BAR,tt=second?t-BAR:t,f=second?F.b:F.a;
+  const k=34,[sx,sy]=shake(tt,.25,14);P.sprite(c,f,560+sx,H-114+sy,k,'down',false,Math.floor(t*8));
+  txt('THIS IS',1000,300,13,'#fff','left',Math.floor(t*20));txt('YOUR FRIEND.',1000,300+13*9,13,SIG,'left',Math.max(0,Math.floor(t*20)-7));
+  txt('#'+f.tokenId+' '+f.familyName,1004,620,7,'#fff');txt('ORIGINAL 16X16 FRAMES. NEVER REDRAWN.',1004,700,4,'#9a9a9a');
+  flash(tt,.22,SIG,.5);
+ },
+ heist(t){if(!this.v){this.v=makeView(byId('cut-01').level,D.routes['cut-01']);}
+  const lead=.6,z=1+.95*ease(t/1.4),r=playView(this.v,Math.max(0,t-lead),{zoom:z,sample:F.b});
+  if(t<lead+.2){c.fillStyle='#000';c.fillRect(0,H-150,W,150);txt('NIGHT GALLERY',60,H-118,9,'#fff');txt('JOB 07 / 4 FLOORS',60,H-40,4,SIG);}
+  if(r.done){const tt=t-lead-(this.v.st.length-1)*STEP;if(tt>.25){slam(tt-.25,()=>{c.save();c.translate(W/2,H/2);c.rotate(-.06);c.fillStyle='#000';c.fillRect(-470,-150,940,300);c.fillStyle=SIG;c.fillRect(-450,-130,900,260);txt('CLEAN',0,-95,24,'#000','center');c.restore();});txt('46 TURNS / 0 ALARMS / TROPHY SECURED',W/2,H-120,5,'#000','center');flash(tt-.25,.2,'#fff',.6);}}
+  letterbox();
+ },
+ caught(t){if(!this.v){this.v=makeView(byId('cut-02').level,D.routes.caught,'operative');this.alarms=[];}
+  const step=.34,r=playView(this.v,t,{zoom:1.7,sample:F.b,step});
+  const s=r.s;if(s.events.includes('alarm')||s.events.includes('caught')){const at=r.i*step;if(!this.alarms.includes(at))this.alarms.push(at);}
+  for(const at of this.alarms)flash(t-at,.25,SIG,.55);
+  if(s.status==='lost'){const tt=t-r.i*step;const [sx,sy]=shake(tt,.4,22);c.fillStyle='rgba(0,0,0,.75)';c.fillRect(0,0,W,H);c.save();c.translate(sx,sy);slam(tt,()=>{c.fillStyle=SIG;c.fillRect(0,H/2-150,W,300);txt('CAUGHT.',W/2,H/2-95,27,'#000','center');});c.restore();txt('READ THE CLOCK. TRY AGAIN.',W/2,H/2+210,6,'#fff','center',Math.floor(tt*40));}
+  letterbox();
+ },
+ lasttitle(t){const [sx,sy]=shake(t,.3,16);c.fillStyle='#000';c.fillRect(0,0,W,H);c.save();c.translate(sx,sy);slam(t,()=>{txt('LAST',W/2,250,24,'#fff','center');const w=5*6*24-24;c.fillStyle=SIG;c.fillRect(W/2-w/2-24,250+24*8+16,w+48,24*9);txt('HEIST',W/2,250+24*8+16+24,24,'#000','center');});c.restore();
+  txt('ONE VAULT. EVERY CLEAR CHANGES IT.',W/2,830,6,'#fff','center',Math.floor(t*48));flash(t,.25);
+ },
+ evolve(t){const n=D.evolution.length,idx=clamp(Math.floor(t/BAR),0,n-1),tt=t-idx*BAR,e=D.evolution[idx];
+  if(!this.v||this.idx!==idx){this.idx=idx;this.v=makeView(e.level,e.route,'ghost');}
+  const step=Math.min(.045,(BAR-.55)/e.route.length),r=playView(this.v,Math.max(0,tt-.35),{zoom:1,sample:idx%2?F.a:F.b,step,trace:true,mutation:e.change?{x:e.change.x,y:e.change.y}:null,frameH:920});
+  c.fillStyle='#000';c.fillRect(0,0,W,120);c.fillRect(0,H-90,W,90);
+  const label=idx===0?'V0 / THE ORIGINAL VAULT':'V'+idx+' / +'+e.change.kind.toUpperCase()+' BY #'+(idx%2?'3412':'7730');
+  txt(label,60,34,8,idx===0?'#fff':SIG,'left',Math.floor(tt*60));
+  txt('REVISION '+idx+' / 12',W-60,44,5,'#fff','right');
+  for(let i=0;i<12;i++){c.fillStyle=i<idx?SIG:'#333';c.fillRect(60+i*56,H-60,44,22);}
+  txt(idx===0?'CLEAR IT FIRST':'OLD ROUTE BROKEN. NEW ROUTE: '+e.route.length+' TURNS',W-60,H-62,4,'#fff','right');
+  if(idx>0)flash(tt,.18,SIG,.45);
+ },
+ grid(t){c.fillStyle='#000';c.fillRect(0,0,W,H);if(!this.tiles){this.tiles=D.grid.map((g,i)=>{const v=sheet(g.level,g.route,'ghost');v.cv=document.createElement('canvas');v.r=HeistCutawayRenderer.create(v.cv);v.name=g.name;v.sample=i%2?F.a:F.b;return v;});}
+  const cols=4,tw=W/cols,th=(H-150)/4,z=1+.08*(1-ease(t/1.5));
+  c.save();c.translate(W/2,(H-150)/2);c.scale(z,z);c.translate(-W/2,-(H-150)/2);
+  this.tiles.forEach((v,i)=>{const x=(i%cols)*tw,y=Math.floor(i/cols)*th,step=.11,j=clamp(Math.floor(Math.max(0,t-i*.04)/step),0,v.st.length-1),s=v.st[j],p=v.st[Math.max(0,j-1)],ms=t*1000,st=j*step*1000;
+   v.r.render(v.l,s,{sample:v.sample,time:ms,width:Math.round(tw-12),height:Math.round(th-12),thumbnail:true,anim:j?{from:{x:p.x,y:p.y},start:st,end:st+90}:null});
+   c.drawImage(v.cv,x+6,y+6);c.fillStyle=s.status==='won'?SIG:'#000';c.fillRect(x+6,y+th-30,tw-12,24);txt(s.status==='won'?'CLEAN / '+v.name:v.name,x+12,y+th-25,2,s.status==='won'?'#000':'#fff');});
+  c.restore();c.fillStyle='#000';c.fillRect(0,H-150,W,150);const w1=txt('22 HANDMADE HEISTS.',60,H-112,9,'#fff','left',Math.floor(t*30));txt('ONE THIEF: YOURS.',60+19*54+40,H-112,9,SIG,'left',Math.max(0,Math.floor(t*30)-20));
+ },
+ outro(t){c.fillStyle='#000';c.fillRect(0,0,W,H);ground();slam(t,()=>{const k=20;txt('RARE',W/2,150,k,'#fff','center');const w=5*6*k-k;c.fillStyle=SIG;c.fillRect(W/2-w/2-k,150+8*k+16,w+2*k,9*k);txt('HEIST',W/2,150+8*k+16+k,k,'#000','center');});
+  if(t>.4)txt('PLAY AS YOUR OWN RARE FRIEND',W/2,620,6,'#fff','center',Math.floor((t-.4)*50));
+  if(t>1.2){txt('FREE IN YOUR BROWSER / NO WALLET NEEDED TO TRY',W/2,700,4,'#9a9a9a','center');txt(q.url||'WARNINGHEJO-BLIP.GITHUB.IO/RARE-HEIST',W/2,780,5,SIG,'center');}
+  const x=(t*260)%(W+400)-200;P.sprite(c,F.b,x,H-114,8,'right',true,Math.floor(t*9));P.sprite(c,F.a,x-230,H-114,8,'right',true,Math.floor(t*9)+3);
+  txt('RARE FRIENDS VIBEATHON 2026',60,60,4,'#9a9a9a');flash(t,.3);
+ }
+};
+const scene=scenes[q.scene||'logo'];
+function frame(){const t=Math.max(0,(performance.now()-(window.__T0??T0))/1000);c.save();scene.call(scene,t);c.restore();requestAnimationFrame(frame);}
+frame();
+</script></body></html>
