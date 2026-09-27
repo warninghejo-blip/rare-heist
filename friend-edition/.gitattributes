@@ -1,0 +1,2 @@
+# Built static output: keep bytes exactly as `friendsdk build` wrote them.
+* -text

@@ -1,0 +1,161 @@
+/* Rare Heist: Friend Edition layout for the FriendSDK 960 x 640 frame.
+   heist.generated.css (the standalone style.css) loads first; these rules fit the same
+   interface into the sandboxed frame. The SDK toolbar overlays the bottom band of the frame,
+   so no control is placed there. Colours stay black, white and the one lime signal. */
+:root { --rh-band: 52px; --rh-bar: 40px; }
+@media (max-width: 518px) { :root { --rh-band: 44px; } }
+@media (max-width: 620px), (max-height: 420px) { :root { --rh-bar: 30px; } }
+
+html, body { height: 100%; overflow: hidden; background: #000; }
+.rh-frame, .rh-mount { position: absolute; inset: 0; }
+
+/* Loading and error states before the game mounts. */
+.rh-status { position: absolute; inset: 0 0 var(--rh-band); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; text-align: center; background: #fff; font-size: 13px; }
+.rh-status-title { font-size: 18px; background: #000; color: #fff; padding: 4px 10px; }
+.rh-status-title span { color: #cf0; }
+.rh-status p { max-width: 520px; }
+
+#rhSdk { position: absolute; inset: 0; display: flex; flex-direction: column; background: #000; padding-bottom: var(--rh-band); font-size: 13px; line-height: 1.45; }
+#rhSdk #screens { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #fff; }
+#rhSdk .page { padding: 0; }
+
+/* Top strip: menu, job, play tools, sound, motion, help. */
+#rhSdk .rh-bar { flex: none; height: var(--rh-bar); display: flex; align-items: center; gap: 6px; padding: 0 8px; background: #000; color: #fff; min-width: 0; }
+#rhSdk .rh-bar button { background: #000; color: #fff; border: 1px solid #fff; box-shadow: none; font-size: 11px; min-height: 28px; padding: 3px 8px; white-space: nowrap; }
+#rhSdk .rh-bar button:hover:not(:disabled) { color: #000; background: #cf0; }
+#rhSdk .rh-bar button.active { background: #cf0; color: #000; border-color: #cf0; }
+#rhSdk .rh-home { display: flex; align-items: center; gap: 8px; border: 0 !important; padding: 0 !important; font-size: 17px !important; }
+#rhSdk .rh-home:hover:not(:disabled) { background: #000 !important; color: #cf0 !important; }
+#rhSdk .rh-home canvas { width: 32px; height: 32px; image-rendering: pixelated; flex: none; }
+#rhSdk .rh-brand small { font-size: 11px; }
+#rhSdk .rh-job { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; }
+#rhSdk .rh-job .tag { border-color: #fff; font-size: 10px; padding: 1px 5px; margin-right: 4px; }
+#rhSdk .rh-tools { display: flex; gap: 5px; margin-left: auto; flex: none; }
+body:not([data-screen="play"]) #rhSdk .rh-back,
+body:not([data-screen="play"]) #rhSdk .rh-job,
+body:not([data-screen="play"]) #rhSdk .rh-playtool { display: none; }
+body[data-screen="play"] #rhSdk .rh-brand { display: none; }
+
+/* Lobby: the Friend, four lessons and fourteen jobs. */
+#rhSdk .rh-lobby { flex: 1; min-height: 0; overflow: auto; padding: 12px; }
+#rhSdk .rh-lobbygrid { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 14px; min-height: 100%; }
+#rhSdk .rh-friend { border: 2px solid #000; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+#rhSdk .rh-friend canvas { image-rendering: pixelated; border: 2px solid #000; box-sizing: content-box; flex: none; }
+#rhSdk .rh-friendtext { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+#rhSdk .rh-friend h2 { font-size: 30px; line-height: 1.1; }
+#rhSdk .rh-family, #rhSdk .rh-progress { font-size: 11px; }
+#rhSdk .rh-progress { background: #000; color: #fff; padding: 2px 8px; }
+#rhSdk .rh-friend .note { margin: 0; font-size: 11px; }
+#rhSdk .rh-friend #rhNext { font-size: 12px; padding: 8px 10px; min-height: 38px; width: 100%; }
+#rhSdk .rh-link { border: 0; box-shadow: none; background: transparent; min-height: 24px; padding: 2px 4px; font-size: 11px; text-decoration: underline; }
+#rhSdk .rh-lists { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+#rhSdk .rh-listhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+#rhSdk .rh-listhead h3 { font-size: 13px; }
+#rhSdk .rh-listhead small { font-size: 10px; }
+#rhSdk .rh-mode { display: flex; }
+#rhSdk .rh-mode button { box-shadow: none; min-height: 28px; padding: 3px 9px; font-size: 11px; }
+#rhSdk .rh-mode button + button { border-left: 0; }
+#rhSdk .rh-lessons { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+#rhSdk .rh-jobs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+#rhSdk .rh-lessons button, #rhSdk .rh-jobs button { text-align: left; text-transform: none; display: flex; flex-direction: column; gap: 3px; min-height: 0; padding: 6px 8px; box-shadow: 2px 2px #000; }
+#rhSdk .rh-lessons b, #rhSdk .rh-jobs b { font-size: 12px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+#rhSdk .rh-lessons small { font-size: 10px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#rhSdk .rh-jobs small { font-size: 10px; text-transform: uppercase; }
+#rhSdk .rh-done { border-left-width: 8px; }
+#rhSdk .rh-marks { display: flex; gap: 3px; }
+#rhSdk .rh-marks i { font-style: normal; font-size: 10px; line-height: 1; border: 1px solid #000; padding: 2px 3px; min-width: 16px; text-align: center; }
+#rhSdk .rh-marks i.on { background: #cf0; }
+
+/* Play screen: HUD, board, coach and actions above the SDK toolbar band. */
+#rhSdk .playpage { flex: 1; min-height: 0; padding: 6px 8px 6px; gap: 5px; }
+#rhSdk .play-layout { flex: 1; min-height: 0; display: flex; }
+#rhSdk .board-column { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 5px; position: relative; }
+#rhSdk .gamehud { flex: none; min-height: 0; padding: 4px 8px; gap: 10px; font-size: 11px; flex-wrap: nowrap; }
+#rhSdk .gamehud .inventoryline { display: flex; gap: 12px; padding: 0; font-size: 11px; justify-content: center; }
+#rhSdk .hudleft, #rhSdk .hudright { gap: 10px; flex-wrap: nowrap; }
+#rhSdk .boardwrap { flex: 1 1 0; min-height: 0; height: auto !important; max-height: none !important; overflow: hidden; }
+#rhSdk .coach { flex: none; min-height: 0; border-top: 2px solid #000; padding: 4px 8px; font-size: 11px; }
+#rhSdk .coach p { font-size: 11px; line-height: 1.35; }
+#rhSdk .coach button { min-height: 26px; padding: 2px 8px; font-size: 11px; }
+#rhSdk .inspectpanel { flex: none; max-height: 34%; overflow: auto; padding: 5px 10px; }
+#rhSdk .actions { flex: none; flex-wrap: nowrap; gap: 5px; padding-top: 0; }
+#rhSdk .actions button { flex: 1 1 0; min-width: 0; min-height: 38px; padding: 4px 6px; font-size: 11px; box-shadow: none; }
+#rhSdk .actions .move { font-size: 17px; flex: 1 1 0; }
+#rhSdk .replaybar { flex: none; padding: 5px 8px; }
+#rhSdk .pausecard { padding: 16px; }
+#rhSdk .pausecard h2 { font-size: 20px; }
+
+/* Dialogs and toasts stay above the toolbar band. */
+#rhSdk dialog { max-width: min(700px, calc(100vw - 16px)); max-height: calc(100dvh - var(--rh-band) - 12px); margin: 6px auto auto; overflow: auto; box-shadow: 5px 5px #000; }
+#rhSdk .dialoginner { padding: 14px 16px; }
+#rhSdk .dialoginner > p { margin: 8px 0; font-size: 12px; }
+#rhSdk .dialoginner h2 { font-size: 20px; }
+#rhSdk .stamp { font-size: 22px; padding: 4px 12px; margin: 8px 0; }
+#rhSdk .resultstats { grid-template-columns: repeat(4, 1fr); margin: 8px 0; }
+#rhSdk .resultstats strong { font-size: 18px; }
+#rhSdk .dialoginner .toolbar { margin: 8px 0 0; gap: 6px; }
+#rhSdk .dialoginner .toolbar button { min-height: 34px; padding: 6px 10px; }
+#rhSdk .debrief { margin-top: 10px; padding-top: 8px; font-size: 12px; }
+#rhSdk .lessonlist { margin: 10px 0; }
+/* Toasts sit over the top of the board, never over the action row or the SDK toolbar. */
+#rhSdk #toast { top: calc(var(--rh-bar) + 34px); bottom: auto; max-width: min(650px, calc(100vw - 16px)); pointer-events: none; }
+
+/* Phone-sized frames (the SDK keeps 3:2, so 360 wide is about 240 tall). */
+@media (max-width: 620px), (max-height: 420px) {
+  #rhSdk { font-size: 11px; }
+  #rhSdk .rh-bar { gap: 4px; padding: 0 4px; }
+  #rhSdk .rh-bar button { font-size: 9px; min-height: 24px; padding: 2px 5px; }
+  #rhSdk .rh-home { font-size: 12px !important; gap: 5px; }
+  #rhSdk .rh-home canvas { width: 24px; height: 24px; }
+  #rhSdk .rh-brand small, #rhSdk .rh-job, #rhSdk #forecast { display: none; }
+  #rhSdk .rh-tools { gap: 3px; }
+
+  #rhSdk .rh-lobby { padding: 6px; }
+  #rhSdk .rh-lobbygrid { grid-template-columns: minmax(0, 1fr); gap: 8px; min-height: 0; }
+  #rhSdk .rh-friend { flex-direction: row; align-items: center; text-align: left; padding: 6px; gap: 8px; }
+  #rhSdk .rh-friendtext { align-items: flex-start; gap: 3px; }
+  #rhSdk .rh-friend h2 { font-size: 15px; }
+  #rhSdk .rh-friend .kicker, #rhSdk .rh-family, #rhSdk .rh-progress { font-size: 8px; }
+  #rhSdk .rh-friend .note { display: none; }
+  #rhSdk .rh-friend #rhNext { font-size: 9px; min-height: 30px; padding: 3px 6px; width: auto; }
+  #rhSdk .rh-link { min-height: 20px; font-size: 8px; }
+  #rhSdk .rh-listhead h3 { font-size: 10px; }
+  #rhSdk .rh-listhead small { display: none; }
+  #rhSdk .rh-lessons, #rhSdk .rh-jobs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  #rhSdk .rh-lessons b, #rhSdk .rh-jobs b { font-size: 10px; }
+  #rhSdk .rh-lessons small, #rhSdk .rh-jobs small { font-size: 8px; }
+  #rhSdk .rh-mode button { min-height: 26px; font-size: 9px; padding: 2px 6px; }
+
+  #rhSdk .playpage { padding: 3px 4px; gap: 3px; }
+  #rhSdk .board-column { gap: 3px; }
+  /* HUD floats over the board; the board scrolls with the Friend (see friend-edition.js). */
+  #rhSdk .gamehud { position: absolute; z-index: 2; top: 2px; left: 2px; right: 2px; padding: 1px 4px; gap: 2px 6px; font-size: 8px; line-height: 1.3; flex-wrap: wrap; background: #000c; pointer-events: none; }
+  #rhSdk .gamehud .inventoryline { font-size: 8px; gap: 6px; }
+  #rhSdk .hudleft, #rhSdk .hudright { gap: 6px; }
+  #rhSdk #lightState, #rhSdk #parStatus { display: none; }
+  #rhSdk .boardwrap { overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }
+  #rhSdk .boardwrap::-webkit-scrollbar { display: none; }
+  #rhSdk .coach { padding: 1px 4px; gap: 4px; font-size: 9px; }
+  #rhSdk .coach span:first-child { font-size: 8px; padding: 1px 4px; max-width: none; white-space: nowrap; }
+  #rhSdk .coach p { font-size: 8px; line-height: 1.25; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #rhSdk .coach button { min-height: 20px; padding: 1px 5px; font-size: 9px; max-width: none; }
+  #rhSdk .inspectpanel { max-height: 42%; padding: 3px 6px; font-size: 9px; }
+  #rhSdk .actions { gap: 2px; }
+  #rhSdk .actions button { min-height: 34px; padding: 1px; font-size: 8px; }
+  #rhSdk .actions .move { font-size: 14px; min-width: 0; min-height: 34px; }
+  #rhSdk .actions .key { display: none; }
+  #rhSdk .pausecard { padding: 8px; max-width: 94%; }
+  #rhSdk .pausecard h2 { font-size: 13px; }
+  #rhSdk .pausecard button { margin-top: 6px; min-height: 30px; }
+  #rhSdk .dialoginner { padding: 8px 10px; }
+  #rhSdk .dialoginner h2 { font-size: 14px; }
+  #rhSdk .dialoginner > p { font-size: 10px; margin: 5px 0; }
+  #rhSdk .stamp { font-size: 14px; padding: 2px 8px; margin: 4px 0; border-width: 2px; }
+  #rhSdk .resultstats { gap: 4px; margin: 4px 0; }
+  #rhSdk .resultstats div { padding: 3px 5px; font-size: 9px; }
+  #rhSdk .resultstats strong { font-size: 13px; }
+  #rhSdk .dialoginner .toolbar button { min-height: 32px; padding: 3px 6px; font-size: 9px; }
+  #rhSdk .debrief, #rhSdk .targetstrip { font-size: 9px; }
+  #rhSdk .close { min-height: 28px; padding: 2px 8px; }
+  #rhSdk #toast { top: calc(var(--rh-bar) + 14px); padding: 4px 8px; font-size: 9px; line-height: 1.35; border-width: 2px; box-shadow: 3px 3px #000; }
+}

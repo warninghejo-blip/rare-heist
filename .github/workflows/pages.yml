@@ -31,6 +31,7 @@ jobs:
           mkdir _site
           cp index.html _site/
           cp -r media _site/media
+          cp -r friend-edition _site/friend-edition
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

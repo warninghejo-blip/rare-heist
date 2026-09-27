@@ -1,0 +1,26 @@
+{
+  "name": "rare-heist-friend-edition",
+  "version": "0.1.2",
+  "private": true,
+  "type": "module",
+  "description": "Rare Heist: Friend Edition, a FriendSDK v0.1.2 game component (Learn + Solo campaign) generated from the standalone Rare Heist sources.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "generate": "node ../build-sdk.mjs",
+    "dev": "node ../build-sdk.mjs && friendsdk dev games/rare-heist",
+    "check": "node ../build-sdk.mjs --verify && friendsdk check games/rare-heist",
+    "test": "node ../build-sdk.mjs --verify && friendsdk test games/rare-heist && friendsdk test games/rare-heist --width 360",
+    "build": "node ../build-sdk.mjs && friendsdk build games/rare-heist"
+  },
+  "dependencies": {
+    "@rarefriends/friendsdk": "https://github.com/spokesz/friendsdk/releases/download/v0.1.2/rarefriends-friendsdk-0.1.2.tgz",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

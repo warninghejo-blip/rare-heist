@@ -1,65 +1,17 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><meta name="description" content="Rare Heist: a one-bit cutaway stealth game. Plan your floors, steal the trophy, then make the shared vault harder. Free guest play. DEMO rewards only."><title>RARE HEIST / CUTAWAY</title><style>:root{--ink:#000;--paper:#fff;--signal:#cf0;--mono:'Heist Grid',monospace;--border:2px solid #000;color-scheme:light}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.55}body{background-image:radial-gradient(#000 0.65px,transparent 0.65px);background-size:8px 8px}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;background:#fff;border:var(--border);padding:10px 14px;min-height:42px;box-shadow:3px 3px #000;text-transform:uppercase;line-height:1.3}button:hover:not(:disabled){background:var(--signal)}button:active:not(:disabled){box-shadow:0 0 #000;transform:translate(2px,2px)}button:disabled{cursor:not-allowed;box-shadow:none;text-decoration:line-through}button.active,.primary{background:var(--signal)}button.black{background:#000;color:#fff}button.black:hover{color:#000}button.plain{box-shadow:none;background:transparent}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,canvas:focus-visible{outline:3px solid var(--signal);outline-offset:4px}.app{max-width:1240px;margin:14px auto;border:3px solid #000;background:#fff;box-shadow:8px 8px #000}header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;background:#000;color:#fff}.brand{background:#000;color:#fff;border:0;box-shadow:none;padding:0;display:flex;align-items:center;gap:12px;white-space:nowrap;font-size:21px}.brand:hover{background:#000!important;color:#cf0}.brand canvas{width:32px;height:32px;image-rendering:pixelated}.settings{display:flex;gap:8px;align-items:center}.settings button{background:#000;color:#fff;border-color:#fff;font-size:12px;min-height:36px;padding:6px 9px;box-shadow:none}.settings button:hover{color:#000}.settings .active{background:var(--signal);color:#000;border-color:var(--signal)}.tag{font-size:12px;text-transform:uppercase;border:1px solid #000;display:inline-block;padding:2px 7px}.tag.inverse{border-color:#fff;color:#fff}.signal{color:var(--signal)}nav{display:flex;gap:0;flex-wrap:wrap;border-bottom:2px solid #000;background:#fff}nav button{flex:1;min-height:43px;border:0;border-right:1px solid #000;box-shadow:none;padding:10px;font-size:12px}nav button:last-child{border:0}.page{padding:24px}.kicker{font-size:12px;letter-spacing:1px;text-transform:uppercase}.title-row{display:flex;align-items:end;justify-content:space-between;gap:20px;border-bottom:3px solid #000;padding-bottom:20px;margin-bottom:20px}h1,h2,h3,p{margin:0}h1{font-size:42px;line-height:1.2;letter-spacing:-1px}h2{font-size:25px;line-height:1.4}h3{font-size:16px}.subtitle{max-width:430px;font-size:13px}.strikeline{background:#000;color:#fff;padding:2px 6px}.districts{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.districts button{font-size:12px;min-height:32px;padding:5px 10px;box-shadow:none}.streetbox{border:2px solid #000;position:relative}.streetbox canvas{width:100%;display:block;image-rendering:pixelated}.door-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-top:2px solid #000;background:#fff}.door-card p{font-size:12px;margin-top:3px}.door-card .walk-buttons{display:flex;gap:6px}.quickcards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:18px 0 0}.quickcards button{text-align:left;min-height:106px;padding:15px}.quickcards strong{display:block;font-size:16px}.quickcards small{display:block;font-size:12px;margin-top:8px}.note{font-size:12px;margin-top:12px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{border:2px solid #000;padding:16px;display:flex;flex-direction:column;gap:10px}.card canvas{width:100%;image-rendering:pixelated;border:1px solid #000}.card h3{font-size:16px}.card p{font-size:12px;min-height:52px}.card .cardactions{margin-top:auto;display:flex;gap:9px}.cardactions button{flex:1;font-size:12px}.stats{display:flex;flex-wrap:wrap;gap:12px;font-size:12px}.stats b{background:#000;color:#fff;padding:2px 7px}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 0 15px}.playpage{padding:12px;display:flex;flex-direction:column;gap:9px}.briefbar{display:flex;gap:12px;align-items:center;justify-content:space-between}.briefbar strong{font-size:16px}.briefbar .tools{display:flex;gap:6px}.briefbar button{box-shadow:none;font-size:12px;padding:5px 9px;min-height:33px}.play-layout{display:flex;gap:12px}.board-column{flex:1;min-width:0}.gamehud{background:#000;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;font-size:12px;min-height:44px}.hudleft,.hudright{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.boardwrap{border:2px solid #000;position:relative;height:clamp(320px,calc(100dvh - 450px),580px);overflow:hidden}.boardwrap canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none;outline-offset:-4px}.boardwrap .shade{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#000 0,#000 2px,transparent 2px,transparent 8px);display:flex;align-items:center;justify-content:center}.pausecard{background:#fff;border:4px solid #000;padding:24px;text-align:center;max-width:80%}.pausecard button{margin-top:18px}.coach{border:2px solid #000;border-top:0;display:flex;gap:12px;align-items:center;padding:9px 12px;min-height:60px;font-size:12px}.coach span:first-child{background:#cf0;white-space:nowrap;padding:3px 7px}.coach p{flex:1}.coach button{min-height:32px;font-size:12px;box-shadow:none;padding:4px 8px}.actions{display:flex;gap:6px;flex-wrap:wrap;padding-top:9px}.actions button{font-size:12px;min-height:40px;box-shadow:none;padding:7px 9px}.actions .move{min-width:42px;font-size:17px}.actions .key{display:inline-block;border:1px solid #000;font-size:11px;padding:1px 3px;margin-right:5px}.inventoryline{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:7px 2px}.editor{width:254px;flex:none;border:2px solid #000;padding:12px;max-height:calc(100dvh - 225px);overflow:auto}.editor h3{margin-bottom:10px}.palette{display:grid;grid-template-columns:1fr 1fr;gap:6px}.palette button{font-size:11px;min-height:35px;padding:6px 4px;box-shadow:none}.editor label{display:block;font-size:12px;margin-top:12px}.editor input,.editor select{width:100%;margin-top:5px;padding:7px;border:2px solid #000;background:#fff;font-size:12px}.editor .row{display:flex;gap:6px}.editor .row>*{flex:1;min-width:0}.editor-help{font-size:12px;margin:12px 0}.editor-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.editor-controls button{font-size:12px;flex:1}.error{border-left:6px solid #000;padding:10px;background:var(--signal);font-size:12px}.shared-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(270px,1fr);gap:20px}.shared-layout canvas{width:100%;border:2px solid #000;image-rendering:pixelated}.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.statblock{border:2px solid #000;padding:12px}.statblock small{display:block;font-size:12px}.statblock strong{display:block;font-size:24px;margin-top:7px}.shared-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.shared-actions button{flex:1}.roundlist{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.roundlist button{font-size:12px;box-shadow:none}.eventlist{list-style:none;padding:0;margin:14px 0}.eventlist li{padding:9px 0;border-bottom:1px solid #000;font-size:12px}.steps{display:grid;grid-template-columns:repeat(3,1fr);border:2px solid #000;margin:18px 0}.steps div{padding:14px;font-size:12px;border-right:1px solid #000}.steps div:last-child{border:0}.steps strong{display:block;margin-bottom:7px}.statusline{padding:8px 12px;background:#cf0;font-size:12px;border:2px solid #000;margin:12px 0}.replaylist{display:grid;gap:10px}.replayrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;border:2px solid #000}.replayrow p{font-size:12px}.toolbar{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0}.toolbar button{font-size:12px}footer{padding:13px 18px;background:#000;color:#fff;font-size:11px;display:flex;justify-content:space-between;gap:10px}footer button{border:0;box-shadow:none;min-height:20px;padding:0;font-size:11px;color:#fff;background:#000}dialog{max-width:min(690px,94vw);max-height:90dvh;border:3px solid #000;box-shadow:8px 8px #000;padding:0;background:#fff}dialog::backdrop{background:repeating-linear-gradient(45deg,#0009 0,#0009 2px,#0006 2px,#0006 8px)}.dialoginner{padding:23px}.dialoginner>p{font-size:13px;margin:14px 0}.dialoginner .toolbar{margin-bottom:0}.dialoginner input,.dialoginner textarea,.dialoginner select{padding:10px;border:2px solid #000;max-width:100%;width:100%;margin:8px 0}.dialoginner textarea{height:170px;font-family:monospace;font-size:12px}.close{float:right;box-shadow:none;min-height:32px;padding:4px 10px;margin-left:15px}.stamp{display:inline-block;background:#cf0;border:4px solid #000;padding:10px 17px;font-size:32px;margin:14px 0}.friendchoices{display:flex;gap:15px;margin:15px 0}.friendchoices button{flex:1;display:flex;align-items:center;justify-content:center;gap:10px}.friendchoices canvas{width:64px;height:64px;image-rendering:pixelated}#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);max-width:min(90vw,650px);padding:12px 18px;background:#cf0;border:3px solid #000;box-shadow:5px 5px #000;font-size:12px;z-index:30}#storageWarning{padding:8px;background:#cf0;font-size:12px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}[hidden]{display:none!important}.onboarding{background:#cf0;padding:8px 12px;border:2px solid #000;font-size:12px;margin:14px 0}.replaybar{display:flex;align-items:center;gap:12px;padding:10px;border:2px solid #000}.replaybar input{flex:1}.replaybar button{font-size:12px;min-height:32px;box-shadow:none}.resultstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:15px 0}.resultstats div{border:1px solid #000;padding:9px;font-size:12px}.resultstats strong{display:block;font-size:24px}.mut-flash{outline:4px solid #cf0;outline-offset:-6px}.wraptext{overflow-wrap:anywhere}.progressline{display:block;background:#000;height:7px;margin-top:10px}.progressline i{display:block;background:#cf0;height:100%}
-@media(max-width:900px){.app{margin:0;box-shadow:none;border-width:2px}.page{padding:16px}.title-row{align-items:start}h1{font-size:30px}.subtitle{font-size:12px;max-width:300px}.cards{grid-template-columns:repeat(2,1fr)}.quickcards{gap:9px}.quickcards strong{font-size:13px}.quickcards small{font-size:11px}.shared-layout{grid-template-columns:1fr 1fr;gap:12px}.editor{width:210px}.settings{gap:5px}.settings button{padding:5px 6px}.brand{font-size:18px}.brand .kicker{display:none}}
-@media(max-width:620px){header{padding:10px;gap:6px;flex-wrap:wrap}.brand{font-size:16px}.brand canvas{width:24px;height:24px}.settings button{font-size:10px;min-height:32px}.settings{margin-left:auto}.settings #friend{max-width:112px;overflow:hidden}.settings #sound{width:44px}nav button{font-size:10px;padding:9px 4px;min-width:60px;min-height:36px}.page{padding:12px}.title-row{display:block;padding-bottom:14px;margin-bottom:12px}.subtitle{max-width:none;margin-top:12px}h1{font-size:28px}.kicker{font-size:10px}h2{font-size:20px}.quickcards{grid-template-columns:1fr 1fr;margin-top:12px}.quickcards button{min-height:82px;padding:10px}.streetbox canvas{height:auto;width:100%}.door-card{padding:10px;align-items:stretch;flex-wrap:wrap}.door-card>div:first-child{flex:1;min-width:150px}.door-card button{font-size:11px}.door-card p{font-size:11px}.door-card .walk-buttons{align-self:center}.districts{gap:5px}.districts button{font-size:10px}.cards{grid-template-columns:1fr 1fr;gap:10px}.card{padding:9px;gap:8px}.card p{font-size:11px;min-height:68px}.card h3{font-size:13px}.card .stats{font-size:10px}.cardactions button{padding:8px 5px;font-size:10px}.cardactions{flex-wrap:wrap}.briefbar{gap:5px;align-items:flex-start}.briefbar strong{font-size:12px}.briefbar .tools{gap:4px}.briefbar button{font-size:10px;padding:5px;min-height:30px}.playpage{padding:7px;gap:7px}.gamehud{font-size:10px;padding:7px;gap:4px;flex-wrap:wrap}.hudleft,.hudright{gap:7px}.boardwrap{height:clamp(300px,calc(100dvh - 310px),450px)}.coach{font-size:11px;padding:8px;gap:6px;min-height:62px}.coach span:first-child{white-space:normal;max-width:65px;font-size:10px}.coach button{font-size:10px;max-width:60px}.actions{gap:5px;padding-top:7px}.actions button{font-size:10px;min-height:37px;padding:7px 6px;flex:1}.actions .move{font-size:17px;min-width:35px;flex:0}.actions .key{display:none}.inventoryline{font-size:10px}.play-layout{display:block}.editor{width:100%;max-height:none;margin-top:12px}.palette{grid-template-columns:repeat(4,1fr)}.editor .row{display:inline-flex;width:49%}.shared-layout{display:block}.shared-layout aside{margin-top:15px}.hero-stats{gap:9px}.statblock{padding:10px}.statblock strong{font-size:21px}.steps{grid-template-columns:1fr}.steps div{border:0;border-bottom:1px solid #000;padding:10px}.steps div:last-child{border:0}.shared-actions button{font-size:11px}.replayrow{align-items:start;flex-wrap:wrap}.replayrow h3{font-size:13px}footer{font-size:10px;padding:10px;flex-wrap:wrap}footer button{font-size:10px}.dialoginner{padding:16px}.stamp{font-size:25px}.friendchoices{gap:9px}.friendchoices button{font-size:11px;display:block}.friendchoices canvas{display:block;margin:auto}.note{font-size:11px}.replaybar{font-size:10px;gap:7px}.replaybar button{font-size:10px}}
-@media(max-height:540px) and (min-width:621px){header{padding:5px 10px}.brand{font-size:15px}.brand canvas{width:22px;height:22px}body[data-screen="play"] nav{display:none}.boardwrap{height:270px}.playpage{padding:6px}.coach{min-height:32px}.actions button{min-height:30px}footer{display:none}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+// GENERATED by publish/rare-heist/build-sdk.mjs. Do not edit; change src/ or sdk/src/ and regenerate.
+// Rare Heist: Friend Edition for FriendSDK v0.1.2 (sandboxed game frame). Inputs sha256 b70fb75e15e4f301.
+// Sources: src/{pixel-font,engine,economy,identity,cutaway-rules,cutaway-levels,cutaway-render,playfeel,ui}.js, sdk/src/friend-shell.html, sdk/src/friend-edition.js.
+/* eslint-disable */
+const MARKUP="<div id=\"rhSdk\" class=\"rh-sdk\">\n<header class=\"rh-bar\">\n <button id=\"home\" class=\"rh-home\" aria-label=\"Rare Heist menu: lessons and jobs\"><canvas id=\"brandSprite\" width=\"32\" height=\"32\" aria-hidden=\"true\"></canvas><span class=\"rh-brand\">RARE <span class=\"signal\">HEIST</span><small> / FRIEND EDITION</small></span></button>\n <button id=\"back\" class=\"rh-back\" aria-label=\"Back to lessons and jobs\">&lt; JOBS</button>\n <div class=\"rh-job\"><span id=\"modeBadge\" class=\"tag\">SOLO</span> <strong id=\"jobName\"></strong></div>\n <div class=\"rh-tools\">\n  <button id=\"forecast\" class=\"rh-playtool active\" aria-pressed=\"true\" title=\"F: show next-turn danger\">FORECAST</button><button id=\"inspect\" class=\"rh-playtool\" aria-pressed=\"false\" title=\"I: inspect objects without spending turns\">INSPECT</button><button id=\"pause\" class=\"rh-playtool\" title=\"P: pause\">PAUSE</button>\n  <button id=\"resumeLast\" hidden>RESUME JOB</button>\n  <button id=\"sound\" aria-pressed=\"false\">SOUND OFF</button><button id=\"motion\" aria-pressed=\"false\">MOTION ON</button><button id=\"help\" aria-label=\"Help\">?</button>\n </div>\n</header>\n<main id=\"screens\">\n<section id=\"catalogPage\" class=\"page rh-lobby\" hidden></section>\n<section id=\"streetPage\" hidden></section><section id=\"lastPage\" hidden></section><section id=\"replaysPage\" hidden></section><section id=\"studioPage\" hidden></section>\n<section id=\"playPage\" class=\"playpage\" hidden>\n <div id=\"sharedBanner\" class=\"statusline\" hidden></div>\n <div class=\"play-layout\"><div class=\"board-column\">\n  <div class=\"gamehud\"><div class=\"hudleft\"><span id=\"floorStatus\">F4</span><span id=\"turnStatus\">TURN 000</span><span id=\"relicStatus\">NO TROPHY</span></div><div class=\"inventoryline\"><span id=\"inventory\">KEYS - / INTEL 0/0</span><span id=\"lightState\">LIGHTS ON</span><span id=\"parStatus\">PAR 46</span></div><div class=\"hudright\"><span id=\"alertStatus\">UNSEEN</span><span id=\"alarmStatus\">ALARM 0/2</span><span id=\"clockStatus\" class=\"signal\"></span></div></div>\n  <div class=\"boardwrap\" id=\"boardWrap\"><canvas id=\"gameCanvas\" width=\"960\" height=\"640\" tabindex=\"0\" aria-label=\"Cutaway vault. Left/right move, up/down use ladders. Space wait, E vent, Q EMP, L light, I inspect, Z practice rewind, R retry. Tap a cell to walk there.\"></canvas><div id=\"pauseShade\" class=\"shade\" hidden><div class=\"pausecard\"><h2>PLAN YOUR NEXT MOVE.</h2><p class=\"note\">Security only moves when you do.</p><button id=\"resume\" class=\"primary\">RESUME</button></div></div></div>\n  <div class=\"coach\" id=\"coach\"><span id=\"coachStep\">RADIO</span><p id=\"coachText\"></p><button id=\"hint\">HINT</button></div>\n  <section class=\"inspectpanel\" id=\"inspectorPanel\" hidden aria-label=\"Tactical inspection\"><div class=\"inspecthead\"><strong id=\"inspectTitle\">TACTICAL SCAN</strong><button id=\"closeInspect\">I / CLOSE</button></div><p id=\"inspectBody\"></p><div id=\"inspectCycle\" class=\"cyclebeats\"></div><p id=\"inspectRisk\" class=\"inspectrisk\"></p></section>\n  <div class=\"actions\" id=\"gameActions\"><button class=\"move\" data-action=\"W\" aria-label=\"Move left\">&larr;</button><button class=\"move\" data-action=\"N\" aria-label=\"Climb up\">&uarr;</button><button class=\"move\" data-action=\"S\" aria-label=\"Climb down\">&darr;</button><button class=\"move\" data-action=\"E\" aria-label=\"Move right\">&rarr;</button><button data-action=\"WAIT\"><span class=\"key\">SPACE</span>WAIT</button><button data-action=\"VENT\" id=\"ventAction\"><span class=\"key\">E</span>VENT</button><button data-action=\"LIGHT\" id=\"lightAction\"><span class=\"key\">L</span>LIGHT</button><button data-action=\"EMP\" id=\"empAction\"><span class=\"key\">Q</span>EMP</button><button id=\"undo\"><span class=\"key\">Z</span>UNDO</button><button id=\"retry\"><span class=\"key\">R</span>RETRY</button></div>\n  <div id=\"replayBar\" class=\"replaybar\" hidden><button id=\"replayToggle\">PLAY</button><input id=\"replayPosition\" type=\"range\" min=\"0\" max=\"1\" value=\"0\" aria-label=\"Replay position\"><span id=\"replayCount\">0 / 0</span></div>\n </div><aside id=\"editor\" hidden></aside></div>\n</section>\n</main>\n<dialog id=\"modal\" aria-labelledby=\"dialogTitle\"><div class=\"dialoginner\" id=\"dialogContent\"></div></dialog><div id=\"toast\" role=\"status\" hidden></div><p id=\"liveAnnounce\" class=\"sr-only\" aria-live=\"polite\"></p>\n</div>";
+let loaded=false,instance=null;
 
-/* Keep the active board and direct controls in one viewport; sheets can scroll. */
-@media(min-width:901px){#streetPage .title-row{margin-bottom:10px;padding-bottom:12px}#streetPage{padding:18px 24px}#streetPage h1{font-size:36px}.quickcards{margin-top:12px}.quickcards button{min-height:84px;padding:11px}.quickcards small{margin-top:5px}.streetbox .door-card{padding:9px 14px}.playpage .boardwrap{max-height:580px}}
-@media(max-width:620px){.settings button,.kicker,nav button,.districts button,.actions button,.inventoryline,.gamehud,.briefbar button,.coach,.note{font-size:12px}.settings #sound{width:auto}.boardwrap{height:clamp(240px,calc(100dvh - 470px),390px)}.tag{font-size:11px}.coach p{font-size:12px}.coach span:first-child{font-size:11px}.actions .move{min-width:42px;min-height:42px}.palette button{font-size:12px;min-height:42px}.quickcards small{font-size:12px}}
-
-@media(max-width:620px){nav{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain}nav button{flex:none;padding:8px 11px;white-space:nowrap}body[data-screen="play"] footer{display:none}.briefbar .tag{display:block;width:max-content;margin-bottom:4px}.briefbar strong{display:block}.brand{min-height:24px}header{padding:8px}.settings{gap:5px}.boardwrap{height:clamp(240px,calc(100dvh - 412px),390px)}}
-@media(min-width:901px){#streetPage .note{margin-top:7px}#streetPage .quickcards button{min-height:70px;padding:8px 12px}#streetPage .title-row{padding-bottom:7px}#streetPage h1{font-size:32px}}
-
-/* 1.8: planning is explicit, progression is separate from prize authority. */
-.targetstrip{display:flex;flex-wrap:wrap;gap:5px;font-size:12px;line-height:1.4;margin:5px 0}.target{border:1px solid #000;padding:3px 5px;background:#fff}.target.earned{background:#cf0;border-width:2px;padding:2px 4px}.nextjob{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid #000;padding:12px;margin:14px 0;background:#000;color:#fff}.nextjob span{font-size:13px;line-height:1.5}.nextjob button{flex:none}.debrief{border-top:2px solid #000;padding-top:14px;margin-top:18px;font-size:13px;line-height:1.6}.debrief p{margin-top:8px}.lessonlist{display:grid;gap:10px;margin:18px 0}.lessonlist button{text-align:left;padding:12px}.lessonlist small{display:block;font-size:12px;margin-top:6px;line-height:1.5}.inspectpanel{border:2px solid #000;padding:9px 12px;line-height:1.5;font-size:12px;background:#fff}.inspecthead{display:flex;gap:12px;justify-content:space-between;align-items:center}.inspecthead strong{font-size:12px}.inspecthead button{padding:5px 8px;min-height:28px;font-size:12px;box-shadow:none}.inspectpanel p{margin:5px 0}.cyclebeats{display:flex;gap:4px;margin:5px 0;flex-wrap:nowrap}.beat{display:inline-flex;flex-direction:column;align-items:center;min-width:34px;border:1px solid #000;font-size:11px;line-height:1.25;padding:2px 5px}.beat.on{background:#cf0}.beat b{font-size:10px}.inspectrisk{border-left:4px solid #000;padding-left:8px}.inspectrisk[data-tone="danger"],.inspectrisk[data-tone="alarm"]{background:#cf0;font-weight:bold}.inspectrisk[data-tone="blocked"]{border-style:dotted}.tools{flex-wrap:wrap}#inspect.active{background:#cf0}
-@media(min-width:901px){body[data-inspecting="true"] .boardwrap{height:clamp(280px,calc(100dvh - 395px),470px);max-height:470px}}
-@media(max-width:620px){.nextjob{display:block;padding:9px}.nextjob button{margin-top:10px;width:100%}.targetstrip{font-size:11px;gap:3px}.target{padding:2px 3px}.target.earned{padding:1px 2px}.briefbar .tools{max-width:205px}.inspectpanel{padding:7px 8px}.inspecthead strong{max-width:205px}.beat{min-width:30px;padding:2px}.inspecthead button{min-height:35px}.lessonlist button{font-size:12px}.nextjob span{font-size:12px}body[data-inspecting="true"] .boardwrap{height:240px}body[data-inspecting="true"] .actions button{min-height:42px}}
-
-.nextjob button{color:#000;background:#cf0}body[data-inspecting="true"] .boardwrap{max-height:580px}
-@media(max-width:620px){body[data-screen="play"] nav{display:none}body[data-screen="play"] .boardwrap{max-height:580px}.briefbar .tools{gap:4px}.briefbar .tools button{min-height:35px}}
-
-/* 1.9: wallet + own Friend */
-.settings button.primary{background:var(--signal);color:#000;border-color:var(--signal)}
-.friendsection{border-top:3px solid #000;padding-top:12px;margin-top:14px}
-.friendsection h3{margin:0 0 4px}
-.friendsection label{display:flex;flex-direction:column;gap:4px;margin:10px 0 8px;font-size:12px}
-.friendsection input{font:inherit;border:3px solid #000;padding:8px;min-height:40px;background:#fff;color:#000}
-.friendsection details{margin-top:10px}.friendsection summary{cursor:pointer;font-size:12px}
-.friendchoices{flex-wrap:wrap}
-.friendchoices button{min-width:132px;flex:1 1 132px;flex-direction:column;text-align:center;font-size:12px}
-#ownedList:empty{display:none}
-@media (max-width:620px){#wallet{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
-.subtitle p{margin:0 0 6px}.subtitle #homeWallet{margin-top:6px}
-.onchain{border:3px solid #000;box-shadow:6px 6px 0 #000;padding:16px;margin:0 0 24px;display:grid;gap:10px;background:#fff}
-.onchain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.onchain .statblock small{display:block}
-.modeswitch{display:flex;gap:0;margin:0 0 18px;border:3px solid #000;width:max-content;max-width:100%;box-shadow:4px 4px 0 #000}.modeswitch button{border:0;border-right:3px solid #000;min-height:40px;padding:8px 16px}.modeswitch button:last-child{border-right:0}.modeswitch button[aria-selected="true"]{background:#000;color:var(--signal)}
-.livewarn{display:grid;gap:4px;border:3px solid #000;background:repeating-linear-gradient(-45deg,var(--signal) 0 10px,#fff 10px 20px);padding:4px;margin:0 0 18px}.livewarn strong,.livewarn span{background:#fff;padding:6px 10px;display:block}.livewarn strong{background:#000;color:var(--signal)}
-.livestats{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-button.burn{background:#000;color:var(--signal);border-color:#000}button.burn:disabled{opacity:.45}
-.burncard label{display:grid;gap:4px;margin:8px 0}.burncard input{font:inherit;border:2px solid #000;padding:6px 8px;min-height:38px}
-.hall{border:3px solid #000;background:#000;color:#fff;padding:16px;margin:24px 0;box-shadow:6px 6px 0 var(--signal)}.hall h3{color:var(--signal);margin:4px 0 10px}.hall .kicker{color:#fff}.hall ol{margin:0;padding-left:28px;display:grid;gap:6px}.hall li{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;border-bottom:1px dashed #fff4;padding-bottom:4px}.hall li b{color:var(--signal)}.hall li small{opacity:.7}
-.burnfacts{padding-left:20px;display:grid;gap:6px}.check{display:flex;gap:8px;align-items:center;margin:12px 0;font-weight:bold}
-@media(max-width:620px){.modeswitch{width:100%}.modeswitch button{flex:1;padding:8px 6px;font-size:12px}.hall li{grid-template-columns:1fr auto}.hall li small{display:none}}
-.burnfacts li{overflow-wrap:anywhere}label.check{display:flex;grid-template-columns:none;gap:10px;align-items:center}label.check input{width:22px;height:22px;min-height:0;flex:none;margin:0}
-@media(max-width:620px){.livestats{grid-template-columns:1fr 1fr;gap:8px}.livestats .statblock{padding:8px}.livestats strong{font-size:16px}.livestats small{font-size:10px}}
-</style></head><body>
-<div class="app">
-<header><button id="home" class="brand" aria-label="Return to the street"><canvas id="brandSprite" width="32" height="32"></canvas><span>RARE <span class="signal">HEIST</span><small class="kicker"> / CUTAWAY</small></span></button><div class="settings"><button id="resumeLast" hidden>RESUME JOB</button><button id="wallet" class="primary" aria-label="Connect a wallet to play as your own Rare Friend">CONNECT WALLET</button><button id="friend" aria-label="Choose original Rare Friend">FRIEND #3412</button><button id="sound" aria-pressed="false">SOUND OFF</button><button id="motion" aria-pressed="false">MOTION ON</button><button id="help" aria-label="Help">?</button></div></header>
-<nav aria-label="Game modes"><button data-route="street">STREET</button><button data-route="learn">LEARN</button><button data-route="solo">SOLO VAULTS</button><button data-route="last">LAST HEIST</button><button data-route="workshop">WORKSHOP</button><button data-route="replays">REPLAYS</button><button data-route="studio">STUDIO / DEMO</button></nav>
-<div id="storageWarning" hidden>Saving is unavailable in this browser. This session still works; export your rooms before closing.</div>
-<main id="screens">
-<section id="streetPage" class="page"><div class="title-row"><div><p class="kicker">RARE FRIENDS / INDEPENDENT VIBEATHON BUILD</p><h1>SMALL FRIEND.<br><span class="strikeline">BIG BREAK-IN.</span></h1></div><div class="subtitle"><p>Walk to a door. Take a job. Leave nothing but a better plan.</p><p>Play as the Rare Friend you own, or as a guest. Free to play.</p><button id="homeWallet" class="primary">PLAY AS MY FRIEND</button></div></div><div class="districts" id="districtTabs"></div><div class="streetbox"><canvas id="streetCanvas" width="960" height="360" tabindex="0" aria-label="Side-view street. Left and right to walk. E to enter the nearest building."></canvas><div class="door-card"><div><h3 id="doorName">ACADEMY</h3><p id="doorDesc">Learn movement, ladders and extraction.</p></div><div class="walk-buttons"><button id="walkLeft" aria-label="Walk left">&lt;</button><button id="walkRight" aria-label="Walk right">&gt;</button><button id="enterDoor" class="primary">E / ENTER</button></div></div></div><div class="quickcards"><button class="primary" data-route="learn"><strong>01 / LEARN TO HEIST</strong><small>Movement. Lasers. Darkness. Crates.</small></button><button data-route="solo"><strong>02 / SOLO VAULTS</strong><small>Twelve buildings. Increasing security.</small></button><button data-route="last"><strong>03 / LAST HEIST</strong><small>Clear. Add one obstacle. Defend.</small></button><button data-route="workshop"><strong>04 / WORKSHOP</strong><small>Build a cutaway. Prove your route.</small></button></div><p class="note" id="streetProgress"></p></section>
-<section id="catalogPage" class="page" hidden></section>
-<section id="lastPage" class="page" hidden></section>
-<section id="replaysPage" class="page" hidden></section>
-<section id="studioPage" class="page" hidden></section>
-<section id="playPage" class="playpage" hidden><div class="briefbar"><div><span id="modeBadge" class="tag">SOLO</span> <strong id="jobName">NIGHT GALLERY</strong></div><div class="tools"><button id="back">BACK</button><button id="forecast" class="active" aria-pressed="true">FORECAST</button><button id="inspect" aria-pressed="false" title="I: inspect objects without spending turns">INSPECT</button><button id="pause">PAUSE</button></div></div><div id="sharedBanner" class="statusline" hidden></div><div class="play-layout"><div class="board-column"><div class="gamehud"><div class="hudleft"><span id="floorStatus">F4</span><span id="turnStatus">TURN 000</span><span id="relicStatus">NO TROPHY</span></div><div class="hudright"><span id="alertStatus">UNSEEN</span><span id="alarmStatus">ALARM 0/2</span><span id="clockStatus" class="signal"></span></div></div><div class="boardwrap" id="boardWrap"><canvas id="gameCanvas" width="960" height="640" tabindex="0" aria-label="Cutaway vault. Left/right move, up/down use ladders. Space wait, E vent, Q EMP, L light, Z practice rewind, R retry."></canvas><div id="pauseShade" class="shade" hidden><div class="pausecard"><h2>PLAN YOUR NEXT MOVE.</h2><p class="note">Security only moves when you do.<br>Shared round clocks do not pause.</p><button id="resume" class="primary">RESUME</button></div></div></div><div class="coach" id="coach"><span id="coachStep">RADIO</span><p id="coachText"></p><button id="hint">HINT</button></div><section class="inspectpanel" id="inspectorPanel" hidden aria-label="Tactical inspection"><div class="inspecthead"><strong id="inspectTitle">TACTICAL SCAN</strong><button id="closeInspect">I / CLOSE</button></div><p id="inspectBody"></p><div id="inspectCycle" class="cyclebeats"></div><p id="inspectRisk" class="inspectrisk"></p></section><div class="inventoryline"><span id="inventory">KEYS - / INTEL 0/0</span><span id="lightState">LIGHTS ON</span><span id="parStatus">PAR 46</span></div><div class="actions" id="gameActions"><button class="move" data-action="W" aria-label="Move left">&larr;</button><button class="move" data-action="N" aria-label="Climb up">&uarr;</button><button class="move" data-action="S" aria-label="Climb down">&darr;</button><button class="move" data-action="E" aria-label="Move right">&rarr;</button><button data-action="WAIT"><span class="key">SPACE</span>WAIT</button><button data-action="VENT" id="ventAction"><span class="key">E</span>VENT</button><button data-action="LIGHT" id="lightAction"><span class="key">L</span>LIGHT</button><button data-action="EMP" id="empAction"><span class="key">Q</span>EMP</button><button id="undo"><span class="key">Z</span>UNDO</button><button id="retry"><span class="key">R</span>RETRY</button></div><div id="replayBar" class="replaybar" hidden><button id="replayToggle">PLAY</button><input id="replayPosition" type="range" min="0" max="1" value="0" aria-label="Replay position"><span id="replayCount">0 / 0</span></div></div><aside id="editor" class="editor" hidden><h3 id="editorTitle">WORKSHOP</h3><p class="editor-help" id="editStatus">Floors hold objects. Slabs hold ladders.</p><div class="palette" id="palette"></div><label id="editNameLabel">ROOM NAME<input id="editName" maxlength="50" value="My Cutaway"></label><div class="row"><label>COLUMN<input id="editX" type="number" min="1" value="2"></label><label>ROW<input id="editY" type="number" min="1" value="1"></label></div><div class="row"><label>FACING<select id="editDir"><option>E</option><option>W</option><option>N</option><option>S</option></select></label><label>PERIOD<select id="editPeriod"><option>4</option><option>6</option><option>8</option></select></label></div><label>PHASE<select id="editPhase"><option>0</option><option>1</option><option>2</option><option>3</option></select></label><label>CIRCUIT<select id="editCircuit"><option value="-1">NONE</option><option value="0">1</option><option value="1">2</option></select></label><label id="initialLightLabel">LIGHTING<select id="editLight"><option value="on">ON / MANUAL</option><option value="off">OFF / MANUAL</option><option value="cycle">3 ON / 3 OFF</option></select></label><div class="editor-controls"><button id="placeTool">PLACE</button><button id="editUndo">UNDO EDIT</button><button id="testRoom" class="primary">TEST ROUTE</button><button id="publishRoom">EXPORT PROOF</button><button id="newRoom">NEW ROOM</button></div></aside></div></section>
-</main><footer><span>RARE FRIENDS ART / FREE GUEST PLAY / DEMO RF BY DEFAULT</span><button id="about">SOURCES + LIMITS / 1.9</button></footer></div>
-<dialog id="modal" aria-labelledby="dialogTitle"><div class="dialoginner" id="dialogContent"></div></dialog><div id="toast" role="status" hidden></div><p id="liveAnnounce" class="sr-only" aria-live="polite"></p>
-<script>/* Original Heist Grid 5x7 glyphs. Font built in memory; no external fonts or font files. */
+function loadLibraries(){
+ if(loaded)return;
+ loaded=true;
+ // The sources are browser/CommonJS modules; these locals select their browser branch.
+ const module=undefined,exports=undefined,require=undefined;
+// ---- src/pixel-font.js ----
+/* Original Heist Grid 5x7 glyphs. Font built in memory; no external fonts or font files. */
 (function(root){'use strict';
 const raw={
  A:'01110/10001/10001/11111/10001/10001/10001',B:'11110/10001/10001/11110/10001/10001/11110',C:'01111/10000/10000/10000/10000/10000/01111',D:'11110/10001/10001/10001/10001/10001/11110',E:'11111/10000/10000/11110/10000/10000/11111',F:'11111/10000/10000/11110/10000/10000/10000',G:'01111/10000/10000/10111/10001/10001/01110',H:'10001/10001/10001/11111/10001/10001/10001',I:'11111/00100/00100/00100/00100/00100/11111',J:'00111/00010/00010/00010/10010/10010/01100',K:'10001/10010/10100/11000/10100/10010/10001',L:'10000/10000/10000/10000/10000/10000/11111',M:'10001/11011/10101/10101/10001/10001/10001',N:'10001/11001/10101/10011/10001/10001/10001',O:'01110/10001/10001/10001/10001/10001/01110',P:'11110/10001/10001/11110/10000/10000/10000',Q:'01110/10001/10001/10001/10101/10010/01101',R:'11110/10001/10001/11110/10100/10010/10001',S:'01111/10000/10000/01110/00001/00001/11110',T:'11111/00100/00100/00100/00100/00100/00100',U:'10001/10001/10001/10001/10001/10001/01110',V:'10001/10001/10001/10001/10001/01010/00100',W:'10001/10001/10001/10101/10101/10101/01010',X:'10001/10001/01010/00100/01010/10001/10001',Y:'10001/10001/01010/00100/00100/00100/00100',Z:'11111/00001/00010/00100/01000/10000/11111',
@@ -87,7 +39,8 @@ function make(){const tables={},glyf=[],loca=[],all=['?'].concat(chars);for(cons
 }
 root.HeistPixel={glyphs:raw,ready:Promise.resolve(false)};if(typeof FontFace==='function'){try{const face=new FontFace('Heist Grid',make(),{weight:'400'});root.HeistPixel.ready=face.load().then(f=>{document.fonts.add(f);document.documentElement.classList.add('pixel-ready');return true}).catch(()=>false);}catch{}}
 })(window);
-</script><script>/* Rare Heist — deterministic, dependency-free rules. No network, wallet or money code. */
+// ---- src/engine.js ----
+/* Rare Heist — deterministic, dependency-free rules. No network, wallet or money code. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -330,9 +283,8 @@ root.HeistPixel={glyphs:raw,ready:Promise.resolve(false)};if(typeof FontFace==='
   function medal(l,s){if(s.status!=='won')return null;return s.alarms===0&&s.empUsed===0&&s.turn<=l.par?'ghost':s.alarms===0?'clean':'escaped';}
   return {DIRS,ACTIONS,tile,positions,validate,normalize,create,step,replay,threats,ray,solid,held,doorOpen,deviceAt,guardAt,active,sensorsPaused,period,countIntel,score,medal,interact,xy,same,lightsOn,canToggleLight};
 });
-</script><script>/* Original Rare Friends artwork; see licenses/NOTICE.md. */
-window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730,"frameWidth":16,"frameHeight":16,"frameCount":64,"clips":{"idle-down":[0,1,2,3,4,5,6,7],"idle-up":[8,9,10,11,12,13,14,15],"idle-left":[16,17,18,19,20,21,22,23],"idle-right":[24,25,26,27,28,29,30,31],"walk-down":[32,33,34,35,36,37,38,39],"walk-up":[40,41,42,43,44,45,46,47],"walk-left":[48,49,50,51,52,53,54,55],"walk-right":[56,57,58,59,60,61,62,63]},"rendering":{"setBit":"opaque black","unsetBit":"transparent","bit0":"top left","bit255":"bottom right","noMirroring":true},"provenance":{"source":"https://github.com/spokesz/friendsdk/blob/762d6f58a73ace723f7f82dc1a61bfa036c21edc/examples/fishing/sample-sprites.ts","gitCommit":"762d6f58a73ace723f7f82dc1a61bfa036c21edc","gitBlobSha":"8c837228a4793edd856257f7cc6d97061a735b8c","recordedBlock":66188037,"freshRpcRead":false},"previewFrameMs":120,"previewTimingNote":"120ms is an export preview playback choice, not claimed canonical on-chain timing.","frames":["0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e00000124812481ff81ff83ffc3ffc07e005a007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e005a007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e005a007e007e0042000000000","0xff000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e00000124812481ff81ff83ffc3ffc07e007e007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e007e007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e007e007e007e0042000000000","0xff000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e00000080808081ffc1ffc1ffc1ffc001e001a001e001e000000000000","0xff00000080808081ffc1ffc1ffc1ffc001e001a001e001e000000000000","0xff00000080808081ffc1ffc1ffc1ffc001e001a001e001e000000000000","0xff000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e00000101010103ff83ff83ff83ff87800580078007800000000000000","0xff00000101010103ff83ff83ff83ff87800580078007800000000000000","0xff00000101010103ff83ff83ff83ff87800580078007800000000000000","0xff000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e00000124812481ff81ff83ffc3ffc07e005a007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e005a007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e005a007e007e0042000000000","0xff000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e005a007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e00000124812481ff81ff83ffc3ffc07e007e007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e007e007e007e0042000000000","0xff00000124812481ff81ff83ffc3ffc07e007e007e007e0042000000000","0xff000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000124812481ff81ff83ffc3ffc07e007e007e007e004200000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e00000080808081ffc1ffc1ffc1ffc001e001a001e001e000000000000","0xff00000080808081ffc1ffc1ffc1ffc001e001a001e001e000000000000","0xff00000080808081ffc1ffc1ffc1ffc001e001a001e001e000000000000","0xff000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000080808081ffc1ffc1ffc1ffc001e001a001e001e00000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e00000101010103ff83ff83ff83ff87800580078007800000000000000","0xff00000101010103ff83ff83ff83ff87800580078007800000000000000","0xff00000101010103ff83ff83ff83ff87800580078007800000000000000","0xff000000000101010103ff83ff83ff83ff8780058007800780000000000","0x7e000000000101010103ff83ff83ff83ff8780058007800780000000000"]},{"tokenId":"3412","familyId":0,"familyName":"Skeleton","seed":3412,"frameWidth":16,"frameHeight":16,"frameCount":64,"clips":{"idle-down":[0,1,2,3,4,5,6,7],"idle-up":[8,9,10,11,12,13,14,15],"idle-left":[16,17,18,19,20,21,22,23],"idle-right":[24,25,26,27,28,29,30,31],"walk-down":[32,33,34,35,36,37,38,39],"walk-up":[40,41,42,43,44,45,46,47],"walk-left":[48,49,50,51,52,53,54,55],"walk-right":[56,57,58,59,60,61,62,63]},"rendering":{"setBit":"opaque black","unsetBit":"transparent","bit0":"top left","bit255":"bottom right","noMirroring":true},"provenance":{"source":"https://github.com/spokesz/friendsdk/blob/762d6f58a73ace723f7f82dc1a61bfa036c21edc/examples/fishing/sample-sprites.ts","gitCommit":"762d6f58a73ace723f7f82dc1a61bfa036c21edc","gitBlobSha":"8c837228a4793edd856257f7cc6d97061a735b8c","recordedBlock":66188037,"freshRpcRead":false},"previewFrameMs":120,"previewTimingNote":"120ms is an export preview playback choice, not claimed canonical on-chain timing.","frames":["0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff007e0018001801ff81ff81ff80ff007e0066000000000","0x660066007e00ff007e0018001801ff81ff81ff80ff007e0066000000000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e003c0018001800ff00fd00fd007f003c0030000000000","0x180018007e007e003c0018001800ff00fd00fd007f003c0030000000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e003c0018001800ff00bf00bf00fe003c000c000000000","0x180018007e007e003c0018001800ff00bf00bf00fe003c000c000000000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x600066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x600066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x60066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x60066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff007e0018001801ff81ff81ff80ff007e0066000000000","0x60066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x60066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x660066007e00ff007e0018001801ff81ff81ff80ff007e0066000000000","0x600066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x600066007e00ff00ff007e0018001801ff81ff81ff80ff007e006600000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e003c0018001800ff00fd00fd007f003c0030000000000","0x6c006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x6c006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e003c0018001800ff00fd00fd007f003c0030000000000","0xc006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0xc006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e003c0018001800ff00bf00bf00fe003c000c000000000","0x360036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x360036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e003c0018001800ff00bf00bf00fe003c000c000000000","0x300036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x300036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000"]}];
-</script><script>/* Rare Heist creator economy. ALL amounts below are simulated, never on-chain.
+// ---- src/economy.js ----
+/* Rare Heist creator economy. ALL amounts below are simulated, never on-chain.
  * Integer micro-RF accounting. Rebuild balances from the bounded event journal,
  * not from untrusted saved balances. No play rewards, RNG or minting API. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.HeistEconomy=api;})(globalThis,function(){
@@ -388,7 +340,8 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  function receipt(s){return {mode:'SIMULATED',unit:'micro-RF',initial:INITIAL,player:s.balance,creatorBalances:{...s.creators},burned:s.burned,treasury:s.treasury,total:s.balance+Object.values(s.creators).reduce((a,b)=>a+b,0)+s.burned+s.treasury,conserved:conserved(s),owned:[...s.owned],events:s.events.map(e=>({...e}))};}
  return Object.freeze({UNIT,INITIAL,MAX_EVENTS,CATALOG,initial,validateEvent,apply,restore,conserved,split,format,serialize,receipt});
 });
-</script><script>/* Play as your own Rare Friend. Read-only chain access through an injected wallet
+// ---- src/identity.js ----
+/* Play as your own Rare Friend. Read-only chain access through an injected wallet
  * (EIP-6963 / window.ethereum) or, for PREVIEW, the public Robinhood Chain RPC.
  * Manifest/ABI from FriendSDK v0.1.2, pinned commit 762d6f5.
  * Wallet requests are limited to account access, a network switch/add prompt and
@@ -537,79 +490,8 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  function formatRF(v,dec=18){const d=10n**BigInt(dec),whole=v/d,frac=(v%d)*100n/d;return whole.toLocaleString('en-US')+'.'+String(frac).padStart(2,'0');}
  return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview});
 });
-</script><script>/* LIVE BURN (beta). Opt-in only; the game's default economy stays DEMO.
- * Real $RAREFRIENDS is burned by a plain ERC-20 transfer(0x…dEaD, amount) that the
- * player signs in their own wallet. Nothing is paid to anyone: no creator, developer or
- * prize share, no custody, no approvals. What a burn unlocks is cosmetic only.
- * A 32-byte tag appended to the calldata (ignored by the token) names the item and the
- * Friend, so purchases and the Hall of Ash can be rebuilt from the chain by anyone. */
-(function(root,factory){const api=factory(root.HeistIdentity||(typeof require==='function'?require('./identity.js'):null));if(typeof module==='object'&&module.exports)module.exports=api;else root.HeistBurn=api;})(globalThis,function(I){
- 'use strict';
- const DEAD='0x000000000000000000000000000000000000dead';
- const TRANSFER_SELECTOR='a9059cbb',MAGIC='52485354',VERSION='01'; // 'RHST' v1
- // Prices in whole RF. code = the byte stored in the calldata tag.
- const ITEMS=Object.freeze([
-  Object.freeze({id:'trail',code:1,rf:25,kind:'trail',name:'GOLDEN TRAIL',text:'Your Friend leaves lime footprints on every floor. Pixels of the Friend itself never change.'}),
-  Object.freeze({id:'lilac',code:2,rf:10,kind:'theme',name:'HATCHWORK',text:'Dense black-and-white paper texture around the interface.'}),
-  Object.freeze({id:'citrus',code:3,rf:10,kind:'theme',name:'SIGNAL PAPER',text:'Sparse lime stipple around the interface.'}),
-  Object.freeze({id:'archive-pack',code:4,rf:50,kind:'pack',name:'THE BLACK ARCHIVE',text:'Three extra heists. Harder, not stronger: no gear, no stat or score boost.'}),
-  Object.freeze({id:'ash',code:9,rf:1,kind:'tribute',name:'TRIBUTE',text:'Burn any amount for your Friend\'s place in the Hall of Ash.',any:true})
- ]);
- const byId=id=>ITEMS.find(x=>x.id===id),byCode=c=>ITEMS.find(x=>x.code===c);
- const hex=(v,n=64)=>BigInt(v).toString(16).padStart(n,'0');
- function units(rf,dec){if(typeof rf!=='string'&&typeof rf!=='number')throw Error('Enter an RF amount');const s=String(rf).trim();if(dec<6)throw Error('Unsupported token decimals');if(!/^\d{1,12}(\.\d{1,6})?$/.test(s))throw Error('Enter an RF amount like 5 or 2.5');const [w,f='']=s.split('.');const v=BigInt(w)*10n**BigInt(dec)+BigInt((f+'000000').slice(0,6))*10n**BigInt(dec-6);if(v<=0n)throw Error('Amount must be above zero');return v;}
- function tag(item,friendId){const it=typeof item==='string'?byId(item):item;if(!it)throw Error('Unknown item');let f=0n;try{f=friendId==null?0n:I.token(friendId);}catch{f=0n;}if(f>=(1n<<192n))f=0n;return MAGIC+VERSION+hex(it.code,2)+'0000'+hex(f,48);}
- function readTag(t){if(typeof t!=='string'||!/^[0-9a-f]{64}$/i.test(t))return null;t=t.toLowerCase();if(t.slice(0,8)!==MAGIC||t.slice(8,10)!==VERSION)return null;const it=byCode(parseInt(t.slice(10,12),16));if(!it)return null;const f=BigInt('0x'+t.slice(16));return {item:it.id,friendId:f?f.toString():null};}
- // transfer(DEAD, amount) + tag. Standard ABI decoders ignore trailing calldata.
- function calldata(amount,item,friendId){if(typeof amount!=='bigint'||amount<=0n)throw Error('Invalid amount');return '0x'+TRANSFER_SELECTOR+hex(DEAD)+hex(amount)+tag(item,friendId);}
- function parseInput(input){if(typeof input!=='string')return null;const d=input.toLowerCase().replace(/^0x/,'');if(d.length<8+128||d.slice(0,8)!==TRANSFER_SELECTOR)return null;if('0x'+d.slice(8+24,8+64)!==DEAD)return null;return {amount:BigInt('0x'+d.slice(72,136)),tag:d.length>=200?readTag(d.slice(136,200)):null};}
- function price(item,dec){const it=typeof item==='string'?byId(item):item;return BigInt(it.rf)*10n**BigInt(dec);}
- // A receipt proves the burn only if the RF contract logged Transfer(player → dEaD, ≥ amount).
- function checkReceipt(r,{from,min=0n}){
-  if(!r||typeof r!=='object')throw Error('No receipt yet');
-  if(BigInt(r.status??0)!==1n)throw Error('The burn transaction failed on chain. No RF was burned.');
-  const player=I.address(from);let burned=0n;
-  for(const g of r.logs||[]){if(!g||g.removed||String(g.address).toLowerCase()!==I.RF_TOKEN.toLowerCase()||!Array.isArray(g.topics)||g.topics.length!==3)continue;
-   if(String(g.topics[0]).toLowerCase()!==I.TRANSFER)continue;if(('0x'+String(g.topics[1]).slice(-40)).toLowerCase()!==player||('0x'+String(g.topics[2]).slice(-40)).toLowerCase()!==DEAD)continue;
-   burned+=BigInt(g.data&&g.data!=='0x'?g.data:0);}
-  if(burned<=0n||burned<min)throw Error('The receipt does not show the RF burn');
-  return {tx:String(r.transactionHash).toLowerCase(),block:String(r.blockNumber),amount:burned};
- }
- async function decimals(call){return Number(I.words(await call(I.RF_TOKEN,I.SELECTORS.decimals,[]),1)[0]);}
- function caller(req){return async(to,sel,args)=>req('eth_call',[{to,data:'0x'+sel+args.map(I.word).join('')},'latest']);}
- const wait=ms=>new Promise(r=>setTimeout(r,ms));
- // Sends one burn from the connected account and waits for its receipt.
- async function burn(p,{account,item,amount,friendId,onSent,poll=1500,timeout=180000}){
-  const it=byId(item);if(!it)throw Error('Unknown item');const from=I.address(account);
-  await I.ensureChain(p);const req=(m,a,t)=>I.request(p,m,a,t),call=caller(req),dec=await decimals(call);
-  const value=it.any?units(amount,dec):price(it,dec);
-  const bal=I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(from)]),1)[0];
-  if(bal<value)throw Error('Not enough RF in this wallet: '+I.formatRF(bal,dec)+' RF available.');
-  const tx=await req('eth_sendTransaction',[{from,to:I.RF_TOKEN,value:'0x0',data:calldata(value,it,friendId)}],300000);
-  if(typeof tx!=='string'||!/^0x[0-9a-f]{64}$/i.test(tx))throw Error('The wallet did not return a transaction hash');
-  onSent?.(tx);
-  for(const end=Date.now()+timeout;Date.now()<end;await wait(poll)){
-   const r=await req('eth_getTransactionReceipt',[tx]).catch(()=>null);
-   if(r)return {...checkReceipt(r,{from,min:value}),item:it.id,friendId:friendId==null?null:String(friendId),decimals:dec};
-  }
-  const e=Error('Sent, but not confirmed yet. It will appear after RESTORE FROM CHAIN.');e.tx=tx;throw e;
- }
- // Every tagged Rare Heist burn: from one player, or (player=null) from everyone.
- async function history(p,{player=null,limit=200}={}){
-  const req=(m,a,t)=>I.request(p,m,a,t),at=await req('eth_blockNumber');
-  const logs=await req('eth_getLogs',[{address:I.RF_TOKEN,fromBlock:'0x0',toBlock:at,topics:[I.TRANSFER,player?'0x'+hex(BigInt(I.address(player))):null,'0x'+hex(BigInt(DEAD))]}],45000);
-  const byTx=new Map();for(const g of logs||[]){if(!g||g.removed||!g.transactionHash)continue;const k=g.transactionHash.toLowerCase();const o=byTx.get(k)||{tx:k,block:g.blockNumber,from:('0x'+String(g.topics[1]).slice(-40)).toLowerCase(),amount:0n};o.amount+=BigInt(g.data&&g.data!=='0x'?g.data:0);byTx.set(k,o);}
-  const list=[...byTx.values()].sort((a,b)=>BigInt(b.block)>BigInt(a.block)?1:-1).slice(0,limit),out=[];
-  for(const o of list){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;out.push({...o,item:d.tag.item,friendId:d.tag.friendId});}
-  return {block:at,burns:out,scanned:byTx.size,truncated:byTx.size>limit};
- }
- // Unlocked items: a tagged burn of at least the item's price.
- function unlocked(burns,dec=18){const set=new Set();for(const b of burns||[]){const it=byId(b.item);if(it&&!it.any&&BigInt(b.amount)>=price(it,dec))set.add(it.id);}return [...set];}
- function hall(burns){const m=new Map();let total=0n;for(const b of burns||[]){const k=b.friendId?'#'+b.friendId:b.from;const o=m.get(k)||{who:k,from:b.from,friendId:b.friendId,amount:0n,count:0};o.amount+=BigInt(b.amount);o.count++;total+=BigInt(b.amount);m.set(k,o);}return {total,rows:[...m.values()].sort((a,b)=>b.amount>a.amount?1:b.amount<a.amount?-1:0)};}
- async function deadBalance(p){const call=caller((m,a,t)=>I.request(p,m,a,t)),dec=await decimals(call);return {decimals:dec,amount:I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(DEAD)]),1)[0]};}
- return Object.freeze({DEAD,ITEMS,byId,units,tag,readTag,calldata,parseInput,price,checkReceipt,burn,history,unlocked,hall,deadBalance});
-});
-</script><script>/* Design A geometry validation. Pure data checks, shared by editor and server.
+// ---- src/cutaway-rules.js ----
+/* Design A geometry validation. Pure data checks, shared by editor and server.
    Does not change HeistEngine's rules or original sprite artwork. */
 (function(root,factory){const api=factory(typeof module==='object'&&module.exports?require('./engine.js'):root.HeistEngine);if(typeof module==='object'&&module.exports)module.exports=api;else root.CutawayRules=api;})(globalThis,function(E){
  'use strict';
@@ -636,7 +518,8 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  function blank(floors=4,width=13){floors=Math.max(3,Math.min(6,Math.floor(Number(floors))||4));width=Math.max(9,Math.min(15,Math.floor(Number(width))||13));const rows=2*floors+1,map=Array.from({length:rows},(_,y)=>y%2?'#'+'.'.repeat(width-2)+'#':'#'.repeat(width));for(let y=2;y<rows-1;y+=2){const r=[...map[y]];r[2]='.';r[width-3]='.';map[y]=r.join('');}function put(x,y,c){const r=[...map[y]];r[x]=c;map[y]=r.join('');}put(1,1,'S');put(width-2,1,'E');put(Math.floor(width/2),rows-2,'T');return E.normalize({id:'custom-cutaway',name:'My Cutaway',tag:'WORKSHOP',map,lasers:[],cameras:[],guards:[],emps:1,maxAlarms:2,par:80});}
  return Object.freeze({conventionErrors,validate,normalize,landing,blank});
 });
-</script><script>/* Authored cutaway plans. Pure engine data. PAR is based on a verified route, not a shortest-path claim. */
+// ---- src/cutaway-levels.js ----
+/* Authored cutaway plans. Pure engine data. PAR is based on a verified route, not a shortest-path claim. */
 (function(r){const levels=[
  {
   "id": "cut-00",
@@ -1884,7 +1767,8 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   "hintEn": "Ladders and their landings are protected. A new obstacle must invalidate the last winning route."
  }
 ];if(typeof module==='object'&&module.exports)module.exports=levels;else r.HEIST_CUTAWAY_LEVELS=levels;})(globalThis);
-</script><script>/* Design A cutaway renderer, extended from the branch's f79308f sample.
+// ---- src/cutaway-render.js ----
+/* Design A cutaway renderer, extended from the branch's f79308f sample.
    Exact bitmap rendering is shared by the game, street, picker and thumbnails.
    Colors: black, white, #ccff00 only. Lighting and sight use ordered dithering. */
 (function(root){'use strict';
@@ -1976,198 +1860,8 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  }
  root.HeistPixels=Object.freeze({INK,PAPER,SIG,rect,box,text,sprite,mask,stipple,dotted});root.HeistCutawayRenderer={create};
 })(globalThis);
-</script><script>/* Side-view street. A local walking hub, not a fake multiplayer scene. */
-(function(root){'use strict';const P=root.HeistPixels;
- const districts=[
- {id:'foundry',name:'Foundry Row',width:1900,doors:[['academy','ACADEMY','Learn movement, ladders and extraction.',180],['solo','VAULT OFFICE','Twelve tactical buildings. Pick your next job.',440],['last','LAST HEIST','One shared vault. One last successful raider.',700],['workshop','WORKSHOP','Build a floor plan and prove your escape.',960],['replays','REPLAY OFFICE','Review your routes. Find the missed beat.',1220],['studio','DEMO STUDIO','Creator packs. Simulated RF only.',1480],['canal','CANAL WALK','Cross to the pump station.',1750]]},
- {id:'canal',name:'Canal Walk',width:1380,doors:[['foundry','FOUNDRY ROW','Return to the main street.',160],['annex-01','PUMP HOUSE','Light switch. Relay. One clean escape.',470],['replays','REPLAY OFFICE','Replay your field work.',800],['roof','ROOF ACCESS','Climb to the observatory district.',1150]]},
- {id:'roof',name:'Rooftop Line',width:1380,doors:[['canal','CANAL WALK','Go back down to the waterfront.',160],['annex-02','OBSERVATORY','Two credentials and a cycling blackout.',470],['daily','DAILY DISPATCH','Same UTC-day challenge. No EMP. One alarm.',800],['workshop','WORKSHOP','Design your next cutaway vault.',1150]]}
- ];
- function create(canvas){const c=canvas.getContext('2d',{alpha:false});let geo={};
-  function render(state,sample,time,{reduced=false}={}){const d=districts.find(x=>x.id===state.district)||districts[0],w=canvas.clientWidth<620?640:960,h=canvas.clientWidth<620?390:260;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}c.imageSmoothingEnabled=false;const camera=Math.max(0,Math.min(d.width-w,state.x-w*.46)),floor=h-44;geo={camera,floor,width:w,height:h,doors:d.doors};
-   P.rect(c,0,0,w,h,P.PAPER);P.stipple(c,0,95,w,180,12);P.rect(c,0,floor+8,w,20);P.stipple(c,0,floor+28,w,h-floor-28,4);P.text(c,d.name,24,12,2);P.text(c,'LOCAL / NO TIMER',w-24,12,1,P.INK,'right');
-   for(let i=0;i<d.doors.length;i++){const [id,name,,dx]=d.doors[i],x=dx-camera;if(x< -150||x>w+150)continue;const bw=202,top=(h<300?48:120)+(i%2)*18,bh=floor-top;P.box(c,x-bw/2,top,bw,bh,P.PAPER,4);P.rect(c,x-bw/2-8,top-8,bw+16,8);P.stipple(c,x-bw/2+5,top+4,20,bh-5,4);P.stipple(c,x+bw/2-23,top+4,19,bh-5,4);P.box(c,x-76,top+15,152,30,P.INK);P.text(c,name,x,top+26,1,P.PAPER,'center');
-    const active=Math.abs(state.x-dx)<44;P.box(c,x-26,floor-78,52,78,active?P.SIG:P.PAPER,4);P.rect(c,x+12,floor-43,5,5);P.rect(c,x-38,floor-83,76,5);
-    P.box(c,x-71,top+64,37,30);P.box(c,x+34,top+64,37,30);P.rect(c,x-54,top+64,3,30);P.rect(c,x+51,top+64,3,30);
-    if(i%2===0){P.rect(c,x-80,top-32,28,24);P.stipple(c,x-76,top-28,20,16,4,P.PAPER);}else {P.rect(c,x+60,top-33,3,25);P.rect(c,x+47,top-33,28,3);}
-    P.text(c,String(i+1).padStart(2,'0'),x-86,floor-28,2);
-    if(active){P.box(c,x-56,floor-112,112,22,P.SIG);P.text(c,'E / ENTER',x,floor-105,1,P.INK,'center');}
-    const lamp=x+bw/2+21;P.rect(c,lamp,floor-127,4,127);P.box(c,lamp-8,floor-137,20,18,P.SIG);P.rect(c,lamp-7,floor-4,18,4);
-   }
-   if(d.id==='canal'){P.text(c,'PUMP STATION / EAST',580-camera+260,h-12,1);}
-   if(state.target!=null){const tx=state.target-camera;P.dotted(c,state.x-camera,floor+4,tx,floor+4,P.SIG,4,10);P.rect(c,tx-3,floor+2,6,6,P.SIG);}
-   P.sprite(c,sample,state.x-camera,floor,4,state.facing||'right',!!state.walking,reduced?0:Math.floor(time/105));
-   if(camera>0)P.text(c,'<',15,179,3);if(camera<d.width-w)P.text(c,'>',w-15,179,3,P.INK,'right');
-   P.rect(c,0,0,w,30,P.PAPER);P.rect(c,0,29,w,1,P.INK);P.text(c,d.name,24,10,2);P.text(c,'LOCAL / NO TIMER',w-24,12,1,P.INK,'right');P.rect(c,0,h-21,w,21,P.INK);P.text(c,'< > WALK    E ENTER    CLICK A DOOR TO WALK THERE',w/2,h-14,1,P.PAPER,'center');return geo;
-  }
-  function hit(cx,cy){const r=canvas.getBoundingClientRect(),x=(cx-r.left)*canvas.width/r.width+geo.camera,y=(cy-r.top)*canvas.height/r.height;return {x,y,door:geo.doors?.find(d=>Math.abs(d[3]-x)<102&&y>55&&y<geo.floor+15)};}
-  return {render,hit,metrics:()=>geo};
- }
- root.HeistStreet={create,districts};
-})(globalThis);
-</script><script>/* LAST HEIST — shared deterministic round rules. Source, not a security boundary.
-   The server owns identities, attempts, time and transactions. Offline rehearsal is labelled. */
-(function(root,factory){const node=typeof module==='object'&&module.exports;const api=factory(node?require('./engine.js'):root.HeistEngine,node?require('./cutaway-rules.js'):root.CutawayRules,node?require('./cutaway-levels.js'):root.HEIST_CUTAWAY_LEVELS);if(typeof module==='object'&&module.exports)module.exports=api;else root.LastHeist=api;})(globalThis,function(E,C,levels){
- 'use strict';
- const RULE_VERSION=2,MAX_ACTIONS=180,MAX_CHANGES=12;
- const PROFILES=Object.freeze({sprint:{quietMs:90000,editMs:90000,maxMs:720000,attemptMs:240000,label:'90 SECOND DEMO'},standard:{quietMs:600000,editMs:120000,maxMs:3600000,attemptMs:600000,label:'10 MINUTE DEMO'}});
- const clone=x=>JSON.parse(JSON.stringify(x));
- const fail=(code,message)=>{const e=new Error(message);e.code=code;throw e;};
- const own=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
- function seed(){return C.normalize(levels.find(l=>l.id==='last-cutaway'));}
- function createRound(id,now,profile='sprint',options={}){
-  if(typeof profile!=='string'||!own(PROFILES,profile))fail('PROFILE','Unknown round profile');
-  if(!Number.isSafeInteger(now)||now<0)fail('TIME','Invalid server clock');
-  return {v:RULE_VERSION,id,profile,createdAt:now,startsAt:options.waiting?null:now,lastClock:now,hardEnd:options.waiting?null:now+PROFILES[profile].maxMs,deadline:options.waiting?null:now+PROFILES[profile].quietMs,revision:0,level:seed(),phase:options.waiting?'waiting':'open',leader:null,lease:null,solvers:[],changes:[],events:[],attemptCount:0,failedCount:0,clears:0,finishedAt:null,outcome:null,prize:1000,prizeClaimed:false,prizePaid:0,referenceActions:null};
- }
- function event(r,type,now,data={}){r.events.push({type,at:now,revision:r.revision,...data});r.events=r.events.slice(-80);}
- function advance(raw,clock){
-  const r=clone(raw),now=Math.max(r.lastClock,clock);r.lastClock=now;
-  if(r.phase==='finished')return r;
-  if(r.phase==='waiting'){
-   if(now>=r.createdAt+86400000){r.phase='finished';r.outcome='no-clear';r.finishedAt=r.createdAt+86400000;event(r,'settled',r.finishedAt,{outcome:r.outcome});}
-   return r;
-  }
-  const p=PROFILES[r.profile];
-  if(r.phase==='editing'&&now>=r.lease.until){
-   const at=r.lease.until;r.phase='open';r.lease=null;r.deadline=Math.min(r.hardEnd,at+p.quietMs);event(r,'edit-expired',at);
-  }
-  if(now>=r.hardEnd||(r.phase==='open'&&now>=r.deadline)){
-   r.phase='finished';r.lease=null;r.finishedAt=Math.min(r.hardEnd,r.deadline);
-   r.outcome=!r.leader?'no-clear':r.solvers.length<2?'uncontested':'winner';
-   event(r,'settled',r.finishedAt,{outcome:r.outcome,player:r.leader});
-  }
-  return r;
- }
- function activate(raw,clock){
-  const r=advance(raw,clock);if(r.phase!=='waiting')return r;
-  const p=PROFILES[r.profile];r.phase='open';r.startsAt=r.lastClock;
-  r.hardEnd=r.lastClock+p.maxMs;r.deadline=r.lastClock+p.quietMs;
-  event(r,'started',r.lastClock);return r;
- }
- function validateLog(level,actions,winOnly=true){
-  if(!Array.isArray(actions)||!actions.length||actions.length>MAX_ACTIONS||actions.some(a=>!E.ACTIONS.includes(a)||a==='EMP'))fail('ACTIONS','Invalid action log');
-  const r=E.replay(level,actions,'ghost');
-  if(!r.state||r.error?.startsWith('Invalid')||r.state.empUsed||r.state.alarms>0&&r.state.status==='won')fail('REPLAY','Replay did not validate');
-  if(winOnly&&!r.ok)fail('NOT_CLEARED','A clean extraction is required');
-  if(!winOnly&&!['won','lost'].includes(r.state.status))fail('NOT_FINISHED','Finish the attempt first');
-  return r;
- }
- function takeLead(raw,player,revision,actions,clock){
-  let r=advance(raw,clock);const now=r.lastClock;
-  if(r.phase==='finished')fail('ROUND_FINISHED','Round has ended');
-  if(r.revision!==revision)fail('STALE_REVISION','This attempt belongs to an older vault');
-  if(r.phase!=='open')fail('EDIT_RESERVED','Another clear has reserved the next change');
-  if(r.leader===player)fail('OWN_DEFENCE','Wait for another player to clear your vault');
-  validateLog(r.level,actions);r.leader=player;r.referenceActions=[...actions];r.clears++;
-  if(!r.solvers.includes(player))r.solvers.push(player);
-  event(r,'clear',now,{player,turns:actions.length});
-  const p=PROFILES[r.profile];
-  if(r.changes.length<MAX_CHANGES&&r.hardEnd-now>p.quietMs+1000){
-   r.phase='editing';r.lease={player,until:Math.min(now+p.editMs,r.hardEnd-p.quietMs)};
-   r.deadline=Math.min(r.hardEnd,r.lease.until+p.quietMs);
-  }else{r.phase='open';r.lease=null;r.deadline=Math.min(r.hardEnd,now+p.quietMs);}
-  return r;
- }
- function allowedCell(l,x,y){
-  if(!Number.isInteger(x)||!Number.isInteger(y)||y%2!==1||C.landing(l,x,y)||E.tile(l,x,y)!=='.'||E.deviceAt(l,x,y))return false;
-  if(l.guards.some(g=>g.path.some(p=>p[0]===x&&p[1]===y)))return false;
-  // Entrance/exit/trophy plus all interaction tiles keep their immediate neighbours.
-  for(const c of 'SETab12pPGHCDvRl')for(const p of E.positions(l,c))if(Math.abs(p.x-x)+Math.abs(p.y-y)<=1)return false;
-  return true;
- }
- function mutationLevel(raw,change){
-  if(!change||typeof change!=='object'||Array.isArray(change)||Object.keys(change).some(k=>!['kind','x','y','dir'].includes(k)))fail('ONE_CHANGE','Submit exactly one allowed addition');
-  if(!['wall','laser','camera'].includes(change.kind))fail('CHANGE_KIND','Choose wall, laser or camera');
-  if(!allowedCell(raw.level,change.x,change.y))fail('PROTECTED_TILE','This tile is protected or occupied');
-  if(raw.changes.length>=MAX_CHANGES)fail('CHANGE_CAP','Round change limit reached');
-  const count=raw.changes.filter(c=>c.kind===change.kind).length;
-  if(count>=({wall:6,laser:3,camera:3})[change.kind])fail('KIND_CAP','This type has reached its limit');
-  if(change.kind!=='wall'&&!['E','W'].includes(change.dir))fail('DIRECTION','Shared devices must face left or right along a floor');
-  if(change.kind==='wall'&&change.dir!=null)fail('ONE_CHANGE','Walls do not accept a direction');
-  const l=clone(raw.level);
-  if(change.kind==='wall'){const row=[...l.map[change.y]];row[change.x]='#';l.map[change.y]=row.join('');}
-  if(change.kind==='laser')l.lasers.push({x:change.x,y:change.y,dir:change.dir,range:3,period:4,on:2,phase:0});
-  if(change.kind==='camera')l.cameras.push({x:change.x,y:change.y,dir:change.dir,range:3,rotation:[change.dir],speed:2});
-  const valid=C.validate(l);if(!valid.ok)fail('MAP_INVALID',valid.errors.join('; '));
-  // The start must remain safe for the initial frame (no invisible spawn trap).
-  const s=E.create(l,'ghost'),h=E.threats(l,s);if([...h.lasers,...h.vision].some(p=>E.same(p,s)))fail('SPAWN_TRAP','The entrance must remain safe');
-  return E.normalize(l);
- }
- function checkMutation(raw,change){
-  const level=mutationLevel(raw,change);
-  if(!raw.referenceActions)fail('CLEAR_FIRST','Clear the current vault first');
-  if(E.replay(level,raw.referenceActions,'ghost').ok)fail('NO_CHALLENGE','The previous successful route must stop working');
-  return level;
- }
- function fortify(raw,player,revision,change,proof,clock){
-  let r=advance(raw,clock);const now=r.lastClock;
-  if(r.phase==='finished')fail('ROUND_FINISHED','Round has ended');
-  if(r.revision!==revision)fail('STALE_REVISION','An older revision cannot be changed');
-  if(r.phase!=='editing'||r.lease?.player!==player)fail('NO_EDIT_RIGHT','Only the latest successful player may edit');
-  const l=checkMutation(r,change);validateLog(l,proof);
-  r.revision++;r.level=l;r.phase='open';r.lease=null;r.deadline=Math.min(r.hardEnd,now+PROFILES[r.profile].quietMs);
-  r.referenceActions=[...proof];r.changes.push({...clone(change),revision:r.revision,player,at:now});
-  event(r,'fortified',now,{player,change:clone(change)});return r;
- }
- function skip(raw,player,clock){let r=advance(raw,clock);if(r.phase!=='editing'||r.lease?.player!==player)fail('NO_EDIT_RIGHT','No active change to skip');r.phase='open';r.lease=null;r.deadline=Math.min(r.hardEnd,r.lastClock+PROFILES[r.profile].quietMs);event(r,'skipped',r.lastClock,{player});return r;}
- function claim(raw,player,clock){let r=advance(raw,clock);if(r.phase!=='finished')fail('NOT_SETTLED','Round is not settled');if(r.outcome!=='winner'||r.leader!==player)fail('NO_PRIZE','No prize for this session');if(!r.prizeClaimed){r.prizeClaimed=true;r.prizePaid=r.prize;event(r,'claimed',r.lastClock,{player,amount:r.prize});}return r;}
- function publicRound(raw,clock,me=null){const r=advance(raw,clock);return {id:r.id,profile:r.profile,revision:r.revision,phase:r.phase,level:clone(r.level),createdAt:r.createdAt,startsAt:r.startsAt??null,serverNow:r.lastClock,deadline:r.deadline,hardEnd:r.hardEnd,editUntil:r.lease?.until||null,leader:r.leader,canEdit:r.lease?.player===me,canEnter:['waiting','open'].includes(r.phase)&&r.leader!==me,solvers:r.solvers.length,attemptCount:r.attemptCount,failedCount:r.failedCount,clears:r.clears,changes:clone(r.changes),events:clone(r.events),prize:r.prize,prizeClaimed:r.prizeClaimed,prizePaid:r.prizePaid,outcome:r.outcome,finishedAt:r.finishedAt,maxActions:MAX_ACTIONS,maxChanges:MAX_CHANGES};}
- return {RULE_VERSION,MAX_ACTIONS,MAX_CHANGES,PROFILES,seed,createRound,activate,advance,takeLead,allowedCell,mutationLevel,checkMutation,fortify,skip,claim,validateLog,publicRound};
-});
-</script><script>(function(root){'use strict';
- const A=root.LastHeist;
- const clone=x=>JSON.parse(JSON.stringify(x));
- const uuid=()=>globalThis.crypto?.randomUUID?.()||('local-'+Date.now()+'-'+Math.random().toString(36).slice(2));
- class Network{
-  constructor(){this.local=false;this.me=null;}
-  async request(method,url,value){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);try{
-   const r=await fetch(url,{method,credentials:'same-origin',signal:controller.signal,headers:method==='POST'?{'Content-Type':'application/json','X-RH-CSRF':this.me?.csrf||''}:{},...(method==='POST'?{body:JSON.stringify(value||{})}:{})});
-   let b;try{b=await r.json();}catch{throw Object.assign(Error('This host does not provide the shared game API.'),{code:'NO_SERVER'});}
-   if(!r.ok)throw Object.assign(Error(b.message||b.error),{code:b.error});return b;
-  }catch(e){if(e instanceof TypeError)throw Object.assign(Error('Shared server unavailable.'),{code:['http:','https:'].includes(location.protocol)?'NETWORK':'NO_SERVER'});if(e.name==='AbortError')throw Object.assign(Error('Server timed out. Your local attempt is still here.'),{code:'NETWORK'});throw e;}finally{clearTimeout(timer);}}
-  async init(){this.me=await this.request('POST','/api/session');return this.me;}
-  async list(){return (await this.request('GET','/api/rounds')).rounds;}
-  round(id){return this.request('GET','/api/rounds/'+id);}
-  attempt(ticket){return this.request('GET','/api/attempts/'+ticket);}
-  economy(){return this.request('GET','/api/economy');}
-  replays(id){return this.request('GET',`/api/rounds/${id}/replays`);}
-  context(id){return this.request('GET','/api/rounds/'+id+'/edit-context');}
-  create(profile){return this.request('POST','/api/rounds',{profile});}
-  enter(id,heroId){return this.request('POST',`/api/rounds/${id}/enter`,{heroId});}
-  finish(id,ticket,actions){return this.request('POST',`/api/rounds/${id}/finish`,{ticket,actions});}
-  fortify(id,revision,change,actions){return this.request('POST',`/api/rounds/${id}/fortify`,{revision,change,actions});}
-  skip(id){return this.request('POST',`/api/rounds/${id}/skip`);}
-  claim(id){return this.request('POST',`/api/rounds/${id}/claim`);}
-  async rename(name){const r=await this.request('POST','/api/session/name',{name});this.me.name=r.name;return r;}
- }
- class Rehearsal{
-  constructor(){this.local=true;this.key='rare-heist-rehearsal-v1';this.data={rounds:{},names:{'local-1':'Player 1','local-2':'Player 2','local-3':'Player 3'},player:'local-1'};this.tickets=new Map();this.storage=true;
-   try{const v=JSON.parse(localStorage.getItem(this.key)||'null');if(v?.v===1&&v.rounds&&typeof v.rounds==='object'&&Object.values(v.rounds).every(r=>r.v===1&&r.id&&A.PROFILES[r.profile]&&root.HeistEngine.validate(r.level).ok)&&['local-1','local-2','local-3'].includes(v.player))this.data=v;}catch{}
-  }
-  save(){try{localStorage.setItem(this.key,JSON.stringify({...this.data,v:1}));}catch{this.storage=false;}}
-  async init(){if(!Object.keys(this.data.rounds).length)await this.create('sprint');this.me={player:this.data.player,name:this.data.names[this.data.player],balance:0};this.save();return this.me;}
-  view(r){return {...A.publicRound(r,Date.now(),this.data.player),names:clone(this.data.names),source:'local-rehearsal',quorum:2,rewardUnit:'DEMO RF',identity:'unverified-local-seat'};}
-  get(id){let r=this.data.rounds[id];if(!r)throw Error('Unknown rehearsal');r=A.advance(r,Date.now());this.data.rounds[id]=r;this.save();return r;}
-  async list(){return Object.keys(this.data.rounds).slice(-12).reverse().map(id=>this.view(this.get(id)));}
-  async round(id){return this.view(this.get(id));}
-  async context(id){const r=this.get(id);if(r.lease?.player!==this.data.player)throw Error('No editing lease');return {round:this.view(r),referenceActions:clone(r.referenceActions)};}
-  async create(profile){const id=uuid();this.data.rounds[id]=A.createRound(id,Date.now(),profile);const ids=Object.keys(this.data.rounds);if(ids.length>12)delete this.data.rounds[ids[0]];this.save();return this.view(this.data.rounds[id]);}
-  async enter(id,heroId='3412'){const r=this.get(id);if(r.phase!=='open'||r.leader===this.data.player)throw Object.assign(Error('Another player must try the vault'),{code:'OWN_DEFENCE'});const ticket=uuid();this.tickets.set(ticket,{round:id,player:this.data.player,level:clone(r.level),revision:r.revision,expires:Math.min(r.deadline,r.hardEnd),result:null,heroId});r.attemptCount++;this.save();return {ticket,revision:r.revision,expires:r.deadline,round:this.view(r)};}
-  async finish(id,ticket,actions){const t=this.tickets.get(ticket);if(!t||t.player!==this.data.player)throw Error('No local attempt');if(t.result)return clone(t.result);if(Date.now()>=t.expires)throw Object.assign(Error('Attempt expired'),{code:'ATTEMPT_EXPIRED'});t.actions=[...actions];const play=A.validateLog(t.level,actions,false);let r=this.get(id),result;
-   if(play.state.status==='lost'){r.failedCount++;result='lost';}else if(r.revision!==t.revision||r.phase!=='open'){result='outdated';}else{r=A.takeLead(r,this.data.player,t.revision,actions,Date.now());result='leader';}
-   this.data.rounds[id]=r;this.save();t.result={accepted:result!=='outdated',result,turns:actions.length,round:this.view(r),receiptId:ticket};return clone(t.result);
-  }
-  async fortify(id,revision,change,actions){this.data.rounds[id]=A.fortify(this.get(id),this.data.player,revision,change,actions,Date.now());this.save();return this.view(this.get(id));}
-  async skip(id){this.data.rounds[id]=A.skip(this.get(id),this.data.player,Date.now());this.save();return this.view(this.get(id));}
-  async claim(id){this.data.rounds[id]=A.claim(this.get(id),this.data.player,Date.now());this.save();return {round:this.view(this.get(id)),balance:Object.values(this.data.rounds).filter(r=>r.leader===this.data.player&&r.prizeClaimed).reduce((n,r)=>n+r.prize,0)};}
-  async replays(id){const r=this.get(id);if(r.phase!=='finished')throw Error('Replays unlock at round end');return {round:this.view(r),records:[...this.tickets.entries()].filter(([k,t])=>t.round===id&&t.result&&t.actions).map(([k,t])=>({id:k,name:this.data.names[t.player],revision:t.revision,record:{v:1,at:new Date(r.createdAt).toISOString(),level:t.level,actions:t.actions,mode:'ghost',practice:t.result.result==='outdated',heroId:t.heroId||'3412'}}))};}
-  async rename(name){this.data.names[this.data.player]=String(name).replace(/[<>\x00-\x1f]/g,'').trim().slice(0,24)||'Local Friend';this.me.name=this.data.names[this.data.player];this.save();return {name:this.me.name};}
-  async handoff(){this.data.player='local-'+((Number(this.data.player.slice(-1))%3)+1);return this.init();}
- }
- root.LastHeistClient={Network,Rehearsal};
-})(globalThis);
-</script><script>/* Pure UI explanations. Every next-action assessment uses the unchanged engine.
+// ---- src/playfeel.js ----
+/* Pure UI explanations. Every next-action assessment uses the unchanged engine.
  * No solver, new game rules, account checks or reward authority lives here. */
 (function(root,factory){const api=factory(typeof module==='object'&&module.exports?require('./engine.js'):root.HeistEngine);if(typeof module==='object'&&module.exports)module.exports=api;else root.HeistPlayfeel=api;})(globalThis,function(E){
  'use strict';
@@ -2231,7 +1925,153 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  }
  return Object.freeze({LESSONS,floor,preview,describe,sourceAt,summary,targets,mergeTarget,planKey,lesson,nextFlip});
 });
-</script><script>/* Cutaway product shell. All competitive outcomes are re-executed by the server.
+ // ---- Friend Edition: read-only artwork subset of HeistIdentity (no wallet functions) ----
+ const identity=globalThis.HeistIdentity;
+ globalThis.HeistIdentity=Object.freeze({MANIFEST:identity.MANIFEST,FAMILIES:identity.FAMILIES,token:identity.token,short:identity.short,formatRF:identity.formatRF,sample:identity.sample,preview:identity.preview});
+ // ---- Friend Edition: inert stand-ins for standalone-only modules that are not bundled ----
+ globalThis.RF_ART=[];
+ globalThis.HeistBurn=Object.freeze({byId:()=>null,unlocked:()=>[]});
+ globalThis.LastHeist=Object.freeze({});
+}
+
+// ---- sdk/src/friend-edition.js ----
+/* Rare Heist: Friend Edition glue for FriendSDK v0.1.2. Inlined into heist.generated.js by
+   ../../build-sdk.mjs and executed inside the SDK's sandboxed game frame.
+   The SDK runtime owns wallet connection, Friend selection and the fresh ownership check; this
+   code receives only the verified Friend's token ID, its public artwork and the pause state.
+   No wallet, storage, download, clipboard or server access. Progress lives in memory. */
+function createFriendEdition(root, options, markup) {
+ const P = globalThis.HeistPixels;
+ const escapeText = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+ const compact = () => matchMedia('(max-width:620px), (max-height:420px)').matches;
+ let current = options;
+ const paused = () => !!current.paused?.();
+ let ui = null, ghost = false, portraitTimer = 0, portraitFrame = 0;
+ root.innerHTML = markup;
+ const app = root.querySelector('#rhSdk');
+ const sdk = Object.freeze({
+  edition: 'friend',
+  friendId: String(options.friendId),
+  hero: options.hero,
+  mode: options.mode === 'chain' ? 'chain' : 'preview',
+  app,
+  paused,
+  attach(api) { ui = api; },
+  home: renderLobby,
+  // A remount in the same document keeps this game and adopts the new pause getter.
+  update(next) { current = next; },
+ });
+ globalThis.RareHeistSDK = sdk;
+
+ // While a runtime menu is open the SDK sets `paused`: input stops before the game's own listeners.
+ const gate = event => { if (paused()) { event.stopImmediatePropagation(); if (event.cancelable) event.preventDefault(); } };
+ for (const type of ['keydown', 'pointerdown', 'click']) window.addEventListener(type, gate, true);
+ // Click-to-travel also checks `paused` before every step (src/ui.js travelStep).
+ let wasPaused = false;
+ (function watch() {
+  const now = paused();
+  if (now !== wasPaused) { wasPaused = now; app.classList.toggle('rh-paused', now); }
+  followFriend();
+  requestAnimationFrame(watch);
+ })();
+
+ // Phone-sized frames: floors keep room for the whole-pixel Friend, and the board scrolls to it.
+ function followFriend() {
+  const wrap = document.getElementById('boardWrap'), canvas = document.getElementById('gameCanvas');
+  const view = ui?.view();
+  if (!wrap || !canvas || !view) return;
+  if (view.screen !== 'play' || !view.game || !compact()) { if (canvas.style.height) { canvas.style.height = ''; wrap.scrollTop = 0; } return; }
+  const floors = (view.game.level.map.length - 1) / 2, visible = wrap.clientHeight;
+  // Mirrors the renderer's small-screen layout: 18px sky, 24px ground, 9px slabs, 24px floors.
+  const height = Math.max(visible, 42 + (floors + 1) * 9 + floors * 24);
+  if (canvas.style.height !== height + 'px') canvas.style.height = height + 'px';
+  const geo = view.geometry, y = view.game.state.y;
+  if (!geo?.top || !geo.hh || geo.top[y] == null) return;
+  const target = Math.max(0, Math.min(height - visible, Math.round(geo.top[y] + geo.hh[y] / 2 - visible / 2)));
+  if (Math.abs(wrap.scrollTop - target) > 1) wrap.scrollTop = target;
+ }
+
+ function drawPortrait() {
+  const canvas = document.getElementById('rhPortrait');
+  if (!canvas) { clearInterval(portraitTimer); portraitTimer = 0; return; }
+  // Original 16x16 one-bit frames at an integer scale; the canvas is shown at its bitmap size.
+  const k = compact() ? 4 : 7, size = 18 * k;
+  if (canvas.width !== size) { canvas.width = size; canvas.height = size; canvas.style.width = size + 'px'; canvas.style.height = size + 'px'; }
+  const g = canvas.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  P.rect(g, 0, 0, size, size, P.PAPER);
+  P.sprite(g, options.hero, 9 * k, 16 * k, k, 'down', false, ui?.save.reduced ? 0 : portraitFrame, true);
+ }
+ function animatePortrait() {
+  clearInterval(portraitTimer);
+  portraitTimer = setInterval(() => {
+   if (document.body.dataset.screen !== 'catalog') { clearInterval(portraitTimer); portraitTimer = 0; return; }
+   if (!ui?.save.reduced && !paused()) { portraitFrame++; drawPortrait(); }
+  }, 170);
+ }
+
+ function renderLobby() {
+  if (!ui) return;
+  const page = document.getElementById('catalogPage');
+  const { lessons, jobs, save, mastery } = ui;
+  const done = id => save.done.includes(id);
+  const lessonsDone = lessons.filter(l => done(l.id)).length, jobsDone = jobs.filter(l => done(l.id)).length;
+  const next = !lessonsDone ? lessons[0] : jobs.find(l => !done(l.id)) || jobs.find(l => !(mastery(l) & 1)) || jobs[0];
+  const nextIsLesson = lessons.includes(next);
+  const marks = l => { const bits = mastery(l), intel = /o/.test(l.map.join('')); return '<span class="rh-marks" aria-label="Goals earned">' + [[1, 'C', 'Clean'], [2, 'I', 'All intel'], [4, 'P', 'Par']].filter(([b]) => b !== 2 || intel).map(([b, t, name]) => '<i class="' + (bits & b ? 'on' : '') + '" title="' + name + (bits & b ? ' earned' : '') + '">' + t + '</i>').join('') + '</span>'; };
+  const hero = options.hero;
+  page.innerHTML =
+   '<div class="rh-lobbygrid">'
+   + '<aside class="rh-friend"><canvas id="rhPortrait" width="126" height="126" role="img" aria-label="Your Rare Friend #' + escapeText(hero.tokenId) + ', original artwork"></canvas>'
+   + '<div class="rh-friendtext"><p class="kicker">PLAYING AS YOUR FRIEND</p><h2>#' + escapeText(hero.tokenId) + '</h2><p class="rh-family">' + escapeText(String(hero.familyName || '').toUpperCase()) + ' / HARDWIRED / VERIFIED BY FRIENDSDK</p>'
+   + '<p class="rh-progress">LESSONS ' + lessonsDone + '/' + lessons.length + ' &middot; JOBS ' + jobsDone + '/' + jobs.length + '</p>'
+   + '<button id="rhNext" class="primary">' + (nextIsLesson ? 'START LESSON 01' : 'PLAY NEXT: ' + escapeText(next.name)) + ' &gt;</button>'
+   + '<p class="note">Solo stealth. Original on-chain artwork, never recoloured. No purchases or rewards: the SDK economy is not used. Progress lasts for this session.</p>'
+   + '<button id="rhAbout" class="rh-link">SOURCES + LIMITS</button></div></aside>'
+   + '<section class="rh-lists">'
+   + '<div class="rh-listhead"><h3>LEARN TO HEIST / ' + lessons.length + ' LESSONS</h3><small>PRACTICE: REWIND FREELY</small></div>'
+   + '<div class="rh-lessons">' + lessons.map((l, i) => '<button data-rh-lesson="' + l.id + '" class="' + (done(l.id) ? 'rh-done' : '') + '"><b>0' + (i + 1) + ' / ' + escapeText(l.name) + (done(l.id) ? ' [X]' : '') + '</b><small>' + escapeText(l.desc) + '</small></button>').join('') + '</div>'
+   + '<div class="rh-listhead"><h3>SOLO VAULTS / ' + jobs.length + ' JOBS / ALL OPEN</h3><div class="rh-mode" role="group" aria-label="Security mode"><button data-rh-mode="operative" aria-pressed="' + !ghost + '" class="' + (ghost ? '' : 'active') + '">OPERATIVE</button><button data-rh-mode="ghost" aria-pressed="' + ghost + '" class="' + (ghost ? 'active' : '') + '" title="No detection allowed">GHOST</button></div></div>'
+   + '<div class="rh-jobs">' + jobs.map((l, i) => '<button data-rh-job="' + l.id + '" class="' + (done(l.id) ? 'rh-done' : '') + '" title="' + escapeText(l.desc) + '"><b>' + String(i + 1).padStart(2, '0') + ' ' + escapeText(l.name) + '</b><small>' + escapeText(l.tag) + ' / ' + ((l.map.length - 1) / 2) + 'F / PAR ' + l.par + (save.best[l.id + ':ghost'] ? ' / GHOST ' + save.best[l.id + ':ghost'] : '') + '</small>' + marks(l) + '</button>').join('') + '</div>'
+   + '</section></div>';
+  const start = (level, opts) => { if (!paused()) ui.start(level, opts); };
+  page.querySelector('#rhNext').onclick = () => start(next, nextIsLesson ? { type: 'training' } : { mode: ghost ? 'ghost' : 'operative' });
+  page.querySelector('#rhAbout').onclick = about;
+  page.querySelectorAll('[data-rh-lesson]').forEach(b => b.onclick = () => start(lessons.find(l => l.id === b.dataset.rhLesson), { type: 'training' }));
+  page.querySelectorAll('[data-rh-job]').forEach(b => b.onclick = () => start(jobs.find(l => l.id === b.dataset.rhJob), { mode: ghost ? 'ghost' : 'operative' }));
+  page.querySelectorAll('[data-rh-mode]').forEach(b => b.onclick = () => { ghost = b.dataset.rhMode === 'ghost'; renderLobby(); page.querySelector('[data-rh-mode="' + b.dataset.rhMode + '"]')?.focus({ preventScroll: true }); });
+  portraitFrame = 0; drawPortrait(); animatePortrait();
+ }
+
+ function about() {
+  ui.modal('SOURCES + LIMITS', '<p>Rare Heist: Friend Edition for FriendSDK v0.1.2. The SDK runtime connects the wallet, lists your hardwired Friends and verifies ownership on Robinhood Chain before this game loads.</p>'
+   + '<p>Your Friend #' + escapeText(options.hero.tokenId) + ' walks every job in its original 16x16 one-bit frames, read from the Rare Friends artwork registry through the public Robinhood Chain RPC and drawn at whole-pixel scale without recolouring.</p>'
+   + '<p>This edition contains the four lessons and the fourteen solo jobs. It has no purchases, rewards, prizes or token actions: the SDK chance-game economy is required by the runtime but unused, and its ledger stays simulated. The browser sandbox has no storage, so progress resets when the frame reloads.</p>'
+   + '<p>The shared Last Heist, workshop, creator studio and LIVE BURN live only in the standalone Rare Heist build.</p>');
+ }
+
+ return sdk;
+}
+
+/** Read the selected Friend's canonical 16x16 one-bit frames (familyOf, seedOf, frames) via the public RPC. */
+export async function readFriend(friendId,options={}){
+ loadLibraries();
+ return (await globalThis.HeistIdentity.preview(String(friendId),options)).sample;
+}
+
+/** Mount the game into root: once per document. options: {friendId, hero, paused: () => boolean, mode}. */
+export function boot(root,options){
+ loadLibraries();
+ if(instance){
+  if(instance.friendId!==String(options.friendId))throw new Error('This game frame already belongs to Friend #'+instance.friendId+'. Reload the game to switch Friends.');
+  if(instance.app.parentNode!==root)root.appendChild(instance.app);
+  instance.update(options);
+  return instance;
+ }
+ const sdk=createFriendEdition(root,options,MARKUP);
+ instance=sdk;
+ // ---- src/ui.js ----
+/* Cutaway product shell. All competitive outcomes are re-executed by the server.
    Local scores, practice and the creator-store ledger never authorize real funds. */
 (function(){'use strict';
  const E=HeistEngine,C=CutawayRules,A=LastHeist,P=HeistPixels,F=HeistPlayfeel,$=id=>document.getElementById(id),clone=x=>JSON.parse(JSON.stringify(x));
@@ -2464,5 +2304,5 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  // Read-only QA snapshot: no credentials or write/award endpoints are exposed here.
  rootSnapshot();function rootSnapshot(){window.RareHeistView=()=>({screen,level:game?.level?.id,state:game?.state?clone(game.state):null,actions:game?[...game.actions]:[],practice:game?.practice,editor:editor?.active,street:{district:street.district,x:street.x},geometry:renderer.metrics(),hero:hero.tokenId,inspect:inspectMode,mastery:clone(save.mastery),trail:game&&game.type!=='replay'&&save.trail!==false&&hasItem('trail')?(game.trail||[]).length:0});}
 })();
-</script>
-</body></html>
+ return sdk;
+}
