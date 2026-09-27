@@ -6,7 +6,7 @@
 
 **Sneak your own Rare Friend through a cutaway building, one move at a time.<br>Then leave the next thief a harder way in.**
 
-[**▶ PLAY IN YOUR BROWSER**](https://warninghejo-blip.github.io/rare-heist/) &nbsp;·&nbsp; [**WATCH THE TRAILER**](media/rare-heist-trailer-720p.mp4) &nbsp;·&nbsp; [1080p](media/rare-heist-trailer.mp4)
+[**▶ PLAY IN YOUR BROWSER**](https://rareheist-bc89faa0.sslip.io/) &nbsp;·&nbsp; [mirror](https://warninghejo-blip.github.io/rare-heist/) &nbsp;·&nbsp; [**WATCH THE TRAILER**](media/rare-heist-trailer-720p.mp4) &nbsp;·&nbsp; [1080p](media/rare-heist-trailer.mp4)
 
 Rare Friends Vibeathon 2026 · Character Spotlight · Token Activity · free, no install, no wallet needed to try
 
@@ -100,7 +100,7 @@ node build.mjs          # builds index.html from src/
 npm start               # shared Last Heist server on http://127.0.0.1:4173
 ```
 
-Open `index.html` directly to play solo without a server. On GitHub Pages, Last Heist runs as a local rehearsal. For real shared rounds, deploy the server: `render.yaml` is included, then set `PUBLIC_ORIGIN` to the site address.
+Open `index.html` directly to play solo without a server. The GitHub Pages mirror is static, so shared Last Heist rounds live on the main link, which runs `server/app.mjs` behind nginx (`HOST=127.0.0.1`, `PUBLIC_ORIGIN=https://…`, `DATA_DIR` for the SQLite file). `render.yaml` is included for a one-click Render deploy.
 
 ## Checks
 

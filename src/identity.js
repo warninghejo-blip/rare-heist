@@ -29,10 +29,12 @@
   let timer;try{return await Promise.race([Promise.resolve().then(()=>p.request({method,...(params?{params}:{})})),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('The wallet did not answer in time. Retry.')),timeout);})]);}finally{clearTimeout(timer);}
  }
  // Public RPC for reads without a wallet (PREVIEW, VIEW HOLDER, Hall of Ash). Never ownership claims.
- async function rpc(method,params,{fetchImpl=globalThis.fetch,timeout=15000}={}){
+ async function rpc(method,params,{fetchImpl=globalThis.fetch,timeout=15000,retries=2}={}){
   if(!['eth_call','eth_blockNumber','eth_chainId','eth_getLogs','eth_getTransactionReceipt','eth_getTransactionByHash'].includes(method))throw Error('Forbidden RPC method');
   const ctl=typeof AbortController==='function'?new AbortController():null,timer=setTimeout(()=>ctl?.abort(),timeout);
   try{const r=await fetchImpl(MANIFEST.rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:ctl?.signal});
+   // The public RPC rate-limits bursts (429 seen after ~250 calls/min); one 429 must not abort a 65-call discovery.
+   if(r.status===429&&retries>0){clearTimeout(timer);await new Promise(f=>setTimeout(f,(3-retries)*1500));return await rpc(method,params,{fetchImpl,timeout,retries:retries-1});}
    if(!r.ok)throw Error('Robinhood Chain RPC answered '+r.status);const j=await r.json();if(j.error)throw Error(j.error.message||'RPC error');return j.result;}
   catch(e){throw Error(e.name==='AbortError'?'Robinhood Chain RPC timed out. Retry.':e.message||'Could not reach Robinhood Chain RPC');}
   finally{clearTimeout(timer);}
@@ -80,10 +82,13 @@
  }
  async function block(p){const b=await request(p,'eth_blockNumber');if(typeof b!=='string'||!/^0x[0-9a-f]+$/i.test(b))throw Error('Invalid block');return b;}
  // One token, checked against the connected account (manual ID entry and re-checks).
- async function read(p,id,{connect:ask=false}={}){
+ async function read(p,id,{connect:ask=false,...opts}={}){
   const n=token(id);let player;
   if(ask)player=await connect(p);else{const accounts=await request(p,'eth_accounts');if(!Array.isArray(accounts)||!accounts.length)throw Error('Connect a browser wallet first');player=address(accounts[0]);await ensureChain(p);}
-  const at=await block(p),call=walletCall(p,at),{owner,generation}=await ownership(call,n);
+  // Account and chain come from the wallet; reads fall back to the canonical public RPC (see discover).
+  let at,call,own;try{at=await block(p);call=walletCall(p,at);own=await ownership(call,n);}
+  catch{const q=rpcProvider(opts);at=await block(q);call=walletCall(q,at);own=await ownership(call,n);}
+  const {owner,generation}=own;
   if(owner!==player)throw Error('This wallet does not own Friend #'+n);
   if(!Number.isInteger(generation)||generation<1)throw Error('Friend #'+n+' is not hardwired (generation 1 or higher required)');
   const art=await artwork(call,n);
@@ -92,8 +97,18 @@
  }
  // All hardwired Friends held by the account: balanceOf, then owner-filtered Transfer
  // history (Generations has no ERC721Enumerable), then a fresh ownerOf/generation check.
- async function discover(p,player){
-  player=address(player);const at=await block(p),call=walletCall(p,at);
+ // Wallet RPCs differ: some reject owner-filtered eth_getLogs from block 0 (drpc free plan: 10k-block
+ // cap; publicnode: archive token) or eth_call at a pinned block (drpc: "Unknown state"). The account
+ // still comes from the wallet; on any wallet read failure the same discovery re-runs read-only through
+ // the canonical Robinhood Chain RPC. If that fails too, the wallet's original error is reported.
+ async function discover(p,player,opts={}){
+  player=address(player);
+  try{return await discoverVia(p,player);}
+  catch(e){if(p?.publicRpc)throw e;
+   try{if(BigInt(await rpc('eth_chainId',[],opts))!==BigInt(MANIFEST.chainId))throw e;return {...await discoverVia(rpcProvider(opts),player),via:'public-rpc'};}catch{throw e;}}
+ }
+ async function discoverVia(p,player){
+  const at=await block(p),call=walletCall(p,at);
   const balance=words(await call(MANIFEST.generations,SELECTORS.balance,[BigInt(player)]),1)[0];
   if(balance===0n)return {friends:[],block:at,balance:0,hidden:0};
   const topic='0x'+word(BigInt(player)),q=topics=>request(p,'eth_getLogs',[{address:MANIFEST.generations,fromBlock:'0x0',toBlock:at,topics}],45000);
@@ -118,8 +133,8 @@
  }
  // VIEW ADDRESS: list any holder's Friends read-only through the public RPC (no wallet).
  // Same discovery as a connected wallet; results are PREVIEW, never ownership.
- function rpcProvider(opts={}){return {request:({method,params})=>method==='eth_accounts'?[]:rpc(method,params,opts)};}
- async function inspect(addr,opts={}){const p=rpcProvider(opts);if(BigInt(await rpc('eth_chainId',[],opts))!==BigInt(MANIFEST.chainId))throw Error('Unexpected chain from RPC');const r=await discover(p,address(String(addr).trim()));r.friends=r.friends.map(f=>({...f,preview:true}));return r;}
+ function rpcProvider(opts={}){return {publicRpc:true,request:({method,params})=>method==='eth_accounts'?[]:rpc(method,params,opts)};}
+ async function inspect(addr,opts={}){const p=rpcProvider(opts);if(BigInt(await rpc('eth_chainId',[],opts))!==BigInt(MANIFEST.chainId))throw Error('Unexpected chain from RPC');const r=await discover(p,address(String(addr).trim()),opts);r.friends=r.friends.map(f=>({...f,preview:true}));return r;}
  // Real RF balances, read-only: the connected account and the Friend's canonical wallet
  // (Generations.tokenBoundAccount), where FriendSDK games deliver items and rewards.
  async function rfBalances(p,{account=null,tokenId=null}={}){
