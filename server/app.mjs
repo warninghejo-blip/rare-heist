@@ -5,7 +5,9 @@ import path from 'node:path';
 import {createHash,timingSafeEqual} from 'node:crypto';
 import {ArenaStore} from './store.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock=Date.now,minActionMs=80,publicOrigin=process.env.PUBLIC_ORIGIN||''}={}){
+export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock=Date.now,minActionMs=80,publicOrigin=process.env.PUBLIC_ORIGIN||'',trustProxy=process.env.TRUST_PROXY==='1'}={}){
+ // Behind a reverse proxy every socket is 127.0.0.1; with TRUST_PROXY=1 the proxy-set X-Real-IP keys the rate limits instead.
+ const peer=req=>(trustProxy&&/^[0-9a-f.:]{3,45}$/i.test(req.headers['x-real-ip']||'')?req.headers['x-real-ip']:req.socket.remoteAddress)||'unknown';
  if(publicOrigin){const u=new URL(publicOrigin);if(!['http:','https:'].includes(u.protocol))throw Error('PUBLIC_ORIGIN must be http(s)');publicOrigin=u.origin;}
  if(dbFile!==':memory:')mkdirSync(path.dirname(dbFile),{recursive:true});
  const store=new ArenaStore(dbFile,{clock,minActionMs});
@@ -44,10 +46,10 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
     res.writeHead(200,{...security,'Content-Type':type,'Cache-Control':'no-cache'});res.end(req.method==='HEAD'?undefined:bytes);return;
    }
    if(!['GET','POST'].includes(req.method))return json(res,405,{error:'METHOD'});
-   if(req.method==='POST'&&limited('peer:'+(req.socket.remoteAddress||'unknown'),1200))return json(res,429,{error:'RATE_LIMIT',message:'Too many writes. Wait a minute.'},{'Retry-After':'60'});
+   if(req.method==='POST'&&limited('peer:'+peer(req),1200))return json(res,429,{error:'RATE_LIMIT',message:'Too many writes. Wait a minute.'},{'Retry-After':'60'});
    if(req.method==='POST')checkOrigin(req);
    if(p==='/api/session'&&req.method==='POST'){
-    await body(req);if(!store.session(token(req))&&limited('new-session:'+(req.socket.remoteAddress||'unknown'),60))return json(res,429,{error:'RATE_LIMIT',message:'Session creation limit reached.'},{'Retry-After':'60'});const v=store.bootstrap(token(req));const extra=v.token?{'Set-Cookie':`rh_session=${v.token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${publicOrigin.startsWith('https:')?'; Secure':''}`}:{};
+    await body(req);if(!store.session(token(req))&&limited('new-session:'+peer(req),60))return json(res,429,{error:'RATE_LIMIT',message:'Session creation limit reached.'},{'Retry-After':'60'});const v=store.bootstrap(token(req));const extra=v.token?{'Set-Cookie':`rh_session=${v.token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${publicOrigin.startsWith('https:')?'; Secure':''}`}:{};
     return json(res,200,{...v.session,balance:store.balance(v.session.player),source:'server',siteOrigin:publicOrigin||`http://${req.headers.host}`},extra);
    }
    const s=authenticate(req),b=req.method==='POST'?await body(req):null;
