@@ -471,6 +471,27 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   return {owner:'0x'+ownerWord.toString(16).padStart(40,'0'),generation:Number(words(ge,1)[0])};
  }
  async function block(p){const b=await request(p,'eth_blockNumber');if(typeof b!=='string'||!/^0x[0-9a-f]+$/i.test(b))throw Error('Invalid block');return b;}
+ // Split large eth_getLogs requests by block range when an RPC rejects them or
+ // silently caps a response at 10,000 logs. Ranges are disjoint and read oldest first.
+ async function getLogs(p,filter){
+  const from=BigInt(filter.fromBlock??'0x0'),to=BigInt(filter.toBlock??await request(p,'eth_blockNumber'));
+  if(from>to)return [];
+  const out=[];
+  async function readRange(first,last){
+   let logs;
+   try{logs=await request(p,'eth_getLogs',[{...filter,fromBlock:'0x'+first.toString(16),toBlock:'0x'+last.toString(16)}],45000);}
+   catch(e){
+    const msg=String(e?.message||e);
+    if(first===last||!/exceeds?\s+(?:the\s+)?limit|more than\s+\d+|too many results|response size|block range|range too (?:wide|large)|query returned|limit of\s+\d+/i.test(msg))throw e;
+    const mid=(first+last)>>1n;await readRange(first,mid);await readRange(mid+1n,last);return;
+   }
+   if(!Array.isArray(logs))throw Error('Invalid eth_getLogs response');
+   // Some RPCs return the first 10,000 without an error. Split at that boundary too.
+   if(logs.length>=10000&&first<last){const mid=(first+last)>>1n;await readRange(first,mid);await readRange(mid+1n,last);return;}
+   out.push(...logs);
+  }
+  await readRange(from,to);return out;
+ }
  // One token, checked against the connected account (manual ID entry and re-checks).
  async function read(p,id,{connect:ask=false,...opts}={}){
   const n=token(id);let player;
@@ -535,7 +556,7 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   return out;
  }
  function formatRF(v,dec=18){const d=10n**BigInt(dec),whole=v/d,frac=(v%d)*100n/d;return whole.toLocaleString('en-US')+'.'+String(frac).padStart(2,'0');}
- return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview});
+ return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview,getLogs});
 });
 </script><script>/* LIVE BURN (beta). Opt-in only; the game's default economy stays DEMO.
  * Real $RAREFRIENDS is burned by a plain ERC-20 transfer(0x…dEaD, amount) that the
@@ -580,28 +601,34 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  const wait=ms=>new Promise(r=>setTimeout(r,ms));
  // Sends one burn from the connected account and waits for its receipt.
  async function burn(p,{account,item,amount,friendId,onSent,poll=1500,timeout=180000}){
-  const it=byId(item);if(!it)throw Error('Unknown item');const from=I.address(account);
+  const it=byId(item);if(!it)throw Error('Unknown item');
+  // Tribute has a one-RF floor. Reject it before any wallet method can prompt.
+  if(it.any&&units(amount,18)<10n**18n)throw Error('Tribute must be at least 1 RF');
+  const from=I.address(account);
   await I.ensureChain(p);const req=(m,a,t)=>I.request(p,m,a,t),call=caller(req),dec=await decimals(call);
   const value=it.any?units(amount,dec):price(it,dec);
   const bal=I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(from)]),1)[0];
   if(bal<value)throw Error('Not enough RF in this wallet: '+I.formatRF(bal,dec)+' RF available.');
   const tx=await req('eth_sendTransaction',[{from,to:I.RF_TOKEN,value:'0x0',data:calldata(value,it,friendId)}],300000);
   if(typeof tx!=='string'||!/^0x[0-9a-f]{64}$/i.test(tx))throw Error('The wallet did not return a transaction hash');
-  onSent?.(tx);
+  onSent?.(tx,{tx,from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec});
   for(const end=Date.now()+timeout;Date.now()<end;await wait(poll)){
    const r=await req('eth_getTransactionReceipt',[tx]).catch(()=>null);
-   if(r)return {...checkReceipt(r,{from,min:value}),item:it.id,friendId:friendId==null?null:String(friendId),decimals:dec};
+   if(r){try{if(String(r.transactionHash||'').toLowerCase()!==tx.toLowerCase())throw Error('Receipt hash did not match the pending transaction');return {...checkReceipt(r,{from,min:value}),item:it.id,friendId:friendId==null?null:String(friendId),decimals:dec};}catch(e){e.tx=tx;throw e;}}
   }
   const e=Error('Sent, but not confirmed yet. It will appear after RESTORE FROM CHAIN.');e.tx=tx;throw e;
  }
  // Every tagged Rare Heist burn: from one player, or (player=null) from everyone.
  async function history(p,{player=null,limit=200}={}){
   const req=(m,a,t)=>I.request(p,m,a,t),at=await req('eth_blockNumber');
-  const logs=await req('eth_getLogs',[{address:I.RF_TOKEN,fromBlock:'0x0',toBlock:at,topics:[I.TRANSFER,player?'0x'+hex(BigInt(I.address(player))):null,'0x'+hex(BigInt(DEAD))]}],45000);
-  const byTx=new Map();for(const g of logs||[]){if(!g||g.removed||!g.transactionHash)continue;const k=g.transactionHash.toLowerCase();const o=byTx.get(k)||{tx:k,block:g.blockNumber,from:('0x'+String(g.topics[1]).slice(-40)).toLowerCase(),amount:0n};o.amount+=BigInt(g.data&&g.data!=='0x'?g.data:0);byTx.set(k,o);}
-  const list=[...byTx.values()].sort((a,b)=>BigInt(b.block)>BigInt(a.block)?1:-1).slice(0,limit),out=[];
-  for(const o of list){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;out.push({...o,item:d.tag.item,friendId:d.tag.friendId});}
-  return {block:at,burns:out,scanned:byTx.size,truncated:byTx.size>limit};
+  const owner=player?I.address(player):null,topics=[I.TRANSFER,owner?'0x'+hex(BigInt(owner)):null,'0x'+hex(BigInt(DEAD))];
+  const logs=await I.getLogs(p,{address:I.RF_TOKEN,fromBlock:'0x0',toBlock:at,topics});
+  const byTx=new Map();for(const g of logs||[]){if(!g||g.removed||typeof g.transactionHash!=='string'||!Array.isArray(g.topics)||g.topics.length!==3||String(g.topics[0]).toLowerCase()!==I.TRANSFER||('0x'+String(g.topics[2]).slice(-40)).toLowerCase()!==DEAD)continue;const k=g.transactionHash.toLowerCase(),from=('0x'+String(g.topics[1]).slice(-40)).toLowerCase();if(owner&&from!==owner)continue;const o=byTx.get(k)||{tx:k,block:g.blockNumber,from,amount:0n};o.amount+=BigInt(g.data&&g.data!=='0x'?g.data:0);byTx.set(k,o);}
+  const cap=Math.max(1,Math.min(5000,Math.floor(Number(limit))||200)),list=[...byTx.values()].sort((a,b)=>BigInt(a.block)>BigInt(b.block)?-1:BigInt(a.block)<BigInt(b.block)?1:0),candidates=owner?list:list.slice(0,cap),out=[];let truncated=!owner&&list.length>cap;
+  // Player restore limits only after applying topic1=player and validating tags.
+  // The global Hall intentionally scans a marked latest-N window of transfers.
+  for(const o of candidates){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;if(out.length===cap){truncated=true;break;}out.push({...o,item:d.tag.item,friendId:d.tag.friendId});}
+  return {block:at,burns:out,scanned:byTx.size,truncated};
  }
  // Unlocked items: a tagged burn of at least the item's price.
  function unlocked(burns,dec=18){const set=new Set();for(const b of burns||[]){const it=byId(b.item);if(it&&!it.any&&BigInt(b.amount)>=price(it,dec))set.add(it.id);}return [...set];}
@@ -2244,9 +2271,10 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  const KEY='rh-cutaway-v1',ATTEMPT='rh-cutaway-attempt-v1';let storageOK=true;
  function read(key,max=1000000){try{const x=localStorage.getItem(key);return x&&x.length<max?JSON.parse(x):null;}catch{return null;}}
  function write(key,value){if(SDK)return;try{localStorage.setItem(key,JSON.stringify(value));}catch{storageOK=false;$('storageWarning').hidden=false;}}
- const raw=read(KEY)||{},save={v:1,playfeelVersion:1,retiredBest:{},sound:raw.sound===true,reduced:raw.reduced??matchMedia('(prefers-reduced-motion: reduce)').matches,hero:['3412','7730'].includes(raw.hero)?raw.hero:'3412',mastery:{},best:{},records:[],done:[],district:['foundry','canal','roof'].includes(raw.district)?raw.district:'foundry',streetX:Number.isFinite(raw.streetX)?Math.max(80,Math.min(1750,raw.streetX)):180,economy:null,theme:['plain','lilac','citrus'].includes(raw.theme)?raw.theme:'plain',friend:null,ecoMode:'demo',trail:raw.trail!==false,live:{burns:[]}};
+ const raw=read(KEY)||{},save={v:1,playfeelVersion:1,retiredBest:{},sound:raw.sound===true,reduced:raw.reduced??matchMedia('(prefers-reduced-motion: reduce)').matches,hero:['3412','7730'].includes(raw.hero)?raw.hero:'3412',mastery:{},best:{},records:[],done:[],district:['foundry','canal','roof'].includes(raw.district)?raw.district:'foundry',streetX:Number.isFinite(raw.streetX)?Math.max(80,Math.min(1750,raw.streetX)):180,economy:null,theme:['plain','lilac','citrus'].includes(raw.theme)?raw.theme:'plain',friend:null,ecoMode:'demo',trail:raw.trail!==false,live:{burns:[],pending:null}};
  // LIVE BURN receipts cached on this device. They only unlock cosmetics; RESTORE FROM CHAIN rebuilds them from the chain.
  try{save.live.burns=(Array.isArray(raw.live?.burns)?raw.live.burns:[]).filter(b=>b&&/^0x[0-9a-f]{64}$/.test(b.tx)&&HeistBurn.byId(b.item)&&/^[0-9]{1,78}$/.test(b.amount)&&/^0x[0-9a-f]{40}$/.test(b.from)&&(b.friendId==null||/^[0-9]{1,78}$/.test(b.friendId))).slice(0,200).map(b=>({tx:b.tx,block:String(b.block||''),item:b.item,amount:b.amount,friendId:b.friendId??null,from:b.from}));}catch{}
+ try{const p=raw.live?.pending;if(p&&/^0x[0-9a-f]{64}$/i.test(p.tx)&&/^0x[0-9a-f]{40}$/i.test(p.from)&&HeistBurn.byId(p.item)&&/^\d{1,12}(?:\.\d{1,6})?$/.test(String(p.amount))&&/^\d{1,78}$/.test(String(p.amountUnits))&&Number.isFinite(p.sentAt)&&(p.friendId==null||/^\d{1,78}$/.test(String(p.friendId))))save.live.pending={tx:p.tx.toLowerCase(),from:p.from.toLowerCase(),item:p.item,amount:String(p.amount),amountUnits:String(p.amountUnits),friendId:p.friendId==null?null:String(p.friendId),sentAt:p.sentAt,decimals:Number.isInteger(p.decimals)?p.decimals:18};}catch{}
  try{const f=raw.friend;if(f&&['owned','preview'].includes(f.mode)){const x=HeistIdentity.sample(f.tokenId,f.familyId,f.seed,f.frames,{generation:f.generation,preview:f.mode==='preview'});save.friend={mode:f.mode,owner:typeof f.owner==='string'?f.owner.toLowerCase():null,tokenId:x.tokenId,familyId:x.familyId,seed:x.seed,generation:f.generation,frames:x.frames};}}catch{}
  let economy;try{economy=HeistEconomy.restore(raw.economy);}catch{economy=HeistEconomy.initial();}
  if(raw.best&&typeof raw.best==='object')for(const [k,v]of Object.entries(raw.best).slice(0,100))if(Number.isInteger(v)&&v>0&&v<10000)save.best[k]=v;
@@ -2366,40 +2394,65 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  function bindModes(){$('studioPage').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{save.ecoMode=b.dataset.mode==='live'?'live':'demo';persist();showStudio();});}
  const liveOwned=()=>HeistBurn.unlocked(save.live.burns);
  const hasItem=id=>economy.owned.includes(id)||liveOwned().includes(id);
- function rememberBurn(b){const row={tx:b.tx,block:String(b.block),item:b.item,amount:String(b.amount),friendId:b.friendId||null,from:b.from};if(!save.live.burns.some(x=>x.tx===row.tx))save.live.burns=[row,...save.live.burns].slice(0,200);persist();}
- function showLive(){const B=HeistBurn,mine=wallet.account?save.live.burns.filter(x=>x.from===wallet.account):[];
+ function rememberBurn(b,from=b.from){const sender=HeistIdentity.address(from),row={tx:String(b.tx).toLowerCase(),block:String(b.block),item:b.item,amount:String(b.amount),friendId:b.friendId||null,from:sender};if(!save.live.burns.some(x=>x.tx===row.tx))save.live.burns=[row,...save.live.burns].slice(0,200);persist();}
+ function savePending(meta,amount){save.live.pending={tx:String(meta.tx).toLowerCase(),from:HeistIdentity.address(meta.from),item:meta.item,amount:String(amount),amountUnits:String(meta.amount),friendId:meta.friendId??null,sentAt:Date.now(),decimals:meta.decimals};persist();}
+ function pendingText(p=save.live.pending){return p?'Pending transaction '+p.tx+'. Check its receipt before sending another burn.':'';}
+ function applyBurnItem(id){if(id==='lilac'||id==='citrus'){save.theme=id;applyTheme();}if(id==='trail')save.trail=true;}
+ function pendingStatus(msg){if($('burnStatus'))$('burnStatus').textContent=msg;if($('lvStatus'))$('lvStatus').textContent=msg;if($('burnCheck'))$('burnCheck').hidden=false;}
+ async function checkPending({rerender=true}={}){
+  const pnd=save.live.pending;if(!pnd)return 'none';const provider=wallet.provider&&wallet.account?wallet.provider:HeistIdentity.rpcProvider();let receipt;
+  try{receipt=await HeistIdentity.request(provider,'eth_getTransactionReceipt',[pnd.tx],45000);}catch(e){pendingStatus(pendingText(pnd)+' RPC check failed: '+e.message);return 'pending';}
+  if(!receipt){pendingStatus(pendingText(pnd)+' Press CHECK AGAIN to retry.');return 'pending';}
+  if(String(receipt.transactionHash||'').toLowerCase()!==pnd.tx){pendingStatus(pendingText(pnd)+' The receipt hash did not match. Keep it pending and check again.');return 'pending';}
+  let status;try{status=BigInt(receipt.status??0);}catch{pendingStatus(pendingText(pnd)+' The receipt response was invalid.');return 'pending';}
+  if(status===0n){if(save.live.pending?.tx===pnd.tx){save.live.pending=null;persist();}const message='The burn transaction failed on chain. No RF was burned; you can try again.';if($('burnStatus'))$('burnStatus').textContent=message;if($('lvStatus'))$('lvStatus').textContent=message;toast(message);if(rerender){if($('modal').open)$('modal').close();showLive();}return 'failed';}
+  if(status!==1n){pendingStatus(pendingText(pnd)+' The receipt status is not final.');return 'pending';}
+  try{const r=HeistBurn.checkReceipt(receipt,{from:pnd.from,min:BigInt(pnd.amountUnits)});rememberBurn({...r,item:pnd.item,friendId:pnd.friendId,decimals:pnd.decimals,from:pnd.from},pnd.from);if(save.live.pending?.tx===pnd.tx){save.live.pending=null;persist();}applyBurnItem(pnd.item);const message='Burned '+HeistIdentity.formatRF(r.amount,pnd.decimals)+' RF on chain. '+(pnd.item==='ash'?'Your name is in the Hall of Ash.':(HeistBurn.byId(pnd.item)?.name||pnd.item)+' unlocked.');toast(message);if(rerender){if($('modal').open)$('modal').close();showLive();}return 'confirmed';}
+  catch(e){pendingStatus(pendingText(pnd)+' Receipt found, but it does not prove this burn. Keep it pending and check again. '+e.message);return 'pending';}
+ }
+ function forgetPending(){const pnd=save.live.pending;if(!pnd)return;modal('FORGET THIS PENDING TRANSACTION?','<p>Only do this after you replaced or cancelled this transaction in your wallet. If the original transaction still goes through, RF will still be burned permanently.</p><p>TX '+escape(pnd.tx)+'</p><label class="check"><input type="checkbox" id="forgetAgree"> I understand this transaction could still burn RF.</label><div class="toolbar"><button id="forgetGo" class="burn" disabled>I replaced/cancelled it in my wallet — forget this tx</button><button id="forgetCancel">KEEP WAITING</button></div>');$('forgetAgree').onchange=()=>{$('forgetGo').disabled=!$('forgetAgree').checked;};$('forgetCancel').onclick=()=>$('modal').close();$('forgetGo').onclick=()=>{if(save.live.pending?.tx!==pnd.tx)return;$('modal').close();save.live.pending=null;persist();showLive();toast('Pending transaction forgotten. If it later succeeds, RF will still be burned.');};}
+ function showLive(){const B=HeistBurn,mine=wallet.account?save.live.burns.filter(x=>x.from===wallet.account):[],pending=save.live.pending;
+  const pendingHtml=pending?'<section class="livewarn"><strong>TRANSACTION PENDING. DO NOT SEND ANOTHER BURN.</strong><span>'+escape(pendingText(pending))+' Amount: '+escape(pending.amount)+' RF. You can check the receipt or explicitly forget this transaction.</span><div class="toolbar"><button id="liveCheck">CHECK AGAIN</button><button id="forgetPending">I replaced/cancelled it in my wallet — forget this tx</button></div></section>':'';
   let html=modeSwitch()+'<div class="title-row"><div><p class="kicker">REAL $RAREFRIENDS / 100% BURNED / ROBINHOOD CHAIN</p><h1>LIVE BURN.</h1></div><p class="subtitle">Burn real RF to unlock cosmetics. Every RF goes to 0x…dEaD, an address no one controls. No one is paid: no creator, developer or prize share.</p></div>'
   +'<section class="livewarn"><strong>BETA. REAL TOKENS. PERMANENT.</strong><span>Your wallet will ask you to send RF to 0x000…dEaD. There is no refund. Unlocks are cosmetic and change no rule, stat or score. DEMO mode stays the default and is all you need to play.</span></section>'
   +'<div class="hero-stats livestats"><div class="statblock"><small>YOUR RF</small><strong id="lvYour">'+(wallet.account?'...':'CONNECT')+'</strong></div><div class="statblock"><small>YOU BURNED VIA RARE HEIST</small><strong id="lvMine">'+(wallet.account?'...':'—')+'</strong></div><div class="statblock"><small>ALL PLAYERS VIA RARE HEIST</small><strong id="lvAll">...</strong></div><div class="statblock"><small>RF AT 0x…dEaD, ALL TIME</small><strong id="lvDead">...</strong></div></div>'
-  +'<div class="toolbar">'+(wallet.account?'<span class="tag">'+escape(HeistIdentity.short(wallet.account))+'</span>':'<button id="lvConnect" class="primary">CONNECT WALLET</button>')+'<button id="lvRestore">RESTORE FROM CHAIN</button></div><p class="note" id="lvStatus"></p><div class="cards">';
+  +'<div class="toolbar">'+(wallet.account?'<span class="tag">'+escape(HeistIdentity.short(wallet.account))+'</span>':'<button id="lvConnect" class="primary">CONNECT WALLET</button>')+'<button id="lvRestore">RESTORE FROM CHAIN</button></div><p class="note" id="lvStatus"></p>'+pendingHtml+'<div class="cards">';
   for(const it of B.ITEMS){const has=!it.any&&hasItem(it.id),liveHas=liveOwned().includes(it.id),use=it.kind==='trail'?(save.trail===false?'SHOW TRAIL':'HIDE TRAIL'):it.kind==='pack'?'PLAY PACK':'APPLY';
    html+='<article class="card burncard"><span class="tag">'+it.kind.toUpperCase()+'</span><h3>'+it.name+'</h3><p>'+escape(it.text)+'</p>'+(it.any?'<label>RF TO BURN<input id="ashAmount" inputmode="decimal" autocomplete="off" value="1"></label>':'<strong>'+it.rf+' RF / BURNED</strong>')
    +(liveHas?'<button disabled>BURNED / UNLOCKED</button>':'<button data-burn="'+it.id+'" class="burn">'+(it.any?'BURN FOR THE HALL':'BURN '+it.rf+' RF')+'</button>')+(has?'<button data-use="'+it.id+'" class="primary">'+use+'</button>':'')+'</article>';}
-  html+='</div><section class="hall"><p class="kicker">READ FROM THE CHAIN / EVERY TAGGED RARE HEIST BURN</p><h3>HALL OF ASH</h3><ol id="hallList"><li>Reading Robinhood Chain...</li></ol></section><h3>YOUR BURN RECEIPTS</h3><ul class="eventlist">'+(mine.length?mine.slice(0,8).map(b=>'<li>'+escape((B.byId(b.item)?.name||b.item)+' / '+HeistIdentity.formatRF(BigInt(b.amount))+' RF / TX '+HeistIdentity.short(b.tx)+(b.friendId?' / FRIEND #'+b.friendId:''))+'</li>').join(''):'<li>'+(wallet.account?'No Rare Heist burns from this wallet yet.':'Connect a wallet to see your receipts.')+'</li>')+'</ul><p class="note">How it works: one ERC-20 transfer(0x…dEaD, amount) on the RF token '+escape(HeistIdentity.short(HeistIdentity.RF_TOKEN))+', signed in your wallet. A 32-byte tag after the call data names the item and your Friend, so the game rebuilds unlocks and this Hall from the chain alone. No approvals, no custody, no server.</p>';
+  html+='</div><section class="hall"><p class="kicker">READ FROM THE CHAIN / LATEST 200 TRANSFERS TO dEaD</p><h3>HALL OF ASH</h3><p class="note" id="hallNote">Reading Robinhood Chain...</p><ol id="hallList"><li>Reading Robinhood Chain...</li></ol></section><h3>YOUR BURN RECEIPTS</h3><ul class="eventlist">'+(mine.length?mine.slice(0,8).map(b=>'<li>'+escape((B.byId(b.item)?.name||b.item)+' / '+HeistIdentity.formatRF(BigInt(b.amount))+' RF / TX '+HeistIdentity.short(b.tx)+(b.friendId?' / FRIEND #'+b.friendId:''))+'</li>').join(''):'<li>'+(wallet.account?'No Rare Heist burns from this wallet yet.':'Connect a wallet to see your receipts.')+'</li>')+'</ul><p class="note">How it works: one ERC-20 transfer(0x…dEaD, amount) on the RF token '+escape(HeistIdentity.short(HeistIdentity.RF_TOKEN))+', signed in your wallet. A 32-byte tag after the call data names the item and your Friend, so the game rebuilds unlocks and this Hall from the chain alone. No approvals, no custody, no server.</p>';
   $('studioPage').innerHTML=html;bindModes();
   if($('lvConnect'))$('lvConnect').onclick=async()=>{try{await connectWallet();showLive();}catch(e){$('lvStatus').textContent=e.message;}};
   $('lvRestore').onclick=()=>readLive(true);
+  if($('liveCheck'))$('liveCheck').onclick=()=>checkPending();if($('forgetPending'))$('forgetPending').onclick=forgetPending;
   $('studioPage').querySelectorAll('[data-burn]').forEach(b=>b.onclick=()=>confirmBurn(b.dataset.burn));
   $('studioPage').querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{const id=b.dataset.use;if(id==='archive-pack'){showCatalog();return;}if(id==='trail'){save.trail=save.trail===false;persist();showLive();toast(save.trail?'Golden trail on.':'Golden trail hidden.');return;}save.theme=id;applyTheme();persist();toast('Interface texture applied. No rule changes.');});
   readLive(false);}
- async function readLive(loud){const st=$('lvStatus');if(!st)return;if(loud)st.textContent='Reading every Rare Heist burn from Robinhood Chain...';const p=wallet.provider&&wallet.account?wallet.provider:HeistIdentity.rpcProvider(),f=v=>HeistIdentity.formatRF(v)+' RF',set=(id,v)=>{if($(id))$(id).textContent=v;};
-  try{if(wallet.account){const r=await HeistIdentity.rfBalances(p,{account:wallet.account});set('lvYour',HeistIdentity.formatRF(r.accountRF,r.decimals)+' RF');}
-   const d=await HeistBurn.deadBalance(p);set('lvDead',HeistIdentity.formatRF(d.amount,d.decimals)+' RF');
-   const h=await HeistBurn.history(p);for(const b of h.burns)if(b.from===wallet.account)rememberBurn(b);const seen=new Set(h.burns.map(b=>b.tx)),hall=HeistBurn.hall([...h.burns,...save.live.burns.filter(b=>!seen.has(b.tx))]);
+ async function readLive(loud){const st=$('lvStatus');if(!st)return;if(loud)st.textContent='Reading Rare Heist burns from Robinhood Chain...';const p=wallet.provider&&wallet.account?wallet.provider:HeistIdentity.rpcProvider(),f=(v,dec=18)=>HeistIdentity.formatRF(v,dec)+' RF',set=(id,v)=>{if($(id))$(id).textContent=v;};
+  let pendingResult='none';
+  try{if(save.live.pending){pendingResult=await checkPending({rerender:false});if(save.live.pending)set('lvStatus',pendingText()+' Press CHECK AGAIN to retry.');}
+   if(wallet.account){const r=await HeistIdentity.rfBalances(p,{account:wallet.account});set('lvYour',f(r.accountRF,r.decimals));}
+   const d=await HeistBurn.deadBalance(p);set('lvDead',f(d.amount,d.decimals));
+   const h=await HeistBurn.history(p,{limit:200});let own=null;if(wallet.account){own=await HeistBurn.history(p,{player:wallet.account,limit:200});for(const b of own.burns)rememberBurn(b,b.from);}
+   const seen=new Set(h.burns.map(b=>b.tx)),hall=HeistBurn.hall([...h.burns,...save.live.burns.filter(b=>!seen.has(b.tx))]);
    set('lvAll',f(hall.total));if(wallet.account)set('lvMine',f(save.live.burns.filter(x=>x.from===wallet.account).reduce((a,b)=>a+BigInt(b.amount),0n)));
    if($('hallList'))$('hallList').innerHTML=hall.rows.length?hall.rows.slice(0,10).map(r=>'<li><b>'+escape(r.friendId?'FRIEND #'+r.friendId:HeistIdentity.short(r.from))+'</b><span>'+escape(f(r.amount))+'</span><small>'+r.count+' BURN'+(r.count>1?'S':'')+'</small></li>').join(''):'<li>No Rare Heist burns yet. The first name here is yours to take.</li>';
-   if($('lvStatus'))$('lvStatus').textContent='Read at block '+parseInt(h.block,16)+'. '+h.burns.length+' tagged burn'+(h.burns.length===1?'':'s')+(h.truncated?' (latest 200)':'')+'.';if(loud)showLive();}
+   set('hallNote',h.truncated?'Showing tagged burns among the latest 200 transfers to dEaD. Older global transfers are omitted.':'Showing tagged burns from the complete dEaD transfer history.');
+   if(save.live.pending)set('lvStatus',pendingText()+' Press CHECK AGAIN to retry.');else set('lvStatus','Read at block '+parseInt(h.block,16)+'. '+h.burns.length+' tagged burn'+(h.burns.length===1?'':'s')+(h.truncated?' (latest 200)':'')+'.');
+   if(loud||pendingResult==='confirmed'||pendingResult==='failed')showLive();}
   catch(e){if($('lvStatus'))$('lvStatus').textContent=/fetch|network|timed out|reach/i.test(e.message)?'Robinhood Chain is not reachable from this network right now. Press RESTORE FROM CHAIN to retry.':'Could not read the chain: '+e.message;}}
  function confirmBurn(id){const it=HeistBurn.byId(id);if(!it)return;const amount=it.any?String($('ashAmount')?.value||'').trim():String(it.rf);
-  try{HeistBurn.units(amount,18);}catch(e){toast(e.message);return;}
-  modal('BURN REAL RF?','<p><b>'+escape(it.name)+'</b> for <b>'+escape(amount)+' RF</b>, burned for good.</p><ul class="burnfacts"><li>Sent from '+escape(wallet.account?HeistIdentity.short(wallet.account):'your wallet')+' to 0x000000000000000000000000000000000000dEaD. No one holds that key.</li><li>No refund. Nobody receives it: not the developer, not a creator, not a prize pool.</li><li>Cosmetic only. It changes no rule, stat or score.</li><li>Your wallet shows an RF transfer to 0x…dEaD. Check the amount before you confirm.</li></ul><label class="check"><input type="checkbox" id="burnAgree"> I understand this burns real RF forever.</label><div class="toolbar"><button id="burnGo" class="burn" disabled>BURN '+escape(amount)+' RF</button><button id="burnCancel">CANCEL</button></div><p class="note" id="burnStatus"></p>');
-  $('burnAgree').onchange=()=>{$('burnGo').disabled=!$('burnAgree').checked;};$('burnCancel').onclick=()=>$('modal').close();
-  $('burnGo').onclick=async()=>{const say=t=>{if($('burnStatus'))$('burnStatus').textContent=t;};$('burnGo').disabled=true;$('burnAgree').disabled=true;
-   try{if(!wallet.account){say('Connecting wallet...');await connectWallet();}say('Confirm the burn in your wallet...');
-    const friendId=owned?hero.tokenId:null,r=await HeistBurn.burn(wallet.provider,{account:wallet.account,item:it.id,amount,friendId,onSent:tx=>say('Sent '+HeistIdentity.short(tx)+'. Waiting for Robinhood Chain...')});
-    rememberBurn({...r,from:wallet.account});if(it.kind==='theme'){save.theme=it.id;applyTheme();}if(it.kind==='trail')save.trail=true;persist();
+  try{const value=HeistBurn.units(amount,18);if(it.any&&value<10n**18n)throw Error('Tribute must be at least 1 RF');}catch(e){toast(e.message);return;}
+  const pending=save.live.pending;
+  modal('BURN REAL RF?','<p><b>'+escape(it.name)+'</b> for <b>'+escape(amount)+' RF</b>, burned for good.</p>'+(pending?'<p class="note">A previous transaction is still pending: '+escape(pending.tx)+'. Check it before any new burn can be sent.</p>':'')+'<ul class="burnfacts"><li>Sent from '+escape(wallet.account?HeistIdentity.short(wallet.account):'your wallet')+' to 0x000000000000000000000000000000000000dEaD. No one holds that key.</li><li>No refund. Nobody receives it: not the developer, not a creator, not a prize pool.</li><li>Cosmetic only. It changes no rule, stat or score.</li><li>Your wallet shows an RF transfer to 0x…dEaD. Check the amount before you confirm.</li></ul><label class="check"><input type="checkbox" id="burnAgree"> I understand this burns real RF forever.</label><div class="toolbar"><button id="burnGo" class="burn" disabled>BURN '+escape(amount)+' RF</button><button id="burnCheck" '+(pending?'':'hidden')+'>CHECK AGAIN</button><button id="burnCancel">CANCEL</button></div><p class="note" id="burnStatus"></p>');
+  $('burnAgree').onchange=()=>{$('burnGo').disabled=!$('burnAgree').checked;};$('burnCancel').onclick=()=>$('modal').close();$('burnCheck').onclick=()=>checkPending();
+  $('burnGo').onclick=async()=>{const say=t=>{if($('burnStatus'))$('burnStatus').textContent=t;};if(save.live.pending){say(pendingText()+' Use CHECK AGAIN or confirm that you replaced/cancelled it in your wallet.');$('burnCheck').hidden=false;return;}$('burnGo').disabled=true;$('burnAgree').disabled=true;
+   try{if(!wallet.account){say('Connecting wallet...');await connectWallet();}const from=HeistIdentity.address(wallet.account),friendId=owned?hero.tokenId:null;say('Confirm the burn in your wallet...');
+    const r=await HeistBurn.burn(wallet.provider,{account:from,item:it.id,amount,friendId,onSent:(tx,meta)=>{savePending({...meta,tx,from},amount);$('burnCheck').hidden=false;say('Pending transaction '+tx+'. Waiting for Robinhood Chain; do not send another burn.');}});
+    rememberBurn({...r,from},from);if(save.live.pending?.tx===r.tx){save.live.pending=null;persist();}applyBurnItem(it.id);persist();
     $('modal').close();showLive();toast('Burned '+HeistIdentity.formatRF(r.amount,r.decimals)+' RF on chain. '+(it.any?'Your name is in the Hall of Ash.':it.name+' unlocked.'));}
-   catch(e){say((e.code===4001||/reject|denied/i.test(e.message)?'Cancelled in the wallet. Nothing was burned.':e.message)+(e.tx?' TX '+HeistIdentity.short(e.tx):''));$('burnAgree').disabled=false;$('burnGo').disabled=!$('burnAgree').checked;}};}
+   catch(e){if(e.tx&&save.live.pending?.tx===String(e.tx).toLowerCase())await checkPending({rerender:false});const pendingNow=save.live.pending;if(pendingNow){say(pendingText(pendingNow)+' Press CHECK AGAIN to check the receipt. No new BURN can be sent while it is pending.');$('burnCheck').hidden=false;$('burnAgree').disabled=false;$('burnGo').disabled=!$('burnAgree').checked;}
+    else{say((e.code===4001||/reject|denied/i.test(e.message)?'Cancelled in the wallet. Nothing was burned.':e.message)+(e.tx?' TX '+e.tx:''));$('burnAgree').disabled=false;$('burnGo').disabled=!$('burnAgree').checked;}}};}
  async function readRF(){const st=$('rfStatus');if(!st)return;st.textContent='Reading Robinhood Chain...';try{const p=wallet.provider&&wallet.account?wallet.provider:HeistIdentity.rpcProvider();const r=await HeistIdentity.rfBalances(p,{account:wallet.account,tokenId:hero.tokenId});if(!$('rfStatus'))return;const f=v=>HeistIdentity.formatRF(v,r.decimals)+' RF';$('rfAccount').textContent=r.accountRF!=null?f(r.accountRF):'CONNECT';$('rfFriend').textContent=f(r.friendRF);$('rfTba').textContent=HeistIdentity.short(r.friendWallet);st.textContent='Read at block '+parseInt(r.block,16)+'. RF token '+HeistIdentity.short(r.token)+'.';}catch(e){if($('rfStatus'))$('rfStatus').textContent=/fetch|network|timed out/i.test(e.message)?'Robinhood Chain is not reachable from this network right now. Press READ RF to retry.':'Could not read RF: '+e.message;}}
  function applyTheme(){document.body.style.backgroundImage=save.theme==='lilac'?'repeating-linear-gradient(45deg,#000 0,#000 1px,#fff 1px,#fff 5px)':save.theme==='citrus'?'radial-gradient(#ccff00 1px,#fff 1px)':'';}
  function download(name,body,type){const u=URL.createObjectURL(new Blob([body],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}

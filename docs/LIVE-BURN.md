@@ -28,6 +28,14 @@ LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this
 
 7. Wait for **Sent … Waiting for Robinhood Chain…**, then the toast **Burned 1.00 RF on chain**.
 
+## Pending transactions
+
+If a burn is not confirmed within 180 seconds, Rare Heist keeps its transaction hash, sender and item in memory and local storage. The page shows the full hash and **CHECK AGAIN**. Reloading the page checks the receipt for that same hash before another burn can be sent. Do not confirm another burn while one is pending.
+
+- A successful receipt that proves the RF transfer unlocks the item.
+- A failed receipt clears the pending state and reports that no RF was burned.
+- If you replaced or cancelled the transaction in your wallet, use **I replaced/cancelled it in my wallet — forget this tx** and confirm. The warning explains that RF will still burn if the original transaction later succeeds.
+
 ## What to verify
 
 | Where | Expected |
@@ -47,7 +55,7 @@ Reload the page, return to LIVE BURN and press **RESTORE FROM CHAIN**. The burn 
 |---|---|
 | "Cancelled in the wallet. Nothing was burned." | You rejected the request. |
 | "Not enough RF in this wallet" | Checked before the wallet is asked. Nothing was sent. |
-| "Sent, but not confirmed yet" | The transaction is still pending. Press RESTORE FROM CHAIN later. |
+| Pending transaction hash and **CHECK AGAIN** | The transaction is still pending. Check the receipt for that hash; do not send another burn. |
 | "Robinhood Chain is not reachable" | The public RPC did not answer. Retry. |
 | RESTORE finds nothing, but the explorer shows the burn | The wallet's RPC limits `eth_getLogs` from block 0. The unlock is still saved from the receipt on the device that burned. |
 

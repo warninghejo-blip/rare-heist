@@ -81,6 +81,27 @@
   return {owner:'0x'+ownerWord.toString(16).padStart(40,'0'),generation:Number(words(ge,1)[0])};
  }
  async function block(p){const b=await request(p,'eth_blockNumber');if(typeof b!=='string'||!/^0x[0-9a-f]+$/i.test(b))throw Error('Invalid block');return b;}
+ // Split large eth_getLogs requests by block range when an RPC rejects them or
+ // silently caps a response at 10,000 logs. Ranges are disjoint and read oldest first.
+ async function getLogs(p,filter){
+  const from=BigInt(filter.fromBlock??'0x0'),to=BigInt(filter.toBlock??await request(p,'eth_blockNumber'));
+  if(from>to)return [];
+  const out=[];
+  async function readRange(first,last){
+   let logs;
+   try{logs=await request(p,'eth_getLogs',[{...filter,fromBlock:'0x'+first.toString(16),toBlock:'0x'+last.toString(16)}],45000);}
+   catch(e){
+    const msg=String(e?.message||e);
+    if(first===last||!/exceeds?\s+(?:the\s+)?limit|more than\s+\d+|too many results|response size|block range|range too (?:wide|large)|query returned|limit of\s+\d+/i.test(msg))throw e;
+    const mid=(first+last)>>1n;await readRange(first,mid);await readRange(mid+1n,last);return;
+   }
+   if(!Array.isArray(logs))throw Error('Invalid eth_getLogs response');
+   // Some RPCs return the first 10,000 without an error. Split at that boundary too.
+   if(logs.length>=10000&&first<last){const mid=(first+last)>>1n;await readRange(first,mid);await readRange(mid+1n,last);return;}
+   out.push(...logs);
+  }
+  await readRange(from,to);return out;
+ }
  // One token, checked against the connected account (manual ID entry and re-checks).
  async function read(p,id,{connect:ask=false,...opts}={}){
   const n=token(id);let player;
@@ -145,5 +166,5 @@
   return out;
  }
  function formatRF(v,dec=18){const d=10n**BigInt(dec),whole=v/d,frac=(v%d)*100n/d;return whole.toLocaleString('en-US')+'.'+String(frac).padStart(2,'0');}
- return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview});
+ return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview,getLogs});
 });
