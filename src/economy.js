@@ -52,5 +52,14 @@
  function format(v){if(!Number.isSafeInteger(v))return '—';return (v/UNIT).toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');}
  function serialize(s){return {v:1,events:s.events.map(e=>({...e}))};}
  function receipt(s){return {mode:'SIMULATED',unit:'micro-RF',initial:INITIAL,player:s.balance,creatorBalances:{...s.creators},burned:s.burned,treasury:s.treasury,total:s.balance+Object.values(s.creators).reduce((a,b)=>a+b,0)+s.burned+s.treasury,conserved:conserved(s),owned:[...s.owned],events:s.events.map(e=>({...e}))};}
- return Object.freeze({UNIT,INITIAL,MAX_EVENTS,CATALOG,initial,validateEvent,apply,restore,conserved,split,format,serialize,receipt});
+  // RF ECONOMY calculator: a projection from editable assumptions, never a result. Plain RF numbers, no chain access.
+ // total = days x players x (burnPct% x avgBurn + bountyPct% x avgBounty). Negative or invalid inputs count as 0.
+ // Optional term: stakes = days x stake rounds a day x entrants x STAKES.amount x share of rounds that end with a winner x 30%.
+ function project({players=0,burnPct=0,avgBurn=0,bountyPct=0,avgBounty=0,days=30,stakeRounds=0,stakeEntrants=0,stakeWinPct=0}={}){const n=(v,max)=>{v=Number(v);return Number.isFinite(v)&&v>0?Math.min(v,max):0;};const P=n(players,1e8),d=n(days,3660),items=d*P*n(burnPct,100)/100*n(avgBurn,1e9),bounty=d*P*n(bountyPct,100)/100*n(avgBounty,1e9),stakes=d*n(stakeRounds,1e6)*n(stakeEntrants,1e4)*STAKES.amount*n(stakeWinPct,100)/100*STAKES.burnPct/100;return {items,bounty,stakes,total:items+bounty+stakes};}
+ // LAST HEIST STAKE ROUNDS (DEMO, server-side ledger in server/stakes.mjs; production design in docs/STAKES.md).
+ // One fixed stake per session per round; the winner takes 70% of the pot, 30% is burned; a per-session daily
+ // allowance refills to 200 DEMO RF. Whole DEMO RF (not micro-RF): the server ledger is integer DEMO RF.
+ const STAKES=Object.freeze({amount:50,winnerPct:70,burnPct:30,allowance:200,unit:'DEMO RF'});
+ function stakeSplit(pot){if(!Number.isSafeInteger(pot)||pot<0)throw Error('Invalid pot');const winner=Math.floor(pot*STAKES.winnerPct/100);return {pot,winner,burned:pot-winner};}
+ return Object.freeze({project,STAKES,stakeSplit,UNIT,INITIAL,MAX_EVENTS,CATALOG,initial,validateEvent,apply,restore,conserved,split,format,serialize,receipt});
 });

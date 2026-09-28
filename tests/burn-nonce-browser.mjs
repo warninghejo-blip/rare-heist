@@ -47,8 +47,8 @@ async function setup(){
 }
 async function begin(p,item='lilac'){
  await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();
- await p.waitForFunction(()=>globalThis.__sendCalls>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,modal:document.getElementById('modal').open,go:document.getElementById('burnGo')?.disabled,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));console.log('BEGIN REQUEST DEBUG',JSON.stringify(state));throw e;});
- await p.waitForFunction(()=>globalThis.__txs?.length>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,txs:window.__txs?.length,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));console.log('BEGIN DEBUG',JSON.stringify(state));throw e;});
+ await p.waitForFunction(()=>globalThis.__sendCalls>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,modal:document.getElementById('modal').open,go:document.getElementById('burnGo')?.disabled,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));console.log('BEGIN REQUEST DEBUG',JSON.stringify(state));throw e;});
+ await p.waitForFunction(()=>globalThis.__txs?.length>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,txs:window.__txs?.length,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));console.log('BEGIN DEBUG',JSON.stringify(state));throw e;});
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
@@ -59,20 +59,20 @@ try {
  setExtraBurns([wrong]);
  await p.evaluate(()=>window.__holdHash=true);
  await begin(p,'ash');
- const before=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs.length,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
+ const before=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs.length,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  check('different nonce is in a later block and uncached',BigInt(wrong.block)>BigInt(before.pending.sentBlock)&&!before.burns.some(b=>b.tx===wrong.hash),JSON.stringify(before));
  check('pending stores a nonzero nonce',Number.isInteger(before.pending.nonce)&&before.pending.nonce>0&&before.pending.nonce<=65535);
  check('sent calldata carries the saved nonce',await p.evaluate(()=>HeistBurn.parseInput(window.__txs[0].data).tag.nonce)===before.pending.nonce);
  const different=before.pending.nonce===1?2:1;wrong.input=burnInput(different);
  await p.reload();await p.waitForTimeout(350);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(700);
- const after=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,toast:document.getElementById('toast').textContent}));
+ const after=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,toast:document.getElementById('toast').textContent}));
  console.log('NONCE_MISMATCH_RESTORE',JSON.stringify(after));
  check('different nonce keeps current burn locked',after.pending?.status==='unknown-outcome'&&after.pending.nonce===before.pending.nonce);
  const matching={...wrong,hash:'0x'+(0xc002n).toString(16).padStart(64,'0'),block:'0x3f0c3a7',input:burnInput(before.pending.nonce||3)};
  setExtraBurns([wrong,matching]);
  if(after.pending)await p.locator('#burnUnknownRestore').click();
  await p.waitForTimeout(700);
- const restored=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
+ const restored=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  console.log('NONCE_MATCH_RESTORE',JSON.stringify(restored));
  check('same nonce restores current burn and clears lock',restored.pending===null&&restored.burns.some(b=>b.tx===matching.hash));
  await p.locator('nav button[data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
@@ -82,10 +82,10 @@ try {
  const legacy=await setup();
  await legacy.p.evaluate(()=>window.__holdHash=true);
  await begin(legacy.p,'ash');
- const legacyNonce=await legacy.p.evaluate(()=>{const save=JSON.parse(localStorage.getItem('rh-cutaway-v1'));const nonce=save.live.pending.nonce;delete save.live.pending.nonce;localStorage.setItem('rh-cutaway-v1',JSON.stringify(save));return nonce;});
+ const legacyNonce=await legacy.p.evaluate(()=>{const pending=JSON.parse(localStorage.getItem('rh-live-pending-v1'));const nonce=pending.nonce;delete pending.nonce;localStorage.setItem('rh-live-pending-v1',JSON.stringify(pending));return nonce;});
  legacy.setExtraBurns([{...wrong,hash:'0x'+(0xc003n).toString(16).padStart(64,'0'),input:burnInput(legacyNonce)}]);
  await legacy.p.reload();await legacy.p.waitForTimeout(350);await legacy.p.locator('#burnUnknownRestore').click();await legacy.p.waitForTimeout(700);
- const oldPending=await legacy.p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const oldPending=await legacy.p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1')));
  check('old pending without nonce stays locked even when a later tag matches',oldPending?.status==='unknown-outcome'&&oldPending.nonce===null);
  await legacy.ctx.close();
 }finally{await browser.close();}

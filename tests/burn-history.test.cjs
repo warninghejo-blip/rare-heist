@@ -48,3 +48,14 @@ test('direct Tribute rejects less than 1 RF before calling the wallet',async()=>
  assert.deepEqual(calls,[],'validation must happen before any wallet request');
  assert.match(error?.message||'',/at least 1 RF/);
 });
+
+test('player RESTORE keeps bounty receipts next to tributes and never treats them as unlocks',async()=>{
+ const rows=[['0x'+w(1),'bounty',37n*E],['0x'+w(2),'trail',25n*E],['0x'+w(3),'ash',2n*E]];
+ const logs=rows.map(([tx,,amount],i)=>({address:I.RF_TOKEN,transactionHash:tx,blockNumber:'0x'+(i+1).toString(16),logIndex:'0x0',topics:[I.TRANSFER,'0x'+w(P),'0x'+w(B.DEAD)],data:'0x'+w(amount)}));
+ const txs=new Map(rows.map(([tx,item,amount])=>[tx,{from:P,to:I.RF_TOKEN,input:B.calldata(amount,item,'3412',1)}]));
+ const provider={request:async({method,params})=>method==='eth_blockNumber'?'0x10':method==='eth_getLogs'?logs:method==='eth_getTransactionByHash'?txs.get(params[0]):null};
+ const r=await B.history(provider,{player:P});
+ assert.deepEqual(r.burns.map(b=>b.item).sort(),['ash','bounty','trail']);
+ assert.deepEqual(B.unlocked(r.burns),['trail']);
+ assert.equal(B.ashByFriend(r.burns).get('3412'),64n*E);
+});

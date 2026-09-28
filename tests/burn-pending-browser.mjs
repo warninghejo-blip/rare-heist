@@ -65,7 +65,7 @@ async function setup(){
  const ctx=await b.newContext();ctx.setDefaultTimeout(6000);
  await ctx.addInitScript(({chain,account,src})=>{
   if(window.name!=='__burnProbeInitialized'){
-   for(const key of ['rh-cutaway-v1','__burnProbeHoldReceipt','__burnProbeFailReceipt','__burnProbeTxs','__burnProbeReceiptHashes'])localStorage.removeItem(key);
+   for(const key of ['rh-cutaway-v1','rh-live-pending-v1','__burnProbeHoldReceipt','__burnProbeFailReceipt','__burnProbeTxs','__burnProbeReceiptHashes'])localStorage.removeItem(key);
    localStorage.setItem('__burnProbeHoldReceipt','true');window.name='__burnProbeInitialized';
   }
   const originalFetch=window.fetch.bind(window);window.fetch=(input,options)=>{try{const q=JSON.parse(options.body);if(q.method==='eth_getTransactionReceipt'){const hashes=JSON.parse(localStorage.getItem('__burnProbeReceiptHashes')||'[]');hashes.push(q.params[0]);localStorage.setItem('__burnProbeReceiptHashes',JSON.stringify(hashes));}}catch{}return originalFetch(input,options);};
@@ -105,14 +105,14 @@ try{
  {
   const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{const old=Date.now;Date.now=()=>old()+181000;});
   await p.waitForFunction(()=>/pending transaction|not confirmed/i.test(document.getElementById('burnStatus')?.textContent||''),null,{timeout:5000});
-  const hash=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending?.tx||'');
+  const hash=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1'))?.tx||'');
   check('timeout preserves the pending hash in localStorage',/^0x[0-9a-f]{64}$/.test(hash),hash||'no hash');
   check('timeout UI shows the full hash', !!hash&&(await p.locator('#burnStatus').innerText()).includes(hash),await p.locator('#burnStatus').innerText());
   check('timeout UI offers CHECK AGAIN',await p.locator('#burnCheck').isVisible());
   await p.locator('#burnGo').click();await p.waitForTimeout(200);
   check('timeout retry does not send a second transaction',(await sentCount(p))===1,'eth_sendTransaction count='+await sentCount(p));
   await p.locator('#burnCancel').click();await p.evaluate(()=>localStorage.setItem('__burnProbeReceiptHashes','[]'));await p.reload();await p.locator('nav button[data-route="studio"]').click();await p.waitForTimeout(300);if(await p.locator('[data-mode="live"]').count())await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
-  const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending?.tx||'');
+  const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1'))?.tx||'');
   const receiptHashes=await p.evaluate(()=>JSON.parse(localStorage.getItem('__burnProbeReceiptHashes')||'[]'));
   check('pending hash survives reload',restored===hash,restored||'no hash');
   check('reload checks the stored transaction receipt by hash',receiptHashes.includes(hash),'receipt checks='+receiptHashes.length);
@@ -120,7 +120,7 @@ try{
   if(await p.locator('#forgetPending').count()){
    await p.locator('#forgetPending').click();const text=await p.locator('#dialogContent').innerText();
    check('forget requires a warning and explicit confirmation',text.includes('still goes through')&&await p.locator('#forgetGo').isDisabled());
-   await p.locator('#forgetAgree').check();await p.locator('#forgetGo').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null,null,{timeout:3000});
+   await p.locator('#forgetAgree').check();await p.locator('#forgetGo').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1'))===null,null,{timeout:3000});
    check('confirmed forget clears pending state',!(await p.locator('#liveCheck').count()));
   }else check('forget requires a warning and explicit confirmation',false,'no pending transaction UI after reload');
   await ctx.close();
@@ -136,9 +136,9 @@ try{
  // Revert/failed receipt releases the lock with a message and no unlock record.
  {
   const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{localStorage.setItem('__burnProbeHoldReceipt','false');localStorage.setItem('__burnProbeFailReceipt','true');});
-  await p.locator('#burnCheck').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null,null,{timeout:3000});
+  await p.locator('#burnCheck').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1'))===null,null,{timeout:3000});
   const saved=await readSave(p),text=await p.locator('#toast').innerText();
-  check('failed receipt clears pending and reports no burn',saved?.live?.pending===null&&text.includes('failed on chain'),text);
+  check('failed receipt clears pending and reports no burn',await p.evaluate(()=>localStorage.getItem('rh-live-pending-v1')===null)&&text.includes('failed on chain'),text);
   check('failed receipt creates no unlock record',(saved?.live?.burns?.length||0)===0,'burns='+JSON.stringify(saved?.live?.burns||[]));
   await ctx.close();
  }

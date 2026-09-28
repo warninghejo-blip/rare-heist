@@ -35,7 +35,7 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
   try{
    if(!hostOK(req))return json(res,421,{error:'HOST',message:'Use the configured site origin.'});
    const u=new URL(req.url,'http://localhost'),p=u.pathname;
-   if(p==='/healthz'){return json(res,200,{ok:true,version:'1.9.0',storage:'sqlite',funds:'none',build:buildId});}
+   if(p==='/healthz'){return json(res,200,{ok:true,version:'1.9.0',storage:'sqlite',funds:'none',stakes:'demo',build:buildId});}
    if(!p.startsWith('/api/')){
     if(!['GET','HEAD'].includes(req.method))return json(res,405,{error:'METHOD'});
     let bytes,type='text/html; charset=utf-8';
@@ -59,8 +59,9 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
    if(resume&&req.method==='GET')return json(res,200,store.attempt(resume[1],s.player));
    if(p==='/api/session'&&req.method==='GET')return json(res,200,{...s,balance:store.balance(s.player),source:'server',siteOrigin:publicOrigin||`http://${req.headers.host}`});
    if(p==='/api/session/name'&&req.method==='POST')return json(res,200,store.rename(s.player,b.name));
-   if(p==='/api/rounds')return json(res,200,req.method==='GET'?{rounds:store.list(s.player)}:store.create(s.player,b.profile));
-   const m=p.match(/^\/api\/rounds\/([a-z0-9-]{1,40})(?:\/(enter|finish|fortify|skip|claim|edit-context|replays))?$/);if(!m)return json(res,404,{error:'NOT_FOUND'});
+   if(p==='/api/rounds')return json(res,200,req.method==='GET'?{rounds:store.list(s.player),stakes:store.stakeInfo(s.player)}:store.create(s.player,b.profile,b.stake??false));
+   if(p==='/api/stakes'&&req.method==='GET')return json(res,200,store.stakeInfo(s.player));
+   const m=p.match(/^\/api\/rounds\/([a-z0-9-]{1,40})(?:\/(enter|finish|fortify|skip|claim|stake|edit-context|replays))?$/);if(!m)return json(res,404,{error:'NOT_FOUND'});
    const [,id,action]=m;
    if(!action&&req.method==='GET')return json(res,200,store.round(id,s.player));
    if(action==='replays'&&req.method==='GET')return json(res,200,store.replays(id,s.player));
@@ -71,6 +72,7 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
    else if(action==='fortify')result=store.fortify(id,s.player,b.revision,b.change,b.actions);
    else if(action==='skip')result=store.skip(id,s.player);
    else if(action==='claim')result=store.claim(id,s.player);
+   else if(action==='stake')result=store.stake(id,s.player,b.heroId);
    else return json(res,404,{error:'NOT_FOUND'});
    json(res,200,result);
   }catch(e){const code=e.code||'SERVER';const status=['SESSION','CSRF','ORIGIN'].includes(code)?403:code==='NOT_FOUND'?404:code==='RATE_LIMIT'?429:code==='BODY_SIZE'?413:code==='SERVER'?500:409;json(res,status,{error:code,message:code==='SERVER'?'Request failed. No outcome was credited.':e.message});}

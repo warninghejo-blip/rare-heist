@@ -63,9 +63,12 @@ The thief is **your** Rare Friend: its original 16×16 frames, read from Robinho
 | | |
 |---|---|
 | **LIVE BURN (beta), real RF** | Opt-in, in the Studio. Burn real $RAREFRIENDS from your own wallet to unlock cosmetics. **100% goes to `0x…dEaD`. Nobody is paid**: no creator, developer or prize share. One plain RF `transfer`, checked from the receipt, with no approvals and no custody. |
-| **Hall of Ash** | Every Rare Heist burn carries a tag naming the item and the Friend, so the leaderboard and your unlocks are rebuilt from the chain alone. No server. |
+| **Hall of Ash and ash ranks** | Every Rare Heist burn carries a tag naming the item and the Friend, so the leaderboard, your unlocks and each Friend's **ash rank** (EMBER 1, CINDER 25, FURNACE 100, ASH LORD 500 RF) are rebuilt from the chain alone. Ranks are titles on the reveal, home card, Last Heist and results. No server. |
+| **Vault Bounty** | Anyone can burn RF (from 1) on the live Last Heist vault. Bounties are dated by block time and counted per round; the winner is titled **BOUNTY BREAKER — N RF**. Nobody is paid. |
+| **RF ECONOMY page** | Studio → RF ECONOMY: where RF goes (live sinks, no live faucets, what is simulated, what is only designed), live chain counters (burned via Rare Heist, by you, at `0x…dEaD`, total supply) and an editable "what would Rare Heist burn per month?" calculator, labelled a projection. |
 | **Real RF balances** | Your wallet, your Friend's token-bound wallet and `0x…dEaD`, read live. |
 | **Last Heist pool** | Simulated. The sponsor pool starts at 20,000 DEMO RF, 1,000 is reserved per round, and the winner is paid once. Invariant: initial = available + reserved + paid. |
+| **Last Heist stake rounds (DEMO)** | Playable, simulated. Every entrant stakes 50 DEMO RF (a guest wallet refills to 200 a day). When the clock ends the last thief standing takes 70% of the pot and 30% is burned; if fewer than two sessions cleared, every stake comes back. The lobby shows the pot, a 70/30 bar, the entrants as Friends, a settlement card ("#7730 took 245 DEMO RF · 105 DEMO RF burned") and a live "would have burned" counter. Server ledger with the invariant stakes = paid + burned + refunded + held. |
 | **DEMO Studio** | The default. Themes and a level pack for DEMO RF, with a proposed 70% creator / 20% burn / 10% developer split. |
 
 **RF costs (LIVE BURN):**
@@ -76,12 +79,14 @@ The thief is **your** Rare Friend: its original 16×16 frames, read from Robinho
 | Hatchwork | 10 RF | interface theme |
 | Signal Paper | 10 RF | interface theme |
 | The Black Archive | 50 RF | three extra heists |
-| Tribute | any amount | a place in the Hall of Ash |
+| Tribute | any amount from 1 | a place in the Hall of Ash |
+| Vault Bounty | any amount from 1 | raises the stakes on the Last Heist vault; the winner is titled BOUNTY BREAKER |
 
 All burned. No randomness, no consumables, no gameplay advantage, no payouts. DEMO stays the default on every load, as the Vibeathon rules ask, and everything a player needs is free.
 
-- Rules and the on-chain design for seasons, one-Friend-one-entrant and signed settlement: **[docs/ECONOMY.md](docs/ECONOMY.md)**.
+- Rules, the flow of RF, ash ranks, bounty attribution, the calculator model and the on-chain design for seasons: **[docs/ECONOMY.md](docs/ECONOMY.md)**.
 - A first real burn, step by step: **[docs/LIVE-BURN.md](docs/LIVE-BURN.md)**.
+- Stake rounds: the DEMO rules and ledger, and the production design for real RF (escrow on Robinhood Chain, one Friend one entry, verifiable results, 30% burned in the settlement transaction, audit scope, anti-Sybil, legal note): **[docs/STAKES.md](docs/STAKES.md)**.
 
 ## Controls
 
@@ -114,10 +119,13 @@ Open `index.html` directly to play solo without a server. The GitHub Pages mirro
 | `npm test` | All 23 levels are valid engine maps, follow the cutaway rules and have a clean route without EMP. Also covers LIVE BURN encoding and receipt-forgery checks, plus a shared-mode HTTP test against the real Node/SQLite server |
 | `node --test tests/solver.test.cjs tests/solutions.test.cjs` | The in-game solver matches the reference solver on every level and proves an unbeatable vault unbeatable; every stored solution still wins with the current engine |
 | `node tests/editor-browser.mjs` | The Last Heist obstacle editor against the real server: drag and tap placement, a sealing wall is proven unbeatable and cannot be proved, a harmless one is, then proved and published |
+| `node --test tests/stakes.test.mjs` | DEMO stake rounds on the real store and API: a 50 stake from the 200 daily wallet, one stake per session per round, 70/30 settlement, refunds for uncontested, empty and never-started rounds, idempotent settlement, no negative balances, the next-day refill, 20 parallel HTTP stakes and four worker threads racing one SQLite file, and an upgrade from the previous release's database |
+| `node tests/stakes-browser.mjs` | The stake flow in the real UI against the real server: pot, 70/30 bar, Friends as entrants, the stake sheet, a staked raid, the settlement card and wallet, a refund round, the RF ECONOMY stake pipe, ledger line and calculator term, and a phone layout |
 | `node tests/campaign-browser.mjs` | Every campaign job is won through the real UI with the keyboard |
 | `node tests/travel-browser.mjs` | Click-to-travel walks real turns and stops before any step that would be seen |
 | `node tests/wallet-browser.mjs` | The whole wallet flow against a mock EIP-6963 wallet that answers like the Generations, registry and RF contracts, including LIVE BURN: confirm, burn, receipt check, unlock, Hall of Ash, rejection and not enough RF |
 | `node tests/burn-pending-browser.mjs`, `burn-inflight-browser.mjs`, `burn-unknown-browser.mjs`, `burn-restore-tribute-browser.mjs` | One burn at a time: no second transaction while a burn is pending or its outcome is unknown (wallet timeout, reload, another tab); unlocks survive restore; Tribute from 1 RF |
+| `node tests/burn-bounty-browser.mjs` | Vault Bounty and ash ranks against the real server and a mock chain with block times: per-round totals with boundary blocks, BOUNTY BREAKER, a tagged 7 RF bounty, under-1-RF refusal, the one-burn-at-a-time lock with a bounty, and the RF ECONOMY counters and calculator |
 | `cd sdk && npx friendsdk check games/rare-heist && npx friendsdk test games/rare-heist` | The FriendSDK Friend Edition is valid and passes the SDK's own browser fixture at 960 and 360 px |
 
 The trailer is made by the game itself: `trailer/` renders every scene with the real engine and renderer, and the score in `trailer/music.py` is synthesised from scratch.
@@ -126,6 +134,7 @@ The trailer is made by the game itself: `trailer/` renders every scene with the 
 
 - LIVE BURN is tested against a mock wallet and reviewed independently; Friend discovery was checked read-only against a real holder wallet on mainnet. Safari and physical phones were not tested by hand. LIVE BURN stays marked BETA.
 - The server labels attempts with a Friend ID but does not verify ownership, and guest sessions are not unique people. No real-value prize should depend on the guest version.
+- Stake rounds are DEMO only: nothing real is staked, paid or burned. The real-RF escrow is a specification, not a contract; it needs an audit and legal review first.
 - Difficulty is tuned with a solver. It has not been playtested with players.
 
 ## Credits

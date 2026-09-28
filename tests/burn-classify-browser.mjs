@@ -47,8 +47,8 @@ async function setup(){
 }
 async function begin(p,item='lilac'){
  await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();
- await p.waitForFunction(()=>globalThis.__sendCalls>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,modal:document.getElementById('modal').open,go:document.getElementById('burnGo')?.disabled,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));console.log('BEGIN REQUEST DEBUG',JSON.stringify(state));throw e;});
- await p.waitForFunction(()=>globalThis.__txs?.length>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,txs:window.__txs?.length,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));console.log('BEGIN DEBUG',JSON.stringify(state));throw e;});
+ await p.waitForFunction(()=>globalThis.__sendCalls>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,modal:document.getElementById('modal').open,go:document.getElementById('burnGo')?.disabled,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));console.log('BEGIN REQUEST DEBUG',JSON.stringify(state));throw e;});
+ await p.waitForFunction(()=>globalThis.__txs?.length>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,txs:window.__txs?.length,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));console.log('BEGIN DEBUG',JSON.stringify(state));throw e;});
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
@@ -57,44 +57,44 @@ try {
  for(const msg of ['RPC response rejected: upstream connection closed','Access denied while retrieving transaction result']) {
  const {p,ctx}=await setup();await p.evaluate(msg=>window.__postSendError=msg,msg);await begin(p);await p.waitForTimeout(300);
  if(await p.locator('#burnGo').isVisible())await p.locator('#burnGo').click();await p.waitForTimeout(300);
- const state=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs?.length,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,panel:document.getElementById('burnUnknownPanel')?.innerText||'',status:document.getElementById('burnStatus')?.textContent||''}));
+ const state=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs?.length,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),panel:document.getElementById('burnUnknownPanel')?.innerText||'',status:document.getElementById('burnStatus')?.textContent||''}));
  check('ERROR_CLASS '+msg,state.sends===1&&state.transfers===1&&state.pending?.status==='unknown-outcome'&&state.panel.includes(unknownText)&&!state.status.includes('Nothing was burned'),JSON.stringify(state));await ctx.close();
  }
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p,'ash');const firstCalls=await p.evaluate(()=>window.__sendCalls);
- const attempt=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const attempt=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1')));
  const old={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x1000',input:burnInput(10n**18n,attempt.nonce).replace('524853540102','524853540109')};
  setExtraBurns([old]);await p.reload();await p.waitForTimeout(350);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(700);
- const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null);
+ const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1'))===null);
  await p.locator('nav button[data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
  if(restored)await begin(p,'ash');else await p.locator('[data-burn="ash"]').click();
- const state=await p.evaluate(()=>({sends:window.__sendCalls,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
+ const state=await p.evaluate(()=>({sends:window.__sendCalls,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
  check('OLD_RESTORE keeps the current burn locked',firstCalls+state.sends===1&&state.pending?.status==='unknown-outcome'&&state.panel.includes(unknownText),JSON.stringify(state));await ctx.close();
  }
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p,'ash');const firstCalls=await p.evaluate(()=>window.__sendCalls);
  await p.reload();await p.waitForTimeout(350);
- const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1')));
  const fresh={hash:'0x'+(0xd001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x'+(BigInt(pending.sentBlock)+1n).toString(16),input:burnInput(10n**18n,pending.nonce).replace('524853540102','524853540109')};
- setExtraBurns([fresh]);await p.locator('#burnUnknownRestore').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null).catch(()=>{});
- const state=await p.evaluate(()=>({sends:window.__sendCalls,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
+ setExtraBurns([fresh]);await p.locator('#burnUnknownRestore').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1'))===null).catch(()=>{});
+ const state=await p.evaluate(()=>({sends:window.__sendCalls,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  check('NEW_RESTORE accepts a new matching burn after sentBlock',state.pending===null&&state.burns.some(b=>b.tx===fresh.hash)&&firstCalls+state.sends===1,JSON.stringify(state));await ctx.close();
  }
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p,'ash');await p.reload();await p.waitForTimeout(350);
- const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1')));
  const cached={hash:'0x'+(0xd003n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x'+(BigInt(pending.sentBlock)+1n).toString(16),input:burnInput(10n**18n,pending.nonce).replace('524853540102','524853540109')};
  setExtraBurns([cached]);await p.evaluate(row=>{const save=JSON.parse(localStorage.getItem('rh-cutaway-v1'));save.live.burns.push(row);localStorage.setItem('rh-cutaway-v1',JSON.stringify(save));},{tx:cached.hash,block:cached.block,from:cached.from,item:'ash',amount:cached.amount.toString(),friendId:null});
  await p.reload();await p.waitForTimeout(350);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(500);
- const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
+ const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
  check('CACHED_RESTORE cannot reuse an already recorded hash',state.pending?.status==='unknown-outcome'&&state.panel.includes(unknownText),JSON.stringify(state));await ctx.close();
  }
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>{window.__holdHash=true;window.__missingHead=true;});await begin(p,'ash');await p.reload();await p.waitForTimeout(350);
- const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-live-pending-v1')));
  const fresh={hash:'0x'+(0xd002n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x3f0c3a6',input:burnInput(10n**18n,pending.nonce).replace('524853540102','524853540109')};
  setExtraBurns([fresh]);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(500);
- const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
+ const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
  check('MISSING_HEAD cannot release an unknown burn',state.pending?.status==='unknown-outcome'&&state.pending.sentBlock===null&&state.panel.includes(unknownText),JSON.stringify(state));await ctx.close();
  }
 }finally{await browser.close();}

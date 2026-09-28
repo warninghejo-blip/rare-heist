@@ -30,7 +30,7 @@ LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this
 
 ## Pending transactions
 
-Before opening the wallet request, Rare Heist generates a random nonzero 16-bit attempt nonce, saves it in an `awaiting-wallet` pending state and blocks burns in every open window. The nonce occupies the two formerly zero bytes after the item code in the 32-byte calldata tag. Once the wallet returns a transaction hash, it stores that hash, sender and item. If a burn is not confirmed within 180 seconds, the page shows the full hash and **CHECK AGAIN**. Reloading with a hash checks that same receipt before another burn can be sent. Do not confirm another burn while one is pending.
+Before opening the wallet request, Rare Heist takes a browser Web Lock shared by tabs of the same origin. Under that lock it checks local storage again, generates a random nonzero 16-bit attempt nonce, and saves an `awaiting-wallet` pending state. The lock is stored in the dedicated `rh-live-pending-v1` localStorage key; ordinary game saves in `rh-cutaway-v1` never write or remove it. Older locks in `rh-cutaway-v1.live.pending` move to the dedicated key when the game loads. It holds the Web Lock until the wallet returns a hash or an error is handled. If another tab is sending, the confirmation says “Another tab is sending a burn. Finish or reject it there first.” If Web Locks are unavailable, LIVE BURN refuses to send and asks for a current browser. The nonce occupies the two formerly zero bytes after the item code in the 32-byte calldata tag. Once the wallet returns a transaction hash, it stores that hash, sender and item. If a burn is not confirmed within 180 seconds, the page shows the full hash and **CHECK AGAIN**. Reloading with a hash checks that same receipt before another burn can be sent. Do not confirm another burn while one is pending.
 
 If the wallet request times out or has a network error after `eth_sendTransaction` starts, Rare Heist cannot know whether the wallet sent it. The lock stays in place and a single **UNKNOWN OUTCOME** panel appears on every screen and in every tab. Reloading while the request has no hash, or opening the game while another tab owns that lock, shows the same panel. Its exact message is: “We don't know if your wallet sent the burn. Check your wallet's activity before trying again.”
 
@@ -55,6 +55,10 @@ If the wallet request times out or has a network error after `eth_sendTransactio
 | Block explorer, input data | ends with 32 bytes starting `52485354 01 09`: `RHST`, version 1, item 9 (tribute), then a two-byte attempt nonce |
 
 Reload the page, return to LIVE BURN and press **RESTORE FROM CHAIN**. The burn should come back from the chain alone.
+
+### Vault Bounty
+
+On the Last Heist page (online build), press **BURN A BOUNTY**, enter `1`, **CONTINUE**, then confirm as above. The input data tag starts `52485354 01 0a` (item 10, bounty). After the receipt, the round's banner adds 1.00 RF (it re-reads the chain right after the receipt), your Friend's ash grows by 1 RF, and nothing unlocks. While this bounty is pending or its outcome is unknown, no other burn (bounty, Tribute or cosmetic) can be sent.
 
 ## If something goes wrong
 

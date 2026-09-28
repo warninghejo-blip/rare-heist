@@ -12,13 +12,14 @@ export class DemoFunding {
    // Preserve old DEMO obligations during an upgrade; never silently discard them.
    initial=Math.max(initial,committed);
    db.prepare('INSERT INTO sponsor_budget VALUES(1,?,?)').run(initial,initial);
-   for(const r of rounds){const status=r.prizeClaimed?'paid':r.phase==='finished'&&r.outcome!=='winner'?'released':'reserved';
+   for(const r of rounds){if(!(r.prize>0))continue;const status=r.prizeClaimed?'paid':r.phase==='finished'&&r.outcome!=='winner'?'released':'reserved';
     db.prepare('INSERT INTO prize_reservations VALUES(?,?,?)').run(r.id,r.prize,status);
     if(status!=='released')db.prepare('UPDATE sponsor_budget SET available=available-? WHERE id=1').run(r.prize);
    }
   }
  }
  reserve(r) {
+  if(!(r.prize>0))return; // DEMO stake rounds carry no sponsor prize (server/stakes.mjs holds their pot)
   if(this.db.prepare('SELECT round_id FROM prize_reservations WHERE round_id=?').get(r.id))return;
   const x=this.db.prepare('UPDATE sponsor_budget SET available=available-? WHERE id=1 AND available>=?').run(r.prize,r.prize);
   if(x.changes!==1)throw Object.assign(Error('The finite DEMO sponsor budget is fully committed. Existing prizes remain reserved.'),{code:'DEMO_BUDGET'});

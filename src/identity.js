@@ -12,7 +12,7 @@
  // Offered only if the wallet does not know the network yet (wallet_addEthereumChain).
  const CHAIN_PARAMS=Object.freeze({chainId:MANIFEST.chainHex,chainName:'Robinhood Chain',nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18},rpcUrls:[MANIFEST.rpcUrl]});
  const FAMILIES=['Skeleton','Mask','Family','Cellular','Asymmetry','Hoverer','Colossus','Sparkling','Hollow'];
- const SELECTORS=Object.freeze({owner:'6352211e',generation:'7d71dc35',family:'32bd63d1',seed:'82829f74',frames:'ead2ca3c',balance:'70a08231',tba:'0be76ed6',decimals:'313ce567'});
+ const SELECTORS=Object.freeze({owner:'6352211e',generation:'7d71dc35',family:'32bd63d1',seed:'82829f74',frames:'ead2ca3c',balance:'70a08231',tba:'0be76ed6',decimals:'313ce567',totalSupply:'18160ddd'});
  // $RAREFRIENDS (RF) ERC-20 on Robinhood Chain, from the FriendSDK Fishing deployment.
  const RF_TOKEN='0x0779369854d3EcdEA927206718FFD7730C67B71f';
  const TRANSFER='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -22,7 +22,7 @@
  function words(s,count){if(typeof s!=='string'||!new RegExp('^0x[0-9a-fA-F]{'+(64*count)+'}$').test(s))throw Error('Invalid chain response');return Array.from({length:count},(_,i)=>BigInt('0x'+s.slice(2+64*i,66+64*i)));}
  function address(s){if(typeof s!=='string'||!/^0x[\da-f]{40}$/i.test(s))throw Error('Invalid wallet account');return s.toLowerCase();}
  const short=a=>a?a.slice(0,6)+'…'+a.slice(-4):'';
- const WALLET_METHODS=['eth_chainId','eth_blockNumber','eth_accounts','eth_requestAccounts','eth_call','eth_getLogs','wallet_switchEthereumChain','wallet_addEthereumChain','eth_sendTransaction','eth_getTransactionReceipt','eth_getTransactionByHash'];
+ const WALLET_METHODS=['eth_chainId','eth_blockNumber','eth_accounts','eth_requestAccounts','eth_call','eth_getLogs','wallet_switchEthereumChain','wallet_addEthereumChain','eth_sendTransaction','eth_getTransactionReceipt','eth_getTransactionByHash','eth_getBlockByNumber'];
  async function request(p,method,params,timeout=15000){
   if(!p||typeof p.request!=='function')throw Error('No browser wallet found. Install one, or play as a guest.');
   if(!WALLET_METHODS.includes(method))throw Error('Forbidden wallet action');
@@ -30,7 +30,7 @@
  }
  // Public RPC for reads without a wallet (PREVIEW, VIEW HOLDER, Hall of Ash). Never ownership claims.
  async function rpc(method,params,{fetchImpl=globalThis.fetch,timeout=15000,retries=2}={}){
-  if(!['eth_call','eth_blockNumber','eth_chainId','eth_getLogs','eth_getTransactionReceipt','eth_getTransactionByHash'].includes(method))throw Error('Forbidden RPC method');
+  if(!['eth_call','eth_blockNumber','eth_chainId','eth_getLogs','eth_getTransactionReceipt','eth_getTransactionByHash','eth_getBlockByNumber'].includes(method))throw Error('Forbidden RPC method');
   const ctl=typeof AbortController==='function'?new AbortController():null,timer=setTimeout(()=>ctl?.abort(),timeout);
   try{const r=await fetchImpl(MANIFEST.rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:ctl?.signal});
    // The public RPC rate-limits bursts (429 seen after ~250 calls/min); one 429 must not abort a 65-call discovery.
@@ -165,6 +165,8 @@
   if(tokenId!=null){const n=token(tokenId),w=words(await call(MANIFEST.generations,SELECTORS.tba,[n]),1)[0];out.friendWallet='0x'+w.toString(16).padStart(40,'0');out.friendRF=words(await call(RF_TOKEN,SELECTORS.balance,[w]),1)[0];}
   return out;
  }
+ // RF supply, read-only: totalSupply and the balance held by 0x…dEaD (the RF ECONOMY page).
+ async function rfSupply(p){const at=await block(p),call=walletCall(p,at),w=async(sel,args)=>words(await call(RF_TOKEN,sel,args),1)[0];return {block:at,decimals:Number(await w(SELECTORS.decimals,[])),total:await w(SELECTORS.totalSupply,[]),dead:await w(SELECTORS.balance,[0xdeadn])};}
  function formatRF(v,dec=18){const d=10n**BigInt(dec),whole=v/d,frac=(v%d)*100n/d;return whole.toLocaleString('en-US')+'.'+String(frac).padStart(2,'0');}
- return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview,getLogs});
+ return Object.freeze({MANIFEST,RF_TOKEN,rfBalances,rfSupply,formatRF,rpcProvider,inspect,CHAIN_PARAMS,FAMILIES,SELECTORS,TRANSFER,token,word,words,address,short,request,rpc,providers,ensureChain,connect,sample,read,discover,preview,getLogs});
 });

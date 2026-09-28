@@ -57,7 +57,7 @@ try{
   await p.locator('[data-burn="lilac"]').click();
   if(await p.locator('#modal').evaluate(e=>e.open)){await p.locator('#burnAgree').check();await p.locator('#burnGo').click();}
   await p.waitForTimeout(200);
-  const state=await p.evaluate(()=>({sends:window.__txs?.length||0,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,toast:document.getElementById('toast').textContent,status:document.getElementById('burnStatus')?.textContent||''}));
+  const state=await p.evaluate(()=>({sends:window.__txs?.length||0,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),toast:document.getElementById('toast').textContent,status:document.getElementById('burnStatus')?.textContent||''}));
   check('B1′ hashless wallet request blocks a second burn',state.sends===1,'eth_sendTransaction count='+state.sends);
   check('B1′ awaiting-wallet pending is persisted before hash response',state.pending?.status==='awaiting-wallet'&&!state.pending.tx,JSON.stringify(state.pending));
   check('B1′ blocked action explains the wallet request',/Confirm or reject the previous burn in your wallet first/.test(state.toast+' '+state.status),state.toast+' '+state.status);
@@ -67,7 +67,7 @@ try{
   const {p,ctx}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p);
   const second=await ctx.newPage();await second.goto('file:///'+html);await second.waitForTimeout(250);await second.locator('nav button[data-route="studio"]').click();await second.waitForTimeout(200);if(await second.locator('[data-mode="live"]').count())await second.locator('[data-mode="live"]').click();await second.waitForTimeout(200);
   await second.locator('[data-burn="citrus"]').click();await second.waitForTimeout(150);
-  const state=await second.evaluate(()=>({sent:window.__txs?.length||0,toast:document.getElementById('toast').textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));
+  const state=await second.evaluate(()=>({sent:window.__txs?.length||0,toast:document.getElementById('toast').textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));
   const firstSends=await p.evaluate(()=>window.__txs?.length||0);
   check('B1′ a second window cannot send while the first wallet request is unresolved',firstSends+state.sent===1,'combined eth_sendTransaction count='+(firstSends+state.sent));
   check('B1′ the second window reads the shared hashless pending state as unknown',state.pending?.status==='awaiting-wallet'&&/We don't know if your wallet sent the burn/.test(state.toast)&&await second.locator('#burnUnknownPanel').isVisible(),state.toast+' '+JSON.stringify(state.pending));
@@ -76,25 +76,25 @@ try{
  {
   const {p,ctx}=await setup();await p.evaluate(()=>window.__reject=true);await p.locator('[data-burn="lilac"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();
   await p.waitForFunction(()=>/Cancelled in the wallet/.test(document.getElementById('burnStatus')?.textContent||''));
-  let state=await p.evaluate(()=>({sends:window.__txs?.length||0,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));
+  let state=await p.evaluate(()=>({sends:window.__txs?.length||0,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));
   check('wallet rejection without a hash releases awaiting-wallet',state.sends===0&&!state.pending,JSON.stringify(state));
   await p.evaluate(()=>window.__reject=false);await p.locator('#burnGo').click();await p.waitForFunction(()=>window.__txs?.length===1);
-  state=await p.evaluate(()=>({sends:window.__txs?.length||0,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));
+  state=await p.evaluate(()=>({sends:window.__txs?.length||0,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));
   check('a new burn can proceed after the wallet rejects the previous request',state.sends===1&&state.pending?.tx,'sends='+state.sends+' pending='+!!state.pending?.tx);await ctx.close();
  }
  {
   const {p,ctx}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p);const firstSends=await p.evaluate(()=>window.__txs?.length||0);await p.reload();
   await p.locator('nav button[data-route="studio"]').click();await p.waitForTimeout(200);if(await p.locator('[data-mode="live"]').count())await p.locator('[data-mode="live"]').click();await p.waitForTimeout(1800);
-  const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,status:document.getElementById('burnUnknownPanel')?.innerText||'',restore:!!document.getElementById('burnUnknownRestore'),sends:window.__txs?.length||0}));
+  const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),status:document.getElementById('burnUnknownPanel')?.innerText||'',restore:!!document.getElementById('burnUnknownRestore'),sends:window.__txs?.length||0}));
   check('reload preserves hashless pending as UNKNOWN OUTCOME',state.pending?.status==='unknown-outcome'&&state.status.includes("We don't know if your wallet sent the burn"),JSON.stringify(state));
   check('reload keeps RESTORE FROM CHAIN available with no second send',state.restore&&firstSends+state.sends===1,'restore='+state.restore+' sends='+(firstSends+state.sends));await ctx.close();
  }
  {
   const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{window.__pending=false;window.__wrongHash=true;});await p.waitForTimeout(1800);
-  const before=await p.evaluate(()=>({pending:!!JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns.length}));
+  const before=await p.evaluate(()=>({pending:!!JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns.length}));
   check('receipt with a mismatched hash stays pending',before.pending&&before.burns===0,JSON.stringify(before));
   await p.evaluate(()=>window.__wrongHash=false);await p.locator('#burnCheck').click();await p.waitForTimeout(300);
-  const after=await p.evaluate(()=>({pending:!!JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns.length}));
+  const after=await p.evaluate(()=>({pending:!!JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns.length}));
   check('matching receipt resolves the pending burn',!after.pending&&after.burns===1,JSON.stringify(after));await ctx.close();
  }
 }finally{await b.close();}

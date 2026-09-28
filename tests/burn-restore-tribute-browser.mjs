@@ -64,7 +64,7 @@ async function setup(){
  const ctx=await b.newContext();ctx.setDefaultTimeout(6000);
  await ctx.addInitScript(({chain,account,src})=>{
   if(window.name!=='__burnProbeInitialized'){
-   for(const key of ['rh-cutaway-v1','__burnProbeHoldReceipt','__burnProbeFailReceipt','__burnProbeTxs','__burnProbeReceiptHashes'])localStorage.removeItem(key);
+   for(const key of ['rh-cutaway-v1','rh-live-pending-v1','__burnProbeHoldReceipt','__burnProbeFailReceipt','__burnProbeTxs','__burnProbeReceiptHashes'])localStorage.removeItem(key);
    localStorage.setItem('__burnProbeHoldReceipt','true');window.name='__burnProbeInitialized';
   }
   const originalFetch=window.fetch.bind(window);window.fetch=(input,options)=>{try{const q=JSON.parse(options.body);if(q.method==='eth_getTransactionReceipt'){const hashes=JSON.parse(localStorage.getItem('__burnProbeReceiptHashes')||'[]');hashes.push(q.params[0]);localStorage.setItem('__burnProbeReceiptHashes',JSON.stringify(hashes));}}catch{}return originalFetch(input,options);};

@@ -14,7 +14,9 @@
   Object.freeze({id:'lilac',code:2,rf:10,kind:'theme',name:'HATCHWORK',text:'Dense black-and-white paper texture around the interface.'}),
   Object.freeze({id:'citrus',code:3,rf:10,kind:'theme',name:'SIGNAL PAPER',text:'Sparse lime stipple around the interface.'}),
   Object.freeze({id:'archive-pack',code:4,rf:50,kind:'pack',name:'THE BLACK ARCHIVE',text:'Three extra heists. Harder, not stronger: no gear, no stat or score boost.'}),
-  Object.freeze({id:'ash',code:9,rf:1,kind:'tribute',name:'TRIBUTE',text:'Burn any amount for your Friend\'s place in the Hall of Ash.',any:true})
+  Object.freeze({id:'ash',code:9,rf:1,kind:'tribute',name:'TRIBUTE',text:'Burn any amount for your Friend\'s place in the Hall of Ash.',any:true}),
+  // Vault Bounty: any amount from 1 RF, 100% burned, on the Last Heist vault. Recognition only: nobody is paid.
+  Object.freeze({id:'bounty',code:10,rf:1,kind:'bounty',name:'VAULT BOUNTY',text:'Burn any amount on the live Last Heist vault. The round winner is named BOUNTY BREAKER. Nobody is paid.',any:true})
  ]);
  const byId=id=>ITEMS.find(x=>x.id===id),byCode=c=>ITEMS.find(x=>x.code===c);
  const hex=(v,n=64)=>BigInt(v).toString(16).padStart(n,'0');
@@ -44,7 +46,7 @@
  async function burn(p,{account,item,amount,friendId,nonce=null,onSent,onWalletRequest,poll=1500,timeout=180000}){
   const it=byId(item);if(!it)throw Error('Unknown item');
   // Tribute has a one-RF floor. Reject it before any wallet method can prompt.
-  if(it.any&&units(amount,18)<10n**18n)throw Error('Tribute must be at least 1 RF');
+  if(it.any&&units(amount,18)<10n**18n)throw Error((it.id==='bounty'?'Bounty':'Tribute')+' must be at least 1 RF');
   const from=I.address(account);
   await I.ensureChain(p);const req=(m,a,t)=>I.request(p,m,a,t),call=caller(req),dec=await decimals(call);
   const value=it.any?units(amount,dec):price(it,dec);
@@ -79,5 +81,27 @@
  function unlocked(burns,dec=18){const set=new Set();for(const b of burns||[]){const it=byId(b.item);if(it&&!it.any&&BigInt(b.amount)>=price(it,dec))set.add(it.id);}return [...set];}
  function hall(burns){const m=new Map();let total=0n;for(const b of burns||[]){const k=b.friendId?'#'+b.friendId:b.from;const o=m.get(k)||{who:k,from:b.from,friendId:b.friendId,amount:0n,count:0};o.amount+=BigInt(b.amount);o.count++;total+=BigInt(b.amount);m.set(k,o);}return {total,rows:[...m.values()].sort((a,b)=>b.amount>a.amount?1:b.amount<a.amount?-1:0)};}
  async function deadBalance(p){const call=caller((m,a,t)=>I.request(p,m,a,t)),dec=await decimals(call);return {decimals:dec,amount:I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(DEAD)]),1)[0]};}
- return Object.freeze({DEAD,ITEMS,byId,units,newNonce,tag,readTag,calldata,parseInput,price,checkReceipt,burn,history,unlocked,hall,deadBalance});
+ // ---- Read-only attribution helpers (no transactions). Inputs are rows from history() or checked receipts. ----
+ const blockKey=b=>{if(b==null||b==='')return null;try{const n=BigInt(b);return n>=0n?n.toString():null;}catch{return null;}};
+ const once=burns=>{const seen=new Set(),out=[];for(const b of burns||[]){const k=String(b?.tx||'').toLowerCase();if(!b||!k||seen.has(k))continue;seen.add(k);out.push(b);}return out;};
+ // ASH RANKS: everything burned with a Friend's tag (any item, any sender) is that Friend's ash. Cosmetic titles only.
+ const RANKS=Object.freeze([Object.freeze({id:'ember',name:'EMBER',rf:1}),Object.freeze({id:'cinder',name:'CINDER',rf:25}),Object.freeze({id:'furnace',name:'FURNACE',rf:100}),Object.freeze({id:'ashlord',name:'ASH LORD',rf:500})]);
+ function ashByFriend(burns){const m=new Map();for(const b of once(burns)){if(!b.friendId)continue;const k=String(b.friendId);m.set(k,(m.get(k)||0n)+BigInt(b.amount));}return m;}
+ function rank(amount,dec=18){const v=BigInt(amount||0),at=r=>BigInt(r.rf)*10n**BigInt(dec);let cur=null;for(const r of RANKS)if(v>=at(r))cur=r;const next=RANKS[cur?RANKS.indexOf(cur)+1:0]||null;return {rank:cur,next,toNext:next?at(next)-v:null};}
+ // VAULT BOUNTY attribution. A round's window is [createdAt, finishedAt) in server milliseconds; an unfinished round's
+ // window is still open. A bounty burn counts toward every round whose window holds its block's timestamp (seconds).
+ function roundWindow(r){if(!r||!Number.isSafeInteger(r.createdAt)||r.createdAt<0)return null;if(r.phase!=='finished')return {start:r.createdAt,end:null};return Number.isSafeInteger(r.finishedAt)?{start:r.createdAt,end:r.finishedAt}:null;}
+ function bounties(burns,times,rounds){
+  const list=once(burns).filter(b=>b.item==='bounty'),out=new Map(),timed=[];let unknown=0;
+  for(const b of list){const t=times?.get(blockKey(b.block));if(Number.isSafeInteger(t)&&t>=0)timed.push({b,ms:t*1000});else unknown++;}
+  for(const r of rounds||[]){const w=roundWindow(r),o={amount:0n,count:0,friends:0,wallets:0,unknown};if(w){const fr=new Set(),wa=new Set();for(const {b,ms} of timed)if(ms>=w.start&&(w.end==null||ms<w.end)){o.amount+=BigInt(b.amount);o.count++;if(b.friendId)fr.add(String(b.friendId));else wa.add(String(b.from).toLowerCase());}o.friends=fr.size;o.wallets=wa.size;}out.set(r.id,o);}
+  return out;
+ }
+ // Block timestamps for attribution (eth_getBlockByNumber, read-only), newest first, at most `max` reads per call.
+ async function blockTimes(p,blocks,{known=new Map(),max=40}={}){
+  const out=new Map(known),want=[...new Set((blocks||[]).map(blockKey).filter(k=>k!=null&&!out.has(k)))].sort((a,b)=>BigInt(b)>BigInt(a)?1:-1).slice(0,max);
+  for(const k of want){const r=await I.request(p,'eth_getBlockByNumber',['0x'+BigInt(k).toString(16),false]);const ts=r?.timestamp;if(typeof ts!=='string'||!/^0x[0-9a-f]{1,12}$/i.test(ts))throw Error('Invalid block time from Robinhood Chain');out.set(k,Number(BigInt(ts)));}
+  return out;
+ }
+ return Object.freeze({DEAD,ITEMS,byId,units,newNonce,tag,readTag,calldata,parseInput,price,checkReceipt,burn,history,unlocked,hall,deadBalance,RANKS,rank,ashByFriend,roundWindow,bounties,blockTimes});
 });

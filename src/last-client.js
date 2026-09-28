@@ -10,13 +10,16 @@
    if(!r.ok)throw Object.assign(Error(b.message||b.error),{code:b.error});return b;
   }catch(e){if(e instanceof TypeError)throw Object.assign(Error('Shared server unavailable.'),{code:['http:','https:'].includes(location.protocol)?'NETWORK':'NO_SERVER'});if(e.name==='AbortError')throw Object.assign(Error('Server timed out. Your local attempt is still here.'),{code:'NETWORK'});throw e;}finally{clearTimeout(timer);}}
   async init(){this.me=await this.request('POST','/api/session');return this.me;}
-  async list(){return (await this.request('GET','/api/rounds')).rounds;}
+  // The list also carries this session's DEMO stake wallet, totals and settled stake history (this.stakeInfo).
+  async list(){const v=await this.request('GET','/api/rounds');if(v.stakes)this.stakeInfo=v.stakes;return v.rounds;}
+  async stakes(){this.stakeInfo=await this.request('GET','/api/stakes');return this.stakeInfo;}
+  stake(id,heroId){return this.request('POST',`/api/rounds/${id}/stake`,{heroId});}
   round(id){return this.request('GET','/api/rounds/'+id);}
   attempt(ticket){return this.request('GET','/api/attempts/'+ticket);}
   economy(){return this.request('GET','/api/economy');}
   replays(id){return this.request('GET',`/api/rounds/${id}/replays`);}
   context(id){return this.request('GET','/api/rounds/'+id+'/edit-context');}
-  create(profile){return this.request('POST','/api/rounds',{profile});}
+  create(profile,stake=false){return this.request('POST','/api/rounds',{profile,stake});}
   enter(id,heroId){return this.request('POST',`/api/rounds/${id}/enter`,{heroId});}
   finish(id,ticket,actions){return this.request('POST',`/api/rounds/${id}/finish`,{ticket,actions});}
   fortify(id,revision,change,actions){return this.request('POST',`/api/rounds/${id}/fortify`,{revision,change,actions});}
@@ -43,6 +46,7 @@
   }
   async fortify(id,revision,change,actions){this.data.rounds[id]=A.fortify(this.get(id),this.data.player,revision,change,actions,Date.now());this.save();return this.view(this.get(id));}
   async skip(id){this.data.rounds[id]=A.skip(this.get(id),this.data.player,Date.now());this.save();return this.view(this.get(id));}
+  async stake(){throw Object.assign(Error('Stake rounds run on the game server only.'),{code:'NO_SERVER'});}
   async claim(id){this.data.rounds[id]=A.claim(this.get(id),this.data.player,Date.now());this.save();return {round:this.view(this.get(id)),balance:Object.values(this.data.rounds).filter(r=>r.leader===this.data.player&&r.prizeClaimed).reduce((n,r)=>n+r.prize,0)};}
   async replays(id){const r=this.get(id);if(r.phase!=='finished')throw Error('Replays unlock at round end');return {round:this.view(r),records:[...this.tickets.entries()].filter(([k,t])=>t.round===id&&t.result&&t.actions).map(([k,t])=>({id:k,name:this.data.names[t.player],revision:t.revision,record:{v:1,at:new Date(r.createdAt).toISOString(),level:t.level,actions:t.actions,mode:'ghost',practice:t.result.result==='outdated',heroId:t.heroId||'3412'}}))};}
   async rename(name){this.data.names[this.data.player]=String(name).replace(/[<>\x00-\x1f]/g,'').trim().slice(0,24)||'Local Friend';this.me.name=this.data.names[this.data.player];this.save();return {name:this.me.name};}

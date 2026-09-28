@@ -695,3 +695,155 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 .hud-friend i{display:block;font-style:normal;font-size:10px;color:var(--muted)}
+
+/* ASH RANKS. Heat in a 1-bit palette: a dashed ember, a solid cinder, a lit furnace, and the ash lord wearing the
+   real-money tape. The same four steps frame the Friend on the home card and the reveal. Titles only. */
+.ashrank{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:3px 7px 3px 5px;border:1px dashed var(--signal);color:var(--signal);font-size:10px;line-height:1.2;letter-spacing:.6px;white-space:nowrap;vertical-align:middle;text-transform:uppercase}
+.ashrank i{width:8px;height:10px;flex:none;background:currentColor;clip-path:polygon(38% 0,62% 0,62% 20%,88% 20%,88% 50%,100% 50%,100% 100%,0 100%,0 50%,12% 50%,12% 20%,38% 20%)}
+.ashrank small{font-size:10px;margin-left:4px;opacity:.85}
+.ashrank.r-cinder{border-style:solid}
+.ashrank.r-furnace{background:var(--signal);color:#000;border:1px solid #000}
+.ashrank.r-ashlord{background:#000;color:var(--signal);border:2px solid var(--signal);box-shadow:3px 3px 0 #000}
+.hero-friend[data-rank="ember"]{border-style:dashed;border-color:var(--signal)}
+.hero-friend[data-rank="cinder"]{border-color:var(--signal)}
+.hero-friend[data-rank="furnace"]{border-color:var(--signal);box-shadow:6px 6px var(--signal)}
+.hero-friend[data-rank="ashlord"]{border:6px solid;border-image:var(--tape) 6;box-shadow:6px 6px var(--signal)}
+.hero-rank:empty{display:none}
+.hero-rank{grid-column:1/-1;order:4}
+.hero-rank .ashrank{margin-left:0}
+.reveal.r-ember{border:3px dashed var(--signal)}
+.reveal.r-cinder{border-color:var(--signal)}
+.reveal.r-furnace{border-color:var(--signal);box-shadow:8px 8px 0 var(--signal),16px 16px 0 #000}
+.reveal.r-ashlord{border:6px solid;border-image:var(--tape) 6}
+.reveal-facts .ashrank{margin-left:0}
+#revealAsh{display:contents}
+.res-friend .ashrank{margin:0 8px 0 0}
+.leader .ashrank,.eventlist .ashrank{margin-left:4px}
+.rankstrip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 18px;align-items:center;margin:22px 0 0;padding:12px 14px;border:2px solid var(--haze);background:var(--night)}
+.rankstrip p{font-size:12px;line-height:1.6;color:var(--muted);max-width:68ch}
+.rankstrip p b{color:#fff}
+.rankstrip p strong{color:var(--signal)}
+.rankladder{display:flex;margin:0;padding:0;list-style:none;border:2px solid #000}
+.rung{display:grid;padding:6px 10px;border-right:2px solid #000;background:var(--deep);color:var(--mist);font-size:10px;letter-spacing:.5px;min-width:72px}
+.rung:last-child{border-right:0}
+.rung b{font-size:11px;color:inherit}
+.rung.lit{background:var(--signal);color:#000}
+.rung.here{background:#000;color:var(--signal);box-shadow:inset 0 -4px 0 var(--signal)}
+/* VAULT BOUNTY on the Last Heist round: real RF, so it wears the tape once it holds any. */
+.bounty{margin:14px 0 12px;border:2px dashed var(--haze);background:var(--night);padding:12px 14px;display:grid;gap:6px}
+.bounty.hot{border:6px solid transparent;background:linear-gradient(var(--night),var(--night)) padding-box,var(--tape) border-box}
+.bounty-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
+.bounty-head strong{font-size:18px;color:#fff;letter-spacing:.2px}
+.bounty.hot .bounty-head strong{color:var(--signal)}
+.bounty p{font-size:12px;line-height:1.55;color:var(--wall);max-width:60ch}
+.bounty .note{color:var(--muted);font-size:11px}
+.bounty .toolbar{margin:4px 0 0}
+.bounty-winner{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.bounty-winner span:last-child{color:var(--muted)}
+.breaker{display:inline-block;background:var(--signal);color:#000;border:2px solid #000;padding:2px 8px;font-size:11px;letter-spacing:.5px;white-space:nowrap;box-shadow:2px 2px 0 #000}
+.pastrounds .breaker{margin-left:6px}
+.bountycard{border-style:dashed}
+#dialogContent label input#bountyAmount{display:block;width:100%;margin-top:4px;border:2px solid #000;padding:6px 8px;min-height:40px}
+/* RF ECONOMY: a pipeline, left to right. Solid lines are live on chain, dashed are simulated, dotted are only designed. */
+.econmap{margin:0 0 22px}
+.econmap h2{margin:0 0 12px}
+.econflow{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,1.6fr) minmax(170px,.9fr);align-items:stretch;gap:0}
+.econflow .node{display:grid;align-content:center;gap:4px;padding:14px;border:3px solid #000;background:var(--wall);color:#000}
+.econflow .node small{font-size:10px;letter-spacing:.6px}
+.econflow .node b{font-size:18px}
+.econflow .node span{font-size:11px;line-height:1.5}
+.econflow .furnace{background:#000;color:var(--wall);border:6px solid;border-image:var(--tape) 6}
+.econflow .furnace b{color:var(--signal);font-size:22px}
+.econflow .furnace strong{font-size:26px;color:#fff;line-height:1.1}
+.pipes{list-style:none;margin:0;padding:10px 0;display:grid;gap:8px;position:relative}
+.pipe{position:relative;margin:0 22px;padding:7px 12px;background:var(--night);border:2px solid var(--signal);display:grid;gap:1px}
+.pipe b{font-size:12px;color:#fff;letter-spacing:.4px}
+.pipe span{font-size:11px;color:var(--muted);line-height:1.4}
+.pipe::before,.pipe::after{content:"";position:absolute;top:50%;width:22px;border-top:3px solid var(--signal)}
+.pipe::before{right:100%}
+.pipe::after{left:100%}
+.pipe.future{border-style:dotted;border-color:var(--haze)}
+.pipe.future::before,.pipe.future::after{border-top-style:dotted;border-top-color:var(--haze)}
+.pipe.future b{color:var(--mist)}
+.econlanes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.lane{padding:12px 14px;display:grid;align-content:start;gap:6px;background:var(--night)}
+.lane h3{font-size:14px}
+.lane p{font-size:12px;line-height:1.55;color:var(--muted)}
+.lane p b{color:#fff}
+.lane.faucet{border:2px dashed var(--signal)}
+.lane.faucet .none{font-size:28px;color:var(--signal);line-height:1}
+.lane.sim{border:2px dashed var(--haze)}
+.lane.future{border:2px dotted var(--haze)}
+.econkey{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:11px;color:var(--muted)}
+.econkey .k::before{content:"";display:inline-block;width:26px;margin-right:7px;vertical-align:middle;border-top:3px solid var(--signal)}
+.econkey .k.sim::before{border-top:3px dashed var(--haze)}
+.econkey .k.future::before{border-top:3px dotted var(--haze)}
+.calc{margin:24px 0 0;border:3px solid #000;background:var(--night);box-shadow:6px 6px 0 #000;padding:16px 18px}
+.calchead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calchead h2{font-size:20px}
+.projection{border:2px dashed var(--signal);color:var(--signal);padding:3px 9px;font-size:11px;letter-spacing:.6px}
+.calcgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px;align-items:start}
+.calcin{display:grid;gap:10px}
+.calcin label{display:grid;gap:4px;font-size:12px;color:var(--wall)}
+.calcin input{border:2px solid #000;padding:6px 8px;min-height:40px;width:100%}
+.calcout{display:grid;gap:4px;border:2px dashed var(--signal);padding:14px 16px}
+.calcout .calcbig{font-size:40px;line-height:1.05;color:var(--signal);overflow-wrap:anywhere}
+.calcout>span:not(.calcbig){font-size:12px;color:var(--muted)}
+.calcout dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 14px;margin:10px 0 0;font-size:12px}
+.calcout dl div{display:contents}
+.calcout dt{color:var(--muted)}
+.calcout dd{margin:0;color:#fff;text-align:right}
+@media(max-width:900px){
+ .econflow{grid-template-columns:1fr}
+ .pipes{padding:14px 0}
+ .pipe{margin:0 0 0 22px}
+ .pipe::after{display:none}
+ .econlanes,.calcgrid{grid-template-columns:1fr}
+ .rankstrip{grid-template-columns:1fr}
+ .rankladder{flex-wrap:wrap}
+ .rung{flex:1}
+}
+/* DEMO STAKE ROUNDS on Last Heist. Play money, so it wears the dashed "simulated" line of the RF ECONOMY key and never
+   the striped tape of real RF. The one loud element is the pot bar: lime for the winner's 70%, black ash for the 30% burned. */
+.stakes{margin:14px 0 12px;border:2px dashed var(--mist);background:var(--night);padding:12px 14px;display:grid;gap:8px}
+.stakes-head{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between}
+.stakes-head strong{font-size:20px;color:#fff;letter-spacing:.2px}
+.demostamp{display:inline-block;border:2px dashed var(--mist);color:var(--mist);padding:1px 7px;font-size:10px;letter-spacing:.8px;white-space:nowrap}
+.stakes-rule,.stakes-wallet,.stakes-counter{font-size:12px;line-height:1.55;color:var(--wall)}
+.stakes-wallet b,.stakes-counter b{color:#fff}
+.stakes-counter b{color:var(--signal)}
+.stakes .note{margin-top:0;font-size:11px}
+.potbar{display:flex;min-height:52px;border:2px solid #000;box-shadow:3px 3px 0 #000}
+.potbar span{display:flex;flex-direction:column;justify-content:center;gap:1px;padding:5px 9px;min-width:0;font-size:10px;letter-spacing:.4px;line-height:1.2;overflow-wrap:anywhere}
+.potbar b{font-size:20px;letter-spacing:0}
+.potbar .win{background:var(--signal);color:#000}
+.potbar .ash{background:#000 var(--dots);background-size:5px 5px;color:var(--mist);border-left:2px solid #000}
+.potbar .ash b{color:#fff}
+.entrants{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.entrants li{display:inline-flex;align-items:center;gap:6px;padding:3px 8px 3px 3px;border:1px solid var(--haze);font-size:11px;color:var(--wall);max-width:100%}
+.entrants li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entrants li.you{border:2px solid var(--signal);color:#fff}
+.entrants .fchip canvas{width:24px;height:24px}
+.entrants-none{font-size:12px;color:var(--muted)}
+.settled{position:relative;background:#000;color:var(--wall);border:2px solid #000;padding:14px 12px 10px;display:grid;gap:5px;box-shadow:3px 3px 0 var(--haze)}
+.settlestamp{justify-self:start;border:2px solid var(--mist);color:var(--mist);padding:1px 8px;font-size:11px;letter-spacing:1.5px;transform:rotate(-2deg)}
+.settled.won .settlestamp{border-color:var(--signal);color:var(--signal)}
+.settled p{font-size:11px;line-height:1.5;color:var(--mist)}
+.settled .settle-big{font-size:15px;line-height:1.45;color:#fff}
+.settled .settle-big .fchip{margin-right:6px}
+.settled .pname{color:var(--signal)}
+.stakehist .fchip{margin-right:6px}
+.stakehist .fchip canvas{width:24px;height:24px}
+.section-title .demostamp{align-self:center}
+.roundlist button.stake:not(.active){background:var(--night);color:var(--wall);border:2px dashed var(--mist)}
+.pipe.sim{border-style:dashed;border-color:var(--mist)}
+.pipe.sim::before,.pipe.sim::after{border-top-style:dashed;border-top-color:var(--mist)}
+.pipe.sim b{color:var(--mist)}
+.calcopt{margin:4px 0 0;border:2px dashed var(--haze);padding:8px 12px 10px;display:grid;gap:10px;min-width:0}
+.calcopt legend{padding:0 6px;font-size:11px;letter-spacing:.5px;color:var(--mist)}
+.calcopt p{font-size:11px;color:var(--muted)}
+.lane .ledgerline{border-left:3px dashed var(--mist);padding-left:8px;font-size:11px;color:var(--wall)}
+@media(max-width:560px){
+ .potbar b{font-size:16px}
+ .stakes-head strong{font-size:17px}
+}

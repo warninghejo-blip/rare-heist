@@ -47,8 +47,8 @@ async function setup(){
 }
 async function begin(p,item='lilac'){
  await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();
- await p.waitForFunction(()=>globalThis.__sendCalls>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,modal:document.getElementById('modal').open,go:document.getElementById('burnGo')?.disabled,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));console.log('BEGIN REQUEST DEBUG',JSON.stringify(state));throw e;});
- await p.waitForFunction(()=>globalThis.__txs?.length>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,txs:window.__txs?.length,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));console.log('BEGIN DEBUG',JSON.stringify(state));throw e;});
+ await p.waitForFunction(()=>globalThis.__sendCalls>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,modal:document.getElementById('modal').open,go:document.getElementById('burnGo')?.disabled,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));console.log('BEGIN REQUEST DEBUG',JSON.stringify(state));throw e;});
+ await p.waitForFunction(()=>globalThis.__txs?.length>0).catch(async e=>{const state=await p.evaluate(()=>({calls:window.__sendCalls,txs:window.__txs?.length,status:document.getElementById('burnStatus')?.textContent,toast:document.getElementById('toast')?.textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));console.log('BEGIN DEBUG',JSON.stringify(state));throw e;});
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
@@ -59,13 +59,13 @@ try {
  setExtraBurns([old]);
  await p.evaluate(()=>window.__holdHash=true);
  await begin(p,'ash');
- const before=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs.length,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
+ const before=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs.length,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  check('old block equals head saved BEFORE current send',before.pending.sentBlock===old.block,JSON.stringify(before));
  check('old hash absent from local cache',!before.burns.some(b=>b.tx===old.hash));
  old.input=burnInput(before.pending.nonce||0);
  check('old tag has the same nonce, isolating the block boundary',old.input.slice(150,154)===before.pending.nonce?.toString(16).padStart(4,'0'));
  await p.reload();await p.waitForTimeout(350);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(700);
- const after=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,toast:document.getElementById('toast').textContent}));
+ const after=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,toast:document.getElementById('toast').textContent}));
  console.log('SAME_HEAD_RESTORE',JSON.stringify(after));
  await p.locator('nav button[data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
  if(after.pending===null)await begin(p,'ash');else await p.locator('[data-burn="ash"]').click();
