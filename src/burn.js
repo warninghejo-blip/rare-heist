@@ -49,10 +49,12 @@
   const value=it.any?units(amount,dec):price(it,dec);
   const bal=I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(from)]),1)[0];
   if(bal<value)throw Error('Not enough RF in this wallet: '+I.formatRF(bal,dec)+' RF available.');
-  onWalletRequest?.({from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec});
+  // A missing or malformed head must never be used to attribute an older burn to this request.
+  let sentBlock=null;try{const head=await req('eth_blockNumber');if(typeof head==='string'&&/^0x[0-9a-f]+$/i.test(head))sentBlock=head.toLowerCase();}catch{}
+  onWalletRequest?.({from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec,sentBlock});
   const tx=await req('eth_sendTransaction',[{from,to:I.RF_TOKEN,value:'0x0',data:calldata(value,it,friendId)}],300000);
   if(typeof tx!=='string'||!/^0x[0-9a-f]{64}$/i.test(tx))throw Error('The wallet did not return a transaction hash');
-  onSent?.(tx,{tx,from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec});
+  onSent?.(tx,{tx,from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec,sentBlock});
   for(const end=Date.now()+timeout;Date.now()<end;await wait(poll)){
    const r=await req('eth_getTransactionReceipt',[tx]).catch(()=>null);
    if(r){try{if(String(r.transactionHash||'').toLowerCase()!==tx.toLowerCase())throw Error('Receipt hash did not match the pending transaction');return {...checkReceipt(r,{from,min:value}),item:it.id,friendId:friendId==null?null:String(friendId),decimals:dec};}catch(e){e.tx=tx;throw e;}}

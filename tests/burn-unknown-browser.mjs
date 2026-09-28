@@ -102,7 +102,7 @@ try{
  }
  {
   const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdBeforeSend=true);await beginWaiting(p);const firstCalls=await p.evaluate(()=>window.__sendCalls);
-  const match={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n*10n**18n,block:'0x2000',input:burnInput()};setExtraBurns([match]);await p.reload();await p.waitForTimeout(350);
+  const match={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n*10n**18n,block:'0x3f0c3a6',input:burnInput()};setExtraBurns([match]);await p.reload();await p.waitForTimeout(350);
   const restoreAvailable=await p.locator('#burnUnknownRestore').count()>0;if(restoreAvailable){await p.locator('#burnUnknownRestore').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null,null,{timeout:7000}).catch(()=>{});}
   const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,panel:!document.getElementById('burnUnknownPanel'),calls:window.__sendCalls}));
   check('RESTORE FROM CHAIN finds the matching player burn and clears the lock',restoreAvailable&&state.pending===null&&state.burns.some(x=>x.item==='lilac'&&x.tx===match.hash.toLowerCase())&&state.panel===true&&firstCalls+state.calls===1,JSON.stringify(state));await ctx.close();
