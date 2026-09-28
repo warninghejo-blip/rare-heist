@@ -174,6 +174,17 @@ body[data-screen="play"] footer{display:none}
 .locked{display:flex;align-items:center;justify-content:space-between;gap:14px;border:2px dashed var(--haze);padding:12px 14px;background-image:var(--dots);background-size:6px 6px}
 .locked p{background:var(--deep);padding:2px 6px;font-size:12px}
 .more{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+/* Solutions: a quiet link on every job card, and one list of every level for judges. */
+.cardactions .solbtn{flex:none;align-self:center;font-size:11px;min-height:0;padding:4px 2px;white-space:nowrap}
+.solvedlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.solvedlist button{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:9px;text-align:left;text-transform:none;min-height:46px;padding:5px 9px;background:var(--deep);color:var(--wall);box-shadow:2px 2px #000;font-size:12px;line-height:1.3}
+.solvedlist i{font-style:normal;width:24px;height:24px;display:grid;place-items:center;background:var(--signal);color:#000;border:2px solid #000;font-size:10px}
+.solvedlist small{display:block;font-size:10px;color:var(--mist);letter-spacing:.5px}
+.solvedlist b{display:block;font-weight:400;overflow-wrap:anywhere}
+.solvedlist em{font-style:normal;font-size:10px;color:var(--mist);white-space:nowrap}
+.solvedlist button:hover:not(:disabled){background:var(--wall);color:#000}
+.solvedlist button:hover:not(:disabled) small,.solvedlist button:hover:not(:disabled) em{color:#000}
+.statusline .linkbtn{color:inherit;font-size:inherit;margin-left:4px}
 .more button{font-size:12px}
 
 /* ---------- Play ---------- */
@@ -267,6 +278,39 @@ body[data-editing="true"] .play-layout{grid-template-columns:minmax(0,1fr) 292px
 .editor-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;padding:10px 12px;border-top:2px solid #000;background:var(--dusk)}
 .editor-controls button{font-size:11px;min-height:36px;padding:5px 6px;box-shadow:2px 2px #000}
 .editor-controls #testRoom{grid-column:1/-1;font-size:13px;min-height:42px}
+/* ---------- Last Heist obstacle editor: pieces you drag, checks that answer ---------- */
+.editor[data-kind="fortify"] .devopts,.editor[data-kind="fortify"] .edroom>.edlabel{display:none}
+.palette.fx{gap:12px}
+.fx-lead{font-size:12px;line-height:1.5;color:var(--muted)}
+.pieces{display:flex;flex-direction:column;gap:7px}
+.palette .piece{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:9px;text-align:left;text-transform:none;min-height:58px;padding:6px 8px;background:var(--deep);color:var(--wall);border:2px solid #000;box-shadow:3px 3px #000;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.palette .piece:active:not(:disabled){cursor:grabbing}
+.piece canvas{width:44px;height:44px;image-rendering:pixelated;border:2px solid #000;background:var(--wall);display:block}
+.piece b{display:block;font-weight:400;font-size:13px;letter-spacing:.5px;color:var(--paper)}
+.piece small{display:block;font-size:11px;line-height:1.4;color:var(--mist)}
+.piece i{font-style:normal;font-size:10px;color:var(--mist);align-self:start;white-space:nowrap}
+.palette .piece:hover:not(:disabled){background:var(--wall);color:#000}
+.palette .piece:hover:not(:disabled) b,.palette .piece:hover:not(:disabled) small,.palette .piece:hover:not(:disabled) i{color:#000}
+.palette .piece.active{background:var(--signal);color:#000}
+.palette .piece.active b,.palette .piece.active small,.palette .piece.active i{color:#000}
+.palette .piece.dragging{outline:3px dashed var(--signal);outline-offset:3px;box-shadow:none}
+.face-row{display:grid;grid-template-columns:auto 1fr 1fr;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.palette .face-row button{min-height:32px;font-size:11px;padding:4px 6px;box-shadow:2px 2px #000;white-space:nowrap}
+.palette .face-row button[aria-pressed="true"]{background:var(--wall);color:#000}
+.checks{list-style:none;margin:0;padding:10px 0 0;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--haze)}
+.checks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:9px;align-items:start;font-size:12px;line-height:1.45;color:var(--mist)}
+.checks li b{font-weight:400;color:var(--paper)}
+.ck{width:24px;height:24px;border:2px solid #000;display:grid;place-items:center;font-style:normal;font-size:14px;line-height:1;background:var(--night);box-shadow:inset 0 0 0 1px var(--haze)}
+.checks li[data-s="ok"] .ck{background:var(--signal);color:#000;box-shadow:none}
+.checks li[data-s="bad"] .ck{background:#000;color:var(--signal);border-color:var(--signal);box-shadow:none}
+.checks li[data-s="bad"] b{color:var(--signal)}
+.checks li[data-s="unknown"] .ck{background:var(--mist);color:#000;box-shadow:none}
+.checks li[data-s="run"] .ck{color:var(--paper);animation:ckblink .7s steps(2,jump-none) infinite}
+@keyframes ckblink{from{background:var(--night)}to{background:var(--haze)}}
+body[data-motion="off"] .checks li[data-s="run"] .ck{animation:none}
+@media(max-height:760px){.palette .piece{min-height:46px;padding:4px 8px}.piece canvas{width:36px;height:36px}.palette .piece{grid-template-columns:36px minmax(0,1fr) auto}}
+.dragghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;border:2px solid #000;background:var(--signal);padding:3px;box-shadow:4px 4px #000}
+.dragghost canvas{display:block;width:44px;height:44px;image-rendering:pixelated}
 body[data-editing="true"] .gamehud,body[data-editing="true"] .briefbar .tools #forecast,body[data-editing="true"] .briefbar .tools #inspect,body[data-editing="true"] .briefbar .tools #pause{display:none}
 body[data-editing="true"] .boardwrap{border-top:2px solid #000}
 body[data-editing="true"] .boardwrap canvas{cursor:crosshair}
@@ -644,6 +688,11 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .palgroup div{display:flex;gap:5px}
  .palette button{white-space:nowrap;min-height:40px;padding:4px 9px}
  .editor-controls{position:sticky;bottom:0;z-index:2;box-shadow:0 -3px 0 #000}
+ /* Obstacle editor on a phone: the three pieces side by side, checks below, all visible without sideways scrolling. */
+ .palette.fx{flex-direction:column;overflow:visible}
+ .palette.fx .pieces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .palette.fx .piece{grid-template-columns:1fr;justify-items:center;text-align:center;white-space:normal;gap:4px;padding:7px 5px;min-height:0}
+ .palette.fx .piece i{align-self:center}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 .hud-friend i{display:block;font-style:normal;font-size:10px;color:var(--muted)}

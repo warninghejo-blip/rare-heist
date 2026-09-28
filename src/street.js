@@ -12,7 +12,7 @@
  const rect=P.rect,dither=P.dither,hash=P.hash,text=P.text;
  const seed=id=>{let h=7;for(const ch of id)h=(h*31+ch.charCodeAt(0))>>>0;return h;};
 
- function create(canvas){const c=canvas.getContext('2d',{alpha:false});let geo={},cam=null,lastT=null,key='',L={},pace=null;
+ function create(canvas){const c=canvas.getContext('2d',{alpha:false});let geo={},cam=null,lastT=null,key='',L={},pace=null;const touch=typeof matchMedia==='function'&&matchMedia('(hover: none) and (pointer: coarse)').matches;
   function size(){const cssW=canvas.clientWidth||960,dpr=Math.max(1,root.devicePixelRatio||1),mobile=cssW<620,zoom=Math.max(1,Math.min(Math.round((mobile?1.5:2)*dpr),Math.floor(cssW*dpr/(mobile?240:420))||1));
    return {iw:Math.max(160,Math.round(cssW*dpr/zoom)),ih:Math.round((mobile?250:300)*dpr/zoom),zoom,mobile};}
   const layer=(w,h)=>{const cv=document.createElement('canvas');cv.width=Math.max(1,Math.ceil(w));cv.height=h;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;return [cv,g];};
@@ -31,9 +31,9 @@
    // street layer (world scale F)
    const [front,g]=layer(W+2,ih);
    ground(g,d,W,ih,gy);
-   for(let i=0;i<d.doors.length;i++){const [id,name,,dx]=d.doors[i];facade(g,id,name,Math.round(dx*F),gy,i,d);}
+   const doorRects=[];for(let i=0;i<d.doors.length;i++){const [id,name,,dx]=d.doors[i];doorRects[i]=facade(g,id,name,Math.round(dx*F),gy,i,d);}
    for(let i=0;i<=d.doors.length;i++){const a=i?d.doors[i-1][3]:0,b=i<d.doors.length?d.doors[i][3]:d.width,x=Math.round((a+b)/2*F);if(x>6&&x<W-6)lamp(g,x,gy);}
-   return {sky,far,mid,front,W};}
+   return {sky,far,mid,front,W,doorRects};}
   function ground(g,d,W,ih,gy){
    if(d.id==='canal'){rect(g,0,gy,W,4,DUSK);rect(g,0,gy,W,1,MIST);rect(g,0,gy+4,W,1,INK);for(let x=0;x<W;x+=6){rect(g,x,gy-6,1,6,HAZE);}rect(g,0,gy-6,W,1,HAZE);rect(g,0,gy-3,W,1,DUSK);
     rect(g,0,gy+5,W,ih-gy-5,NIGHT);dither(g,0,gy+5,W,ih-gy-5,3,DUSK);}
@@ -50,10 +50,10 @@
     rect(g,x,top,10,bh,INK);rect(g,x+bw-10,top,10,bh,INK);brick(x+1,top+1,8,bh-1,DUSK,NIGHT);brick(x+bw-9,top+1,8,bh-1,DUSK,NIGHT);rect(g,x-2,top-4,bw+4,16,INK);rect(g,x-1,top-3,bw+2,14,DUSK);
     for(let a=0;a<bw-20;a++){const yy=Math.round(Math.sqrt(Math.max(0,1-Math.pow((a-(bw-20)/2)/((bw-20)/2),2)))*10);rect(g,x+10+a,top+12,1,10-yy,DUSK);rect(g,x+10+a,top+22-yy,1,1,INK);}
     sign(g,cx,top-1,name,1);const ax=cx-6,ay=gy-26;rect(g,cx,ay+6,1,20,INK);rect(g,ax-8,ay-2,28,10,INK);rect(g,ax-7,ay-1,26,8,SIG);text(g,d.doors.findIndex(q=>q[0]===id)===0?'<':'>',cx-2,ay,1,INK);
-    return;}
+    return {x:x+10,y:top+22,w:bw-20,h:gy-top-22,gate:true};}
    if(type==='stairs'){ // fire escape to the roofs
     rect(g,x+14,top,bw-28,bh,INK);brick(x+15,top+1,bw-30,bh-1,DUSK,NIGHT);for(let k=0;k<4;k++){const yy=top+10+k*20;rect(g,x+8,yy,bw-16,2,INK);rect(g,x+8,yy-6,1,6,INK);rect(g,x+bw-9,yy-6,1,6,INK);rect(g,x+8,yy-6,bw-16,1,INK);for(let q=0;q<9;q++)rect(g,x+18+q*((bw-40)/9)|0,yy+2+q*2,5,1,INK);}
-    sign(g,cx,top-14,name,1);return;}
+    sign(g,cx,top-14,name,1);return {x:x+14,y:gy-30,w:bw-28,h:30,gate:true};}
    // body
    const base={bank:MIST,tower:NIGHT,garage:HAZE,cinema:DUSK,studio:NIGHT,pump:DUSK,dome:MIST,kiosk:DUSK,school:DUSK}[type]||DUSK;
    rect(g,x-1,top-1,bw+2,bh+1,INK);
@@ -76,22 +76,28 @@
    // name sign, awning, door, windows
    const sy=type==='cinema'?top+4:type==='bank'?top+2:top+6;sign(g,cx,sy,name,type==='bank'||type==='studio'||type==='cinema'?1:0);
    const dw=type==='garage'?36:type==='bank'?22:18,dh=type==='garage'?26:28,dx=cx-Math.floor(dw/2),dy=gy-dh;
-   if(type==='school'||type==='cinema'||type==='kiosk'){const ay=dy-8;for(let q=x+2;q<x+bw-2;q+=6){rect(g,q,ay,6,5,(q/6|0)%2?PAPER:DUSK);rect(g,q,ay+5,6,1,INK);}rect(g,x+1,ay-1,bw-2,1,INK);}
+   if(type==='school'||type==='cinema'||type==='kiosk'){const ay=dy-12;for(let q=x+2;q<x+bw-2;q+=6){rect(g,q,ay,6,5,(q/6|0)%2?PAPER:DUSK);rect(g,q,ay+5,6,1,INK);}rect(g,x+1,ay-1,bw-2,1,INK);}
+   // door surround: an ink frame, a stone casing with a lintel, and a step
+   if(type!=='garage'){rect(g,dx-5,dy-6,dw+10,dh+6,INK);rect(g,dx-4,dy-5,dw+8,dh+5,type==='bank'||type==='dome'?PAPER:HAZE);rect(g,dx-6,dy-7,dw+12,2,INK);rect(g,dx-5,dy-6,dw+10,1,MIST);rect(g,dx-4,dy-5,1,dh+5,MIST);}
    rect(g,dx-2,dy-2,dw+4,dh+2,INK);
    if(type==='bank'){rect(g,dx,dy,dw,dh,DUSK);const r=Math.floor(dw/2)-2,cy=dy+Math.floor(dh/2);for(let yy=-r;yy<=r;yy++){const h=Math.floor(Math.sqrt(r*r-yy*yy));rect(g,cx-h,cy+yy,h*2+1,1,yy===-r||yy===r?INK:HAZE);rect(g,cx-h,cy+yy,1,1,INK);rect(g,cx+h,cy+yy,1,1,INK);}for(const [a,b] of [[0,-1],[1,0],[0,1],[-1,0]])rect(g,cx+a*(r-3),cy+b*(r-3),1,1,INK);rect(g,cx-1,cy-1,3,3,MIST);}
    else if(type==='garage'){rect(g,dx,dy,dw,dh,NIGHT);for(let yy=dy;yy<dy+dh-8;yy+=3){rect(g,dx,yy,dw,2,HAZE);rect(g,dx,yy+2,dw,1,DUSK);}dither(g,dx,dy+dh-8,dw,8,6,MIST);}
    else if(type==='tower'){rect(g,dx,dy,dw,dh,INK);for(let q=dx+2;q<dx+dw;q+=4)rect(g,q,dy,1,dh,DUSK);rect(g,dx,dy+4,dw,1,SIG);}
-   else{rect(g,dx,dy,dw,dh,type==='studio'?DUSK:NIGHT);rect(g,dx+2,dy+2,dw-4,Math.floor(dh*.45),type==='studio'?MIST:DUSK);rect(g,dx+dw-5,dy+Math.floor(dh*.55),2,2,MIST);}
-   rect(g,dx-5,gy-1,dw+10,1,MIST);
+   else{// a pair of panelled leaves under a lit transom
+    const leaf=type==='studio'?DUSK:NIGHT,panel=type==='studio'?HAZE:DUSK,tr=5;rect(g,dx,dy,dw,dh,INK);rect(g,dx+1,dy+1,dw-2,tr-1,MIST);dither(g,dx+1,dy+1,dw-2,tr-1,6,PAPER);for(let q=dx+4;q<dx+dw-2;q+=4)rect(g,q,dy+1,1,tr-1,INK);
+    const lw=Math.floor((dw-1)/2);for(const lx of [dx,dx+dw-lw]){rect(g,lx,dy+tr+1,lw,dh-tr-1,leaf);rect(g,lx+1,dy+tr+3,lw-2,Math.floor((dh-tr)*.38),panel);rect(g,lx+1,dy+tr+4+Math.floor((dh-tr)*.38),lw-2,Math.floor((dh-tr)*.34),panel);rect(g,lx+1,dy+tr+3,lw-2,1,type==='studio'?MIST:HAZE);}
+    rect(g,dx+lw-2,dy+Math.floor(dh*.58),1,2,MIST);rect(g,dx+dw-lw+1,dy+Math.floor(dh*.58),1,2,MIST);}
+   rect(g,dx-6,gy-1,dw+12,1,MIST);rect(g,dx-5,gy-2,dw+10,1,HAZE);
    if(type==='school'||type==='cinema'||type==='pump'||type==='kiosk'||type==='dome'){const wy=type==='cinema'?top+40:top+22;if(wy+14<dy-6)for(const q of [x+6,x+bw-22])win(g,q,wy,16,12,s,q,true);}
    // house number
    const nx=dx+dw+5,num=String(i+1);rect(g,nx,dy+3,num.length*6+5,11,INK);rect(g,nx+1,dy+4,num.length*6+3,9,MIST);text(g,num,nx+3,dy+5,1,INK);
    // window light on the pavement
    dither(g,dx-8,gy,dw+16,2,3,MIST);
+   return {x:dx,y:dy,w:dw,h:dh};
   }
 
   // ---- frame ----
-  function render(state,sample,time,{reduced=false}={}){
+  function render(state,sample,time,{reduced=false,hover=null}={}){
    const d=districts.find(x=>x.id===state.district)||districts[0],{iw,ih,mobile}=size();
    if(canvas.width!==iw||canvas.height!==ih){canvas.width=iw;canvas.height=ih;}c.imageSmoothingEnabled=false;
    const gy=ih-(mobile?18:22),k=key!==d.id+iw+'x'+ih;if(k){key=d.id+iw+'x'+ih;L=build(d,iw,ih,gy);cam=null;}
@@ -109,14 +115,20 @@
    if(!reduced)weatherBack(d,iw,ih,gy,time);
    c.drawImage(L.front,-camera,0);
    if(!reduced)life(d,iw,ih,gy,time,camera);
-   // doors: active glow + prompt
-   for(const q of d.doors){const x=Math.round(q[3]*F)-camera;if(x<-80||x>iw+80)continue;if(q===near){const bob=reduced?0:Math.round(Math.sin(time/220)*1.5);dither(c,x-14,gy-34,29,34,reduced?4:4+(Math.floor(time/300)%2),SIG);rect(c,x-12,gy-1,25,1,SIG);
-     const lbl='E / ENTER',w=lbl.length*6+7,by=gy-46+bob;rect(c,x-Math.floor(w/2)-1,by-1,w+2,13,INK);rect(c,x-Math.floor(w/2),by,w,11,SIG);text(c,lbl,x-Math.floor(w/2)+4,by+2,1,INK);rect(c,x-1,by+12,3,2,INK);rect(c,x,by+14,1,1,INK);}}
+   // Doors. The one you stand at opens onto a lit hall: light fills the doorway and spills onto the pavement, lime
+   // corners frame it and an ENTER tag waits above. A door under the pointer gets paper corners (click walks there).
+   d.doors.forEach((q,i)=>{const r=L.doorRects[i];if(!r)return;const x0=r.x-camera;if(x0<-80||x0>iw+80)return;const at=q===near,hov=!at&&hover===q[0];if(!at&&!hov)return;
+    const breathe=reduced?0:Math.floor(time/650)%2,bx={l:x0-6,t:r.y-8,r:x0+r.w+5,b:gy+1};
+    if(at){if(!r.gate){rect(c,x0+1,r.y+6,r.w-2,r.h-6,PAPER);dither(c,x0+1,r.y+6,r.w-2,r.h-6,5,MIST);rect(c,x0+1,r.y+6,2,r.h-6,INK);rect(c,x0+r.w-3,r.y+6,2,r.h-6,INK);}
+     for(let k=0;k<5;k++){const sp=Math.round(k*1.6);dither(c,x0-sp,gy+k,r.w+sp*2,1,k<2?6:3,PAPER);}}
+    corners(c,bx,breathe,at?SIG:PAPER);
+    if(at){const lbl=touch?'ENTER':'E  ENTER',w=lbl.length*6+7,cx=x0+Math.floor(r.w/2),by=bx.t-16-breathe;rect(c,cx-Math.floor(w/2)-1,by-1,w+2,13,INK);rect(c,cx-Math.floor(w/2),by,w,11,SIG);text(c,lbl,cx-Math.floor(w/2)+4,by+2,1,INK);rect(c,cx-2,by+12,5,1,INK);rect(c,cx-1,by+13,3,1,INK);rect(c,cx,by+14,1,1,INK);}});
    // walk target
    if(state.target!=null){const tx=Math.round(state.target*F)-camera,sx=Math.round(hx)-camera;for(let q=Math.min(tx,sx);q<Math.max(tx,sx);q+=5)rect(c,q,gy+2,2,1,SIG);rect(c,tx-2,gy+1,5,3,INK);rect(c,tx-1,gy+2,3,1,SIG);}
    // the Friend, feet on the pavement
    const fx=Math.round(hx)-camera;dither(c,fx-7,gy+1,15,2,6,INK);
-   P.sprite(c,sample,fx,gy+1,1,state.facing||'right',!!state.walking,reduced?0:Math.floor(time/105));
+   // Walking plays the walk clip; standing breathes on the idle clip at a slow, calm tempo (no look-around).
+   P.sprite(c,sample,fx,gy+1,1,state.facing||'right',!!state.walking,reduced?0:Math.floor(time/(state.walking?105:320)));
    foreground(d,iw,ih,gy,camera);
    if(!reduced)weatherFront(d,iw,ih,gy,time,camera);
    // chrome: street sign, local note, hints, edge arrows
@@ -128,6 +140,9 @@
    for(const [q,side] of [[left,-1],[right,1]]){if(side<0?camera<=0:camera>=L.W-iw)continue;if(!q){if(blink)text(c,side<0?'<':'>',side<0?4:iw-9,gy-40,1,SIG);continue;}
     const lbl=side<0?'< '+q[1]:q[1]+' >',tw=lbl.length*6+5,tx=side<0?3:iw-tw-3,ty=22,nudge=reduced?0:(Math.floor(time/400)%2)*side;rect(c,tx-1,ty-1,tw+2,13,INK);rect(c,tx,ty,tw,11,SIG);text(c,lbl,tx+3+(side<0?Math.min(0,nudge):Math.max(0,nudge)),ty+2,1,INK);}
    return geo;}
+  // Corner brackets, lime or paper over an ink outline (the same mark the building uses for things in reach).
+  function corners(g,b,off,color){const arm=5,segs=[];for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const cx=sx<0?b.l-off:b.r+off,cy=sy<0?b.t-off:b.b+off;segs.push([sx<0?cx:cx-arm+1,cy,arm,1],[cx,sy<0?cy:cy-arm+1,1,arm]);}
+   for(const [x,y,w,h] of segs)rect(g,x-1,y-1,w+2,h+2,INK);for(const [x,y,w,h] of segs)rect(g,x,y,w,h,color);}
   // Near layer at 1.3x: short props on the kerb side of the road. Never taller than the gap under the Friend.
   function foreground(d,iw,ih,gy,camera){const s=seed(d.id),base=ih-12,W=L.W*1.3;for(let i=0,x=20;x<W;i++,x+=60+Math.floor(hash(i,31,s)*70)){const sx=Math.round(x-camera*1.3);if(sx<-20||sx>iw+20)continue;const r=hash(i,32,s);
     if(d.id==='canal'){rect(c,sx-10,base-7,22,1,INK);rect(c,sx-10,base-7,1,7,INK);rect(c,sx+11,base-7,1,7,INK);rect(c,sx-10,base-4,22,1,HAZE);}

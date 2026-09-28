@@ -27,15 +27,15 @@ The thief is **your** Rare Friend: its original 16×16 frames, read from Robinho
 </tr>
 <tr>
 <td><b>Play as the Friend you own.</b><br>Connect a wallet and the game finds your hardwired Generations Friends. It reads each one's own walking frames from the chain and puts that exact character in every building. Connecting only reads: no signature, no transaction.</td>
-<td><b>Last Heist: one vault, every clear changes it.</b><br>Clear the shared vault, then add one wall, laser or camera that breaks the last winning route, and prove your version is still solvable. The server re-runs every route. The last thief standing when the clock runs out takes the prize.</td>
+<td><b>Last Heist: one vault, every clear changes it.</b><br>Clear the shared vault, then drag one wall, laser or camera from the side palette onto it. A built-in solver checks on the spot that your piece breaks the last winning route and that the vault can still be beaten; then you prove it by clearing your version yourself. The server re-runs every route. The last thief standing when the clock runs out takes the prize.</td>
 </tr>
 <tr>
 <td><img src="media/22-heists.gif" alt="Twenty-two heists solved at once"></td>
 <td><img src="media/caught.gif" alt="Spotted: one detection ends the job"></td>
 </tr>
 <tr>
-<td><b>22 handmade heists.</b><br>Five lessons, a 14-job campaign and a 3-job Black Archive. Guards on foot with flashlights, keycards, pressure plates, circuits, blackouts, vents, lockdowns and drones you hide from in a ladder hatch. Every level ships with a clean solution found by an automated solver.</td>
-<td><b>Read the clock or get caught.</b><br>INSPECT shows any device's next beats without spending a turn. Guards see three cells ahead, one in the dark, and EMP does not stop them; cut the lights or wait in a hatch. Get it wrong and the field report shows exactly what saw you, and when.</td>
+<td><b>22 handmade heists.</b><br>Five lessons, a 14-job campaign and a 3-job Black Archive. Guards on foot with flashlights, keycards, pressure plates, circuits, blackouts, vents, lockdowns and drones you hide from in a ladder hatch. Every level ships with a clean solution found by an automated solver: press WATCH SOLUTION in any job, or open the full list at the bottom of SOLO VAULTS.</td>
+<td><b>Read the clock or get caught.</b><br>INSPECT shows any device's next beats without spending a turn. Guards see three cells ahead, one in the dark, and EMP does not stop them; cut the lights or wait in a hatch. The optional INTEL folder is the security plans: take it and every patrol route, with its turn points, and every camera sweep stays drawn on the building for the rest of the job. Get it wrong and the field report shows exactly what saw you, and when.</td>
 </tr>
 </table>
 
@@ -53,7 +53,7 @@ The thief is **your** Rare Friend: its original 16×16 frames, read from Robinho
   - **PREVIEW** any Friend by token ID.
   - Paste a holder's address to see their Friends (read-only).
   - Play as a guest with the official FriendSDK samples #3412 Skeleton and #7730 Hoverer.
-- **The Friend is the star.** Picking a Friend opens a reveal with its own walking frames, #ID, family and generation. The home portrait walks through its idle and walk frames (still with MOTION OFF). Results stage it at the open exit or under a searchlight. Last Heist, the Hall of Ash and My Runs show every player as its Friend: #ID and sprite, and a Last Heist player who never set a name appears as "Friend #ID".
+- **The Friend is the star.** Picking a Friend opens a reveal with its own walking frames, #ID, family and generation. The home portrait faces you and breathes on its own idle frames (still with MOTION OFF). Results stage it at the open exit or under a searchlight. Last Heist, the Hall of Ash and My Runs show every player as its Friend: #ID and sprite, and a Last Heist player who never set a name appears as "Friend #ID".
 - **Replays show each player's own Friend.**
 
 ## Economy: real RF, burned
@@ -110,6 +110,8 @@ Open `index.html` directly to play solo without a server. The GitHub Pages mirro
 | Command | What it proves |
 |---|---|
 | `npm test` | All 23 levels are valid engine maps, follow the cutaway rules and have a clean route without EMP. Also covers LIVE BURN encoding and receipt-forgery checks, plus a shared-mode HTTP test against the real Node/SQLite server |
+| `node --test tests/solver.test.cjs tests/solutions.test.cjs` | The in-game solver matches the reference solver on every level and proves an unbeatable vault unbeatable; every stored solution still wins with the current engine |
+| `node tests/editor-browser.mjs` | The Last Heist obstacle editor against the real server: drag and tap placement, a sealing wall is proven unbeatable and cannot be proved, a harmless one is, then proved and published |
 | `node tests/campaign-browser.mjs` | Every campaign job is won through the real UI with the keyboard |
 | `node tests/travel-browser.mjs` | Click-to-travel walks real turns and stops before any step that would be seen |
 | `node tests/wallet-browser.mjs` | The whole wallet flow against a mock EIP-6963 wallet that answers like the Generations, registry and RF contracts, including LIVE BURN: confirm, burn, receipt check, unlock, Hall of Ash, rejection and not enough RF |

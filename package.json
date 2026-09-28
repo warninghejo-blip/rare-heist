@@ -7,9 +7,9 @@
     "build": "node build.mjs",
     "start": "node server/app.mjs",
     "check": "for f in src/*.js server/*.mjs; do node --check $f || exit 1; done",
-    "test": "node --test tests/levels.test.cjs tests/burn.test.cjs && node tests/server-smoke.mjs",
+    "test": "node --test tests/levels.test.cjs tests/burn.test.cjs tests/solver.test.cjs tests/solutions.test.cjs && node tests/server-smoke.mjs",
     "test:wallet": "node tests/wallet-browser.mjs",
-    "test:ui": "node tests/campaign-browser.mjs && node tests/wallet-browser.mjs && node tests/travel-browser.mjs"
+    "test:ui": "node tests/campaign-browser.mjs && node tests/wallet-browser.mjs && node tests/travel-browser.mjs && node tests/editor-browser.mjs"
   },
   "devDependencies": {
     "playwright": "^1.58.0"

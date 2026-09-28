@@ -17,7 +17,7 @@ const text=async file=>(await readFile(file,'utf8')).replace(/\r\n/g,'\n');
 
 // Pure game modules plus the UI. Not bundled: art.js (guest sample Friends), burn.js (LIVE BURN),
 // street.js (walking hub), last-heist.js / last-client.js (shared server mode).
-const LIBRARIES=['pixel-font.js','engine.js','economy.js','identity.js','cutaway-rules.js','cutaway-levels.js','cutaway-render.js','playfeel.js'];
+const LIBRARIES=['pixel-font.js','engine.js','economy.js','identity.js','cutaway-rules.js','cutaway-levels.js','solutions.js','cutaway-render.js','playfeel.js'];
 // Elements of the standalone shell that ui.js only touches outside Friend Edition (guarded by `SDK`).
 const STANDALONE_ONLY=new Set(['wallet','friend','homeWallet','about','storageWarning','streetCanvas','doorName','doorDesc','enterDoor','districtTabs','streetProgress',
  'editorTitle','editStatus','palette','editNameLabel','editName','editX','editY','editDir','editPeriod','editPhase','editCircuit','initialLightLabel','editLight',

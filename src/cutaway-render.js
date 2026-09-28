@@ -281,7 +281,7 @@
    const vents=E.positions(l,'v');if(vents.length===2){const [a,bb]=vents;const ay=Q.top[a.y]+Math.round(fh*.24),by=Q.top[bb.y]+Math.round(fh*.24);dotted(g,X(a.x)+cw/2,ay,X(bb.x)+cw/2,by,lit?HAZE:MIST,1,5);}
    for(let y=1;y<rows-1;y+=2)for(let x=1;x<cols-1;x++){
     const ch=l.map[y][x],xx=X(x),T=Q.top[y],F=T+fh,m=xx+Math.floor(cw/2);
-    if(ch==='S'){const dw=Math.max(10,Math.round(cw*.42)),dh=Math.min(fh-3,Math.round(fh*.82));rect(g,m-Math.floor(dw/2)-2,F-dh-2,dw+4,dh+2,INK);rect(g,m-Math.floor(dw/2),F-dh,dw,dh,lit?HAZE:DUSK);rect(g,m-Math.floor(dw/2),F-dh,2,dh,lit?MIST:HAZE);rect(g,m-Math.floor(dw/2)-3,F-1,dw+6,1,MIST);label(g,'IN',m,F-dh-11,PAPER,INK,'center');}
+    if(ch==='S'){entrance(g,m,T,F,lit);}
     else if(ch==='E'){const dw=Math.max(12,Math.round(cw*.5)),dh=Math.min(fh-2,Math.round(fh*.84)),dx=m-Math.floor(dw/2),dy=F-dh;
      if(!lit||!still||s.relic){const glow=still?4:4+(Math.floor(time/300)%2);dither(g,dx-5,dy-4,dw+10,dh+4,lit&&!s.relic?2:glow,SIG);}
      // trophy in hand: the EXIT becomes the objective, a lime arrow bobs over its sign
@@ -292,17 +292,16 @@
     else if(ch==='T'){trophy(g,m,F,T,s,time,still,lit);}
     else if(ch==='a'||ch==='b'){const pw=Math.max(8,Math.round(cw*.3));rect(g,m-Math.floor(pw/2),F-10,pw,10,INK);rect(g,m-Math.floor(pw/2)+1,F-9,pw-2,9,lit?MIST:HAZE);rect(g,m-Math.floor(pw/2)-1,F-11,pw+2,2,INK);
      if(!(s.keys&(ch==='a'?1:2))){const cy=F-11-12+(still?0:Math.round(Math.sin(time/300+x)));rect(g,m-6,cy,13,11,INK);rect(g,m-5,cy+1,11,9,SIG);text(g,ch,m-2,cy+2,1,INK);if(!still&&(Math.floor(time/220)+x)%9===0){rect(g,m+6,cy-2,1,3,PAPER);rect(g,m+5,cy-1,3,1,PAPER);}}}
-    else if('ABDR'.includes(ch)){const open=E.doorOpen(l,s,ch),dw=Math.max(12,Math.round(cw*.46)),dx=m-Math.floor(dw/2),dy=T+1;
-     if(!open){rect(g,dx-2,dy,dw+4,fh-1,INK);rect(g,dx,dy+1,dw,fh-2,lit?HAZE:DUSK);rect(g,dx,dy+1,1,fh-2,MIST);for(let q=dy+4;q<F-2;q+=5)rect(g,dx+2,q,dw-4,1,lit?DUSK:NIGHT);rect(g,dx+dw-3,dy+Math.floor(fh*.55),2,2,MIST);
-      const by=T+Math.round(fh*.25);rect(g,m-6,by,13,12,INK);rect(g,m-5,by+1,11,10,SIG);text(g,ch,m-2,by+3,1,INK);}
-     else{dither(g,dx,dy+2,dw,fh-3,lit?5:3,lit?HAZE:INK);rect(g,dx-2,dy,2,fh-1,INK);rect(g,dx+dw,dy,2,fh-1,INK);rect(g,dx-2,dy,dw+4,3,INK);rect(g,dx-1,dy+3,1,fh-4,MIST);rect(g,dx+dw+1,dy+3,1,fh-4,MIST);rect(g,dx,dy+2,dw,1,MIST);rect(g,m-4,dy+4,9,11,INK);rect(g,m-3,dy+5,7,9,lit?PAPER:MIST);text(g,ch,m-2,dy+6,1,INK);rect(g,m-1,dy+16,3,2,INK);rect(g,m,dy+16,1,1,SIG);}}
+    else if(ch==='A'||ch==='B')cardDoor(g,ch,E.doorOpen(l,s,ch),m,T,F,lit,time,still);
+    else if(ch==='D'||ch==='R')powerDoor(g,ch,E.doorOpen(l,s,ch),m,T,F,lit,time,still);
     else if(ch==='G'||ch==='H'){const open=E.doorOpen(l,s,ch),gw=Math.max(14,Math.round(cw*.62)),gx=m-Math.floor(gw/2),hb=open?Math.max(3,Math.round(fh*.18)):fh-2;
      rect(g,gx-1,T,gw+2,4,INK);rect(g,gx,T+1,gw,1,MIST);for(let i=0;i<5;i++){const bx=gx+Math.round(i*(gw-2)/4);rect(g,bx,T+3,2,hb,INK);rect(g,bx,T+3,1,hb,MIST);}if(!open)rect(g,gx,T+Math.floor(fh*.55),gw,2,INK);
      if(open)label(g,ch,gx-5,T+2,MIST,INK,'center');else{const by=T+Math.floor(fh*.22);rect(g,m-6,by,13,11,INK);rect(g,m-5,by+1,11,9,SIG);text(g,ch,m-2,by+2,1,INK);}}
     else if(ch==='1'||ch==='2'){const on=s.switches&(ch==='1'?1:2),by=T+Math.round(fh*.3);rect(g,m-6,by,13,15,INK);rect(g,m-5,by+1,11,13,on?SIG:PAPER);rect(g,m-3,by+3,7,9,INK);rect(g,m-2,by+(on?4:8),5,3,on?SIG:MIST);rect(g,m,by+15,1,F-by-15,INK);label(g,ch,m,by-10,PAPER,INK,'center');}
     else if(ch==='p'||ch==='P'){const held=E.held(l,s,ch==='p'?0:1),pw=Math.max(14,Math.round(cw*.62));rect(g,m-Math.floor(pw/2)-1,F-4,pw+2,4,INK);rect(g,m-Math.floor(pw/2),F-3,pw,2,held?SIG:MIST);if(held&&!still)dither(g,m-Math.floor(pw/2),F-8,pw,4,3+(Math.floor(time/250)%2),SIG);label(g,ch==='p'?'P1':'P2',m,F-15,held?SIG:PAPER,INK,'center');}
     else if(ch==='o'){const i=chips.findIndex(p=>p.x===x&&p.y===y);const dk=Math.max(12,Math.round(cw*.42));rect(g,m-Math.floor(dk/2),F-8,dk,2,INK);rect(g,m-Math.floor(dk/2)+1,F-6,1,6,INK);rect(g,m+Math.floor(dk/2)-2,F-6,1,6,INK);rect(g,m-Math.floor(dk/2),F-8,dk,1,lit?HAZE:MIST);
-     if(!(s.intel&(1<<i))){const fy=F-17;rect(g,m-5,fy,10,9,INK);rect(g,m-4,fy+1,8,7,PAPER);rect(g,m-3,fy+1,5,3,HAZE);rect(g,m-3,fy+5,6,1,INK);if(!still&&(Math.floor(time/200)+x*3)%11===0){rect(g,m+5,fy-3,1,3,SIG);rect(g,m+4,fy-2,3,1,SIG);}}}
+     // the intel: a folder of security plans, blueprint-blue with paper lines and a lime tab
+     if(!(s.intel&(1<<i))){const fy=F-18;rect(g,m-6,fy,13,10,INK);rect(g,m-5,fy+1,11,8,DUSK);for(let q=fy+3;q<fy+9;q+=2)rect(g,m-4,q,9,1,MIST);rect(g,m-1,fy+2,1,7,MIST);rect(g,m+1,fy+4,3,3,PAPER);rect(g,m+2,fy+5,1,1,DUSK);rect(g,m-6,fy-2,6,2,INK);rect(g,m-5,fy-1,4,1,SIG);if(!still&&(Math.floor(time/200)+x*3)%11===0){rect(g,m+6,fy-4,1,3,SIG);rect(g,m+5,fy-3,3,1,SIG);}}}
     else if(ch==='v'){const vw=Math.max(14,Math.round(cw*.56)),vy=T+Math.round(fh*.14),vh=10;rect(g,m-Math.floor(vw/2)-1,vy-1,vw+2,vh+2,INK);rect(g,m-Math.floor(vw/2),vy,vw,vh,MIST);for(let j=0;j<3;j++)rect(g,m-Math.floor(vw/2)+1,vy+2+j*3,vw-2,1,INK);label(g,'VENT',m,vy+vh+3,lit?INK:MIST,lit?WALL:NIGHT,'center');}
     else if(ch==='l'){const by=T+Math.round(fh*.34);if(!lit&&!still)dither(g,m-10,by-6,21,24,2+(Math.floor(time/400)%2),SIG);rect(g,m-5,by,11,14,INK);rect(g,m-4,by+1,9,12,lit?SIG:PAPER);rect(g,m-1,by+(lit?3:7),3,4,INK);label(g,'L',m,by-10,lit?PAPER:SIG,INK,'center');}
    }
@@ -310,6 +309,29 @@
     rect(g,xx,yy,size,size,INK);rect(g,xx+1,yy+1,size-2,size-2,lit?MIST:HAZE);rect(g,xx+1,yy+1,size-2,1,PAPER);for(let q=yy+Math.floor(size/3);q<yy+size-1;q+=Math.floor(size/3))rect(g,xx+1,q,size-2,1,lit?HAZE:DUSK);
     for(let i=2;i<size-2;i++)rect(g,xx+i,yy+size-1-i,1,1,INK);rect(g,xx+2,yy+2,1,1,INK);rect(g,xx+size-3,yy+2,1,1,INK);rect(g,xx+2,yy+size-3,1,1,INK);rect(g,xx+size-3,yy+size-3,1,1,INK);}
   }
+  // ---- Doors: one frame language. An ink frame and a casing on the wall; what is inside says how it opens. ----
+  // Keycard doors A/B slide apart and have a card reader (lime light while locked). Power doors D and the exit relay R
+  // are roll shutters under a lime-and-ink hazard header. Open doors show a dark doorway and the parked leaves.
+  function doorFrame(g,m,T,F,lit,dw){const dx=m-Math.floor(dw/2);rect(g,dx-3,T+1,dw+6,F-T-1,INK);rect(g,dx-2,T+2,dw+4,F-T-2,lit?HAZE:DUSK);rect(g,dx-2,T+2,dw+4,1,lit?MIST:HAZE);rect(g,dx-2,T+2,1,F-T-2,lit?MIST:HAZE);rect(g,dx,T+4,dw,F-T-4,INK);return dx;}
+  function doorway(g,dx,dw,T,F,lit){rect(g,dx,T+4,dw,F-T-4,NIGHT);dither(g,dx,F-Math.round((F-T)*.35),dw,Math.round((F-T)*.35),lit?3:2,DUSK);rect(g,dx,F-1,dw,1,lit?MIST:HAZE);}
+  function badge(g,m,y,ch,icon){const w=icon?17:13,x=m-Math.floor(w/2);rect(g,x,y,w,11,INK);rect(g,x+1,y+1,w-2,9,SIG);if(icon==='bolt')for(const [a,b] of [[4,1],[5,1],[6,1],[3,2],[4,2],[5,2],[3,3],[4,3],[2,4],[3,4],[4,4],[5,4],[6,4],[4,5],[5,5],[3,6],[4,6],[3,7],[2,8]])rect(g,x+a,y+b,1,1,INK);text(g,ch,x+w-7,y+2,1,INK);}
+  function cardDoor(g,ch,open,m,T,F,lit,time,still){const cw=Q.cw,fh=F-T,dw=Math.max(10,Math.min(Math.round(cw*.46),cw-14)),dx=doorFrame(g,m,T,F,lit,dw),lw=Math.floor((dw-1)/2),leaf=lit?MIST:HAZE,edge=lit?PAPER:MIST;
+   if(!open){for(const lx of [dx,dx+dw-lw]){rect(g,lx,T+4,lw,F-T-4,leaf);rect(g,lx,T+4,1,F-T-4,edge);const wy=T+7,wh=Math.max(3,Math.round(fh*.14));rect(g,lx+1,wy,Math.max(1,lw-2),wh,INK);if(lw>3)rect(g,lx+2,wy+1,lw-4,wh-2,NIGHT);rect(g,lx+1,F-5,lw-1,1,lit?HAZE:DUSK);}
+    rect(g,dx+lw-1,T+Math.round(fh*.5),1,3,INK);rect(g,dx+dw-lw,T+Math.round(fh*.5),1,3,INK);badge(g,m,T+Math.round(fh*.28),ch);}
+   else{doorway(g,dx,dw,T,F,lit);rect(g,dx,T+4,2,F-T-4,leaf);rect(g,dx+dw-2,T+4,2,F-T-4,leaf);rect(g,dx,T+4,1,F-T-4,edge);const px=m-4;rect(g,px,T+5,9,9,INK);rect(g,px+1,T+6,7,7,lit?PAPER:MIST);text(g,ch,px+2,T+6,1,INK);}
+   // card reader on the wall beside the door: lime light while locked, paper once your card opened it
+   const rx=dx+dw+4,ry=T+Math.round(fh*.42);if(rx+5<=m+Math.floor(cw/2)){rect(g,rx,ry,5,8,INK);rect(g,rx+1,ry+1,3,6,lit?MIST:HAZE);rect(g,rx+2,ry+2,1,2,INK);rect(g,rx+1,ry+5,3,2,INK);rect(g,rx+2,ry+5,1,1,open?PAPER:(still||Math.floor(time/700)%2?SIG:INK));}}
+  function powerDoor(g,ch,open,m,T,F,lit,time,still){const cw=Q.cw,fh=F-T,dw=Math.max(10,Math.min(Math.round(cw*.5),cw-10)),dx=doorFrame(g,m,T,F,lit,dw);
+   // hazard header across the frame
+   rect(g,dx-3,T+1,dw+6,4,INK);for(let i=0;i<dw+4;i++)if(((i+T)>>1)%2===0)rect(g,dx-2+i,T+2,1,2,SIG);
+   const slat=lit?HAZE:DUSK,body=lit?MIST:HAZE;
+   if(!open){rect(g,dx,T+5,dw,F-T-5,body);for(let q=T+7;q<F-3;q+=3)rect(g,dx,q,dw,1,slat);rect(g,dx,F-3,dw,2,INK);rect(g,m-2,F-5,5,1,INK);badge(g,m,T+Math.round(fh*.3),ch,'bolt');}
+   else{doorway(g,dx,dw,T,F,lit);rect(g,dx,T+5,dw,4,body);rect(g,dx,T+6,dw,1,slat);rect(g,dx,T+8,dw,1,INK);const px=m-4;rect(g,px,T+10,9,9,INK);rect(g,px+1,T+11,7,7,lit?PAPER:MIST);text(g,ch,px+2,T+11,1,INK);}}
+  // Entrance: a plain street door with a lit glass panel, a doormat and the IN sign.
+  function entrance(g,m,T,F,lit){const cw=Q.cw,fh=F-T,dw=Math.max(10,Math.min(Math.round(cw*.42),cw-10)),dh=Math.min(fh-3,Math.round(fh*.86)),dx=m-Math.floor(dw/2),dy=F-dh;
+   rect(g,dx-3,dy-3,dw+6,dh+3,INK);rect(g,dx-2,dy-2,dw+4,dh+2,lit?HAZE:DUSK);rect(g,dx-2,dy-2,dw+4,1,lit?MIST:HAZE);rect(g,dx,dy,dw,dh,INK);rect(g,dx+1,dy+1,dw-2,dh-1,lit?DUSK:NIGHT);
+   const gx=dx+3,gw=dw-6,gh=Math.max(4,Math.round(dh*.3));if(gw>1){rect(g,gx-1,dy+3,gw+2,gh+2,INK);rect(g,gx,dy+4,gw,gh,MIST);dither(g,gx,dy+4,gw,gh,6,PAPER);}rect(g,dx+dw-4,dy+Math.round(dh*.55),2,1,MIST);
+   rect(g,dx-4,F-1,dw+8,1,MIST);rect(g,dx-2,F-2,dw+4,1,lit?HAZE:DUSK);label(g,'IN',m,dy-13,PAPER,INK,'center');}
   function trophy(g,m,F,T,s,time,still,lit){const cw=Q.cw,fh=Q.fh,pw=Math.max(12,Math.round(cw*.42)),ph=Math.max(7,Math.round(fh*.28)),px=m-Math.floor(pw/2),py=F-ph;
    // spotlight from the ceiling
    if(!s.relic&&!lit)dither(g,m-8,F-ph-Math.round(fh*.36)-6,17,Math.round(fh*.36)+6,still?3:3+(Math.floor(time/600)%2),SIG);
@@ -336,6 +358,63 @@
    if(lbl)labels.push([lbl,x,p.y%2?y-11:y+hh+1,color]);}
   let labels=[];
   function flushLabels(g){for(const [lbl,x,y,color] of labels){const w=Math.max(20,lbl.length*6+5);rect(g,x,y,w,11,INK);rect(g,x+1,y+1,w-2,9,color===SIG?SIG:PAPER);text(g,lbl,x+3,y+2,1,INK);}labels=[];}
+  // ---- Reach: the things you can use from where you stand ----
+  // Pickups and goals next to you get lime corners; vents, light switches, crates and locked doors get paper corners and
+  // a short word under the cell; ladder hatches above or below you get a small arrow. Drawn only while the Friend stands still.
+  function reachOf(l,s){const out=[],at=(x,y)=>E.tile(l,x,y),chips=E.positions(l,'o');
+   if(at(s.x,s.y)==='v'&&!(s.relic&&l.ventsWithRelic===false))out.push({x:s.x,y:s.y,kind:'act',word:'VENT',key:'E'});
+   if(E.canToggleLight(l,s)){const p=E.positions(l,'l').find(q=>Math.abs(q.x-s.x)+Math.abs(q.y-s.y)<=1);if(p)out.push({...p,kind:'act',word:'LIGHTS',key:'L'});}
+   for(const dy of [-1,1]){const y=s.y+dy;if(y>0&&y<l.map.length-1&&!(y%2)&&at(s.x,y)!=='#')out.push({x:s.x,y,kind:'ladder',up:dy<0});else if(s.y%2===0&&y>0&&y<l.map.length-1&&at(s.x,y)!=='#')out.push({x:s.x,y,kind:'ladder',up:dy<0});}
+   for(const dx of [-1,1]){const x=s.x+dx,y=s.y,c=at(x,y);if(y%2!==1)continue;
+    if('ABDRGH'.includes(c)&&!E.doorOpen(l,s,c))out.push({x,y,kind:'locked',word:{A:'NEEDS CARD A',B:'NEEDS CARD B',D:'NEEDS POWER 1',R:s.relic?'NEEDS POWER 1':'NEEDS TROPHY',G:'HOLD P1',H:'HOLD P2'}[c]});
+    else if(s.crates.some(q=>q.x===x&&q.y===y))out.push({x,y,kind:'act',word:'PUSH'});
+    else if((c==='a'&&!(s.keys&1))||(c==='b'&&!(s.keys&2))||c==='1'||c==='2'||(c==='T'&&!s.relic)||(c==='E'&&s.relic)||(c==='o'&&!(s.intel&(1<<chips.findIndex(q=>q.x===x&&q.y===y)))))out.push({x,y,kind:'goal'});}
+   return out;}
+  function reachMark(g,r,time,still){const cw=Q.cw,x=X(r.x),T=Q.top[r.y],hh=Q.hh[r.y],breathe=still?0:(Math.floor(time/700)%2);
+   if(r.kind==='ladder'){const m=x+Math.floor(cw/2),cy=T+Math.floor(hh/2)+(r.up?-breathe:breathe);for(let i=0;i<3;i++){const w=1+i*2,yy=r.up?cy-1+i:cy+1-i;rect(g,m-i-1,yy-1,w+2,3,INK);}for(let i=0;i<3;i++){const w=1+i*2,yy=r.up?cy-1+i:cy+1-i;rect(g,m-i,yy,w,1,PAPER);}return;}
+   brackets(g,{l:x+2,t:T+2,r:x+cw-3,b:T+hh-3},breathe,r.kind==='goal'?SIG:PAPER,Math.max(3,Math.round(cw*.16)));
+   if(r.word){const w=r.key&&!Q.touch?r.key+' '+r.word:r.word;label(g,w,x+Math.floor(cw/2),Math.min(Q.ih-9,T+hh+2),r.kind==='locked'?SIG:PAPER,INK,'center');}}
+  // ---- Security plans (INTEL) ----
+  // Patrols: the whole route as a dashed paper line on the floor, a lime bracket at each turnaround, lime chevrons from
+  // the patrol towards its next turn, and WAIT where the route stands still. Rotating cameras: every other direction
+  // they will face, as a hollow dashed beam, and a curved arrow at the lens. The reveal grows out from each device.
+  function chev(g,x,y,dir,color){const d=dir==='W'?-1:1,pts=[[0,-2],[1,-1],[2,0],[1,1],[0,2]].map(([a,b])=>[x+a*d,y+b]);for(const [a,b] of pts)rect(g,a-1,b-1,3,3,INK);for(const [a,b] of pts)rect(g,a,b,1,1,color);}
+  function plans(g,l,s,lit,time,still,t){const cw=Q.cw,cx=x=>X(x)+Math.floor(cw/2);
+   l.guards.forEach(d=>{const now=E.guardAt(d,s.turn),floors=new Set(d.path.map(p=>p[1]));
+    if(floors.size!==1){for(let i=0;i<d.path.length;i++){const p=d.path[i],q=d.path[(i+1)%d.path.length];dotted(g,cx(p[0]),floorY(p[1])-3,cx(q[0]),floorY(q[1])-3,INK,3,6);dotted(g,cx(p[0])+1,floorY(p[1])-2,cx(q[0])+1,floorY(q[1])-2,PAPER,1,6);}return;}
+    const y=d.path[0][1],xs=d.path.map(p=>p[0]),a=cx(Math.min(...xs)),b=cx(Math.max(...xs)),ly=floorY(y)-3,gx=cx(now.x),reach=Math.max(gx-a,b-gx)*t,from=Math.max(a,Math.round(gx-reach)),to=Math.min(b,Math.round(gx+reach));
+    for(let x=from;x<=to;x+=6){const w=Math.min(3,to-x+1);rect(g,x-1,ly-1,w+2,3,INK);rect(g,x,ly,w,1,PAPER);}
+    // turnarounds: an end bracket facing back along the route
+    for(const [ex,side] of [[a,-1],[b,1]])if(side<0?from<=a:to>=b){const bx=ex+side*3;rect(g,bx-1,ly-5,3,9,INK);rect(g,bx+(side<0?1:-3),ly-5,3,3,INK);rect(g,bx+(side<0?1:-3),ly+1,3,3,INK);rect(g,bx,ly-4,1,7,SIG);rect(g,bx+(side<0?1:-2),ly-4,2,1,SIG);rect(g,bx+(side<0?1:-2),ly+2,2,1,SIG);}
+    // heading: chevrons from the patrol to the end it is walking towards
+    if(t>=1&&(now.dir==='E'||now.dir==='W')){const sgn=now.dir==='E'?1:-1,end=sgn>0?b:a;for(let x=gx+sgn*Math.round(cw*.6);sgn>0?x<end-4:x>end+4;x+=sgn*Math.max(12,cw))chev(g,x,ly-5,now.dir,SIG);}
+    // standing still: repeated cells in the route
+    if(t>=1)for(let i=0;i<d.path.length;i++){const p=d.path[i];if(d.path[(i+d.path.length-1)%d.path.length][0]===p[0])continue;let n=1;while(n<d.path.length&&d.path[(i+n)%d.path.length][0]===p[0])n++;if(n>1)label(g,'WAIT '+n,cx(p[0]),ly-15,PAPER,INK,'center');}});
+   l.cameras.forEach(d=>{const ro=d.rotation||[d.dir];if(ro.length<2)return;const cur=ro[((Math.floor(s.turn/(d.speed||2))+(d.phase||0))%ro.length+ro.length)%ro.length];
+    for(const dir of new Set(ro)){if(dir===cur)continue;const cells=E.ray(l,s,d.x,d.y,dir,E.lightsOn(l,s)?d.range:Math.min(d.range,1));if(!cells.length)continue;const n=Math.max(1,Math.ceil(cells.length*t)),part=cells.slice(0,n);
+     // one hollow beam per future direction: sparse paper dots inside, a dotted paper frame around the whole reach
+     const x0=Math.min(...part.map(p=>X(p.x)))+1,x1=Math.max(...part.map(p=>X(p.x)+cw))-2,y0=Math.min(...part.map(p=>Q.top[p.y]))+2,y1=Math.max(...part.map(p=>Q.top[p.y]+Q.hh[p.y]))-3;
+     dither(g,x0,y0,x1-x0,y1-y0,1,PAPER);for(let q=x0;q<x1;q+=4){rect(g,q-1,y0-1,3,3,INK);rect(g,q,y0,1,1,PAPER);rect(g,q-1,y1-1,3,3,INK);rect(g,q,y1,1,1,PAPER);}for(let q=y0;q<=y1;q+=4)for(const xx of [x0,x1]){rect(g,xx-1,q-1,3,3,INK);rect(g,xx,q,1,1,PAPER);}}
+    // sweep arrow: an arc around the camera from where it looks now to where it looks next, with an arrowhead
+    const nxt=ro[(ro.indexOf(cur)+1)%ro.length],ang={E:0,S:Math.PI/2,W:Math.PI,N:-Math.PI/2},a0=ang[cur];let da=((ang[nxt]-a0+3*Math.PI)%(2*Math.PI))-Math.PI;if(Math.abs(da)<.01)da=Math.PI;
+    const cxm=X(d.x)+Math.floor(cw/2),cym=Q.top[d.y]+5,r=Math.max(8,Math.round(cw*.34)),pts=[];for(let i=2;i<=12;i++){const q=a0+da*i/12;pts.push([Math.round(cxm+Math.cos(q)*r),Math.round(cym+Math.sin(q)*r*.8)]);}
+    for(const [px,py] of pts)rect(g,px-1,py-1,3,3,INK);for(const [px,py] of pts)rect(g,px,py,1,1,SIG);const [ex,ey]=pts.at(-1),q1=a0+da,tx=-Math.sin(q1)*Math.sign(da),ty=Math.cos(q1)*Math.sign(da);for(const k2 of [-1,1]){const hx=Math.round(ex-tx*3+Math.cos(q1)*2*k2),hy=Math.round(ey-ty*3+Math.sin(q1)*2*k2);rect(g,hx-1,hy-1,3,3,INK);rect(g,hx,hy,1,1,SIG);}rect(g,ex-1,ey-1,3,3,SIG);});}
+  // Laser clocks: turns until each emitter switches, on a small tag above the post.
+  function planTags(g,l,s,t){if(t<1)return;const cw=Q.cw,fh=Q.fh;l.lasers.forEach(d=>{const on=E.active(d,s,s.turn);let n=null;for(let i=1;i<=(d.period||4)+1;i++)if(E.active(d,s,s.turn+i)!==on){n=i;break;}if(n==null)return;const m=X(d.x)+Math.floor(cw/2),top=Q.top[d.y]+Q.hh[d.y]-Math.round(fh*.62)-10-(d.circuit!=null?10:0);label(g,(on?'OFF ':'ON ')+n,m,top,on?PAPER:SIG,INK,'center');});}
+  // The pickup moment: a plans card drops in over the building for about two seconds.
+  function plansBanner(g,l,t,still){const items=[l.guards.length?'PATROL ROUTES':null,l.cameras.some(d=>(d.rotation||[]).length>1)?'CAMERA SWEEPS':null,l.lasers.length?'LASER CLOCKS':null].filter(Boolean),one=(items.length?items.join(' + '):'EVERY DEVICE')+' REVEALED';
+   // one line when it fits the frame, otherwise one item per line (phones)
+   const lines=one.length*6+18<=Q.iw-6?[one]:items.length?items:['EVERY DEVICE'],w=Math.max(14*6,...lines.map(s=>s.length*6))+14,h=14+lines.length*10+2,x=Math.round(Q.iw/2-w/2),drop=still?0:t<160?Math.round((1-t/160)*(h+6)):t>2300?Math.round((t-2300)/300*(h+6)):0,y=3-drop;
+   rect(g,x-1,y-1,w+2,h+2,INK);rect(g,x,y,w,12,SIG);text(g,'SECURITY PLANS',x+w/2,y+3,1,INK,'center');rect(g,x,y+12,w,h-12,DUSK);for(let q=x+2;q<x+w-2;q+=4)rect(g,q,y+h-2,2,1,HAZE);lines.forEach((s,i)=>text(g,s,x+w/2,y+15+i*10,1,PAPER,'center'));}
+  // Obstacle editor ghost: the piece drawn where it would land (lime brackets), or a cross and a short reason.
+  function ghostPiece(g,l,s,gh,lit,time,still){const p={x:gh.x,y:gh.y};if(p.y<1||p.y>=Q.rows-1||p.x<1||p.x>=Q.cols-1)return;const x=X(p.x),T=Q.top[p.y],hh=Q.hh[p.y],cw=Q.cw;
+   if(gh.ok){const d={x:p.x,y:p.y,dir:gh.dir||'E',range:3};
+    if(gh.kind==='wall'){rect(g,x,T,cw,hh,INK);g.fillStyle=tile(g,'inner',8,6,t=>{t.fillStyle=INK;t.fillRect(0,0,8,6);t.fillStyle=NIGHT;t.fillRect(0,2,8,1);t.fillRect(0,5,8,1);t.fillRect(3,0,1,2);t.fillRect(7,3,1,2);});g.fillRect(x+2,T,cw-4,hh);}
+    else if(gh.kind==='laser'){const lv={...l,lasers:[{...d,period:4,on:2,phase:0}]};lasers(g,lv,s,lit,time,still);}
+    else if(gh.kind==='camera'){const cells=E.ray(l,s,d.x,d.y,d.dir,lit?3:1);visionFill(g,cells,lit,.8);const [ox,oy]=lensOf(d,d.dir);coneFrom(g,ox,oy,cells,lit?6:8,1,d.dir);cameras(g,{...l,cameras:[{...d,rotation:[d.dir],speed:2}]},s,lit,time,still);}
+    brackets(g,{l:x+2,t:T+2,r:x+cw-3,b:T+hh-3},still?0:(Math.floor(time/300)%2),SIG,Math.max(3,Math.round(cw*.18)));}
+   else{for(let i=0;i<Math.min(cw,hh)-6;i+=2){const a=x+Math.round((cw-Math.min(cw,hh))/2)+3+i,b=T+3+i*(hh-6)/Math.max(1,Math.min(cw,hh)-6);rect(g,a-1,b-1,3,3,INK);rect(g,a,b,1,1,PAPER);const a2=x+cw-1-(a-x);rect(g,a2-1,b-1,3,3,INK);rect(g,a2,b,1,1,PAPER);}
+    if(gh.tag)tag(g,gh.tag,x+cw/2,Math.max(2,T-14),PAPER);}}
   function lasers(g,l,s,lit,time,still){const {cw,fh}=Q;
    for(const d of l.lasers){const m=X(d.x)+Math.floor(cw/2),T=Q.top[d.y],F=T+Q.hh[d.y],on=E.active(d,s,s.turn),ray=E.ray(l,s,d.x,d.y,d.dir,d.range),by=F-Math.round(fh*.43),hor='EW'.includes(d.dir);
     if(ray.length){const end=ray.at(-1),ex=hor?X(end.x)+(d.dir==='E'?cw:0):m,ey=hor?by:Q.top[end.y]+(d.dir==='S'?Q.hh[end.y]:0);
@@ -404,7 +483,7 @@
    // hero position (tweened)
    const a=o.anim?.from&&!o.reduced&&at<o.anim.end?o.anim:mem.heroTw&&at<mem.heroTw.end?mem.heroTw:null;let tt=1;if(a)tt=ease((at-a.start)/(a.end-a.start));
    const from=a?a.from:{x:s.x,y:s.y},focusX=from.x+(s.x-from.x)*tt;
-   Q=layout(l,w,h,o.thumbnail,focusX);
+   Q=layout(l,w,h,o.thumbnail,focusX);Q.touch=!!o.touch;
    const intro=mem.intro;
    if(intro&&intro.end==null){intro.peekX=intro.full&&Q.pan?peekTarget(l,s):null;intro.end=intro.full?(intro.peekX!=null?2350:1750):1250;}
    if(intro&&time-intro.start>(still?(intro.full?1600:1100):intro.end))mem.intro=null;
@@ -431,24 +510,41 @@
    if(mem.ghost&&at<mem.ghost.end){const f=1-(at-mem.ghost.start)/(mem.ghost.end-mem.ghost.start);visionFill(g,mem.ghost.cells,lit,f);}else mem.ghost=null;
    const next=o.forecast?E.threats(l,s,s.turn+1):null;
    if(next){const now=new Set([...hz.vision,...hz.lasers].map(p=>E.xy(p.x,p.y)));for(const p of [...next.vision,...next.lasers])if(!now.has(E.xy(p.x,p.y)))mark(g,p,'',INK);for(const p of next.guards)if(!hz.guards.some(q=>E.same(q,p)))mark(g,p,'NEXT',INK);}
+   // SECURITY PLANS: any intel folder taken shows every patrol route, camera sweep and laser clock for the rest of the job.
+   const planned=!o.thumbnail&&!o.editor&&s.intel>0;
+   if(planned&&mem.plansTurn==null){mem.plansTurn=s.turn;mem.plansAt=sameLevel&&s.events.includes('intel')?time:null;}else if(!planned)mem.plansTurn=mem.plansAt=null;
+   const planT=mem.plansAt==null||still?1:ease((time-mem.plansAt)/650);
+   if(planned)plans(g,l,s,lit,at,still,planT);
    lasers(g,l,s,lit,at,still);cameras(g,l,s,lit,at,still);guards(g,l,s,hz,lit,at,still);
+   if(planned)planTags(g,l,s,planT);
    const {cw}=Q;
-   if(o.trace)for(let i=1;i<o.trace.length;i++){const p=o.trace[i-1],q=o.trace[i];dotted(g,X(p.x)+cw/2,foot(p.y)-5,X(q.x)+cw/2,foot(q.y)-5,INK,3,6);dotted(g,X(p.x)+cw/2,foot(p.y)-5,X(q.x)+cw/2,foot(q.y)-5,SIG,2,6);}
+   // Route trace. With traceCut (the obstacle editor) the part after the cut fades to a thin hollow line.
+   if(o.trace)for(let i=1;i<o.trace.length;i++){const p=o.trace[i-1],q=o.trace[i],cut=o.traceCut!=null&&i>o.traceCut,ax=X(p.x)+cw/2,ay=foot(p.y)-5,bx=X(q.x)+cw/2,by=foot(q.y)-5;if(cut){dotted(g,ax,ay,bx,by,lit?HAZE:MIST,1,6);continue;}dotted(g,ax,ay,bx,by,INK,3,6);dotted(g,ax,ay,bx,by,SIG,2,6);}
+   if(o.traceCut!=null&&o.trace?.[o.traceCut]){const p=o.trace[o.traceCut];tag(g,'CUT',X(p.x)+cw/2,Math.max(2,foot(p.y)-24),PAPER);}
    if(o.editor){for(let x=1;x<Q.cols;x++)dotted(g,X(x),Q.y0,X(x),Q.y0+Q.H,lit?HAZE:MIST,1,4);}
+   // Obstacle editor: while a piece is dragged, every cell that accepts it shows a small drop spot on its floor.
+   if(o.allowed)for(const p of o.allowed){const m=X(p.x)+Math.floor(cw/2),F=floorY(p.y)-5;rect(g,m-3,F-1,7,4,INK);rect(g,m-2,F,5,2,PAPER);rect(g,m-1,F+3,3,1,INK);}
+   if(o.ghost)ghostPiece(g,l,s,o.ghost,lit,at,still);
+   if(o.verdict){const v=o.verdict;tag(g,v.text,X(v.x)+cw/2,Math.min(Q.ih-14,Q.top[v.y]+Q.hh[v.y]+2),v.ok?SIG:PAPER);}
    if(o.inspection)mark(g,o.inspection,'SCAN');
    if(o.incident){const d=o.incident;mark(g,d.origin,d.id);mark(g,d.target,'CAUGHT');const ax=X(d.origin.x)+cw/2,ay=Q.top[d.origin.y]+Q.hh[d.origin.y]*.35,bx=X(d.target.x)+cw/2,by=foot(d.target.y)-8;dotted(g,ax,ay,bx,by,INK,4,6);dotted(g,ax+1,ay+1,bx+1,by+1,SIG,2,6);}
    if(o.guide)mark(g,o.guide,o.guideLabel||'GO');if(o.hover)mark(g,o.hover);if(o.mutation)mark(g,o.mutation,'NEW');if(o.selected)mark(g,o.selected,'EDIT');
    // golden trail (LIVE BURN cosmetic): lime footprints on the cells just left, never on the Friend
    if(o.trail){const kk=Math.max(1,Math.round(cw/24)),n=o.trail.length;o.trail.forEach((t,i)=>{if(t.x===s.x&&t.y===s.y)return;const fresh=i>=n-5,px=X(t.x)+cw/2,py=foot(t.y)-kk-1;for(const [dx,dy] of [[-kk*2.6,0],[kk*0.6,-kk*1.2]]){rect(g,px+dx-1,py+dy-1,kk*2+2,kk+2,INK);rect(g,px+dx,py+dy,kk*2,kk,fresh?SIG:PAPER);}});}
+   // What you can use from where you stand, and the cell under the pointer (visual only; see reachOf / focus)
+   const settled=!a||tt>=1,reachList=o.reach&&settled&&s.status==='playing'&&!mem.intro?reachOf(l,s):[];
+   for(const r of reachList)reachMark(g,r,at,still);
+   if(o.focus&&s.status==='playing'){const p=o.focus;if(p.y>0&&p.y<Q.rows-1&&p.x>0&&p.x<Q.cols-1){const x=X(p.x),T=Q.top[p.y],hh=Q.hh[p.y];brackets(g,{l:x+1,t:T+1,r:x+cw-2,b:T+hh-2},0,p.goal?SIG:PAPER,Math.max(3,Math.round(cw*.2)));if(p.tag)labels.push([p.tag,Math.max(1,Math.min(Q.iw-p.tag.length*6-6,x+Math.round(cw/2)-Math.round((p.tag.length*6+5)/2))),p.y%2?T-11:T+hh+1,p.goal?SIG:PAPER]);}}
    // the Friend (on a win the escape staging draws it walking out through the EXIT)
    let fx=X(s.x)+cw/2,fy=foot(s.y),moving=false;
    if(a){fx=X(a.from.x)+cw/2+(fx-X(a.from.x)-cw/2)*tt;fy=foot(a.from.y)+(fy-foot(a.from.y))*tt;moving=a.from.x!==s.x||a.from.y!==s.y;if(moving&&a.from.y===s.y)fy-=Math.round(Math.sin(tt*Math.PI)*2);}
    const k=Q.k,escape=staged&&!o.hideHero&&s.status==='won';
    if(!o.hideHero&&!escape){if(!lit){dither(g,fx-10*k,fy-16*k,20*k,17*k,2,PAPER);rect(g,fx-7*k,fy+1,14*k,1,SIG);}else if(s.y%2)dither(g,fx-6*k,Math.round(foot(s.y)),12*k,1,8,HAZE);
     if(a&&moving&&!still&&s.y%2&&a.from.y===s.y){const t=(at-a.start)/(a.end-a.start),dx=s.x>a.from.x?-1:1;for(let i=0;i<3;i++){const q=Math.min(1,t*1.2);rect(g,fx+dx*(5*k+i*2+q*4),fy-1-i-Math.round(q*2),1,1,lit?HAZE:MIST);}}
-    // idle for a while: the Friend looks around (its own left / right idle clips), a small sign of life
-    let face=s.facing||'down';const idle=time-mem.turnAt-2800;if(!still&&!moving&&idle>0&&s.status==='playing'){const q=idle%6400;face=q<900?'left':q<3200?'down':q<4100?'right':'down';}
-    sprite(g,o.sample,fx,fy,k,face,moving,still?0:Math.floor(at/120));
+    // Idle for a while: the Friend turns once to face you and breathes on its own idle clip. A single short glance to
+    // the side every 16 s is the only other sign of life (calm by design; MOTION OFF keeps the last facing, frame 0).
+    let face=s.facing||'down';const idle=time-mem.turnAt-3200;if(!still&&!moving&&idle>0&&s.status==='playing'){const q=idle%16000;face=q>=11000&&q<11700?(s.facing==='left'?'left':'right'):'down';}
+    sprite(g,o.sample,fx,fy,k,face,moving,still?0:Math.floor(at/(moving?120:300)));
     if(s.relic)relicIcon(g,fx,fy-16*k-10);}
    flushLabels(g);
    if(escape)escapeStage(g,l,s,o.sample,fx,fy,time,still);
@@ -456,9 +552,10 @@
    const top=fy-16*k-6;
    if(!o.hideHero&&!o.thumbnail)for(const f of effects){const t=(time-f.start)/(f.end-f.start),lift=still?0:Math.round(t*10);
     if(f.e==='alarm'||f.e==='caught'){if(still||Math.floor(t*6)%2===0){rect(g,fx-7,top-18,14,15,INK);rect(g,fx-6,top-17,12,13,f.e==='caught'?PAPER:SIG);text(g,'!',fx-2,top-14,1,INK);}const on=still||Math.floor(t*8)%2===0;if(on&&f.e==='alarm'&&s.status!=='lost'){for(let q=0;q<Q.iw;q+=8){rect(g,q,0,4,2,SIG);rect(g,q,Q.ih-2,4,2,SIG);}if(!still)dither(g,X(1),Q.y0,(Q.cols-2)*cw,Q.H,2,SIG);}}
-    else{const lbl={relic:'TROPHY',key:'KEY',intel:'INTEL',switch:'SWITCH',vent:'VENT',emp:'EMP'}[f.e];const tw=lbl.length*6+5;rect(g,fx-tw/2,top-8-lift,tw,11,INK);rect(g,fx-tw/2+1,top-7-lift,tw-2,9,f.e==='relic'?SIG:PAPER);text(g,lbl,fx-tw/2+3,top-6-lift,1);
+    else{const lbl={relic:'TROPHY',key:'KEY',intel:'PLANS',switch:'SWITCH',vent:'VENT',emp:'EMP'}[f.e];const tw=lbl.length*6+5;rect(g,fx-tw/2,top-8-lift,tw,11,INK);rect(g,fx-tw/2+1,top-7-lift,tw-2,9,f.e==='relic'?SIG:PAPER);text(g,lbl,fx-tw/2+3,top-6-lift,1);
      if(!still&&(f.e==='relic'||f.e==='key'||f.e==='intel'))for(let i=0;i<8;i++){const ang=i*Math.PI/4,r=4+t*14;rect(g,fx+Math.cos(ang)*r,fy-8*k+Math.sin(ang)*r,1,1,i%2?PAPER:SIG);}}}
    if(!o.thumbnail&&l.lighting)lightSign(g,l,s,lit,at,still);
+   if(planned&&mem.plansAt!=null&&time-mem.plansAt<2600)plansBanner(g,l,time-mem.plansAt,still);
    // floor plaques
    if(!o.thumbnail){const px=X(1)-Q.wallT-16;if(px>=1)for(let y=1;y<Q.rows-1;y+=2){const yy=Q.top[y]+3;rect(g,px,yy,14,11,INK);rect(g,px+1,yy+1,12,9,s.y===y?SIG:MIST);text(g,'F'+(Q.n-(y-1)/2),px+2,yy+2,1,INK);}}
    if(!o.thumbnail&&!o.editor){beacons(g,l,s,time,still);minimap(g,l,s,hz,lit,time,still);}
@@ -575,5 +672,12 @@
   function hit(cx,cy){const r=canvas.getBoundingClientRect(),sx=(cx-r.left)*canvas.width/r.width,sy=(cy-r.top)*canvas.height/r.height;return {x:Math.floor((sx-geo.x0)/geo.cw),y:geo.top?.findIndex((y,i)=>sy>=y&&sy<y+geo.hh[i])??-1};}
   return {render,hit,pulse,metrics:()=>geo};
  }
- root.HeistPixels=Object.freeze({INK,PAPER,SIG,PAL,rect,box,text,label,sprite,mask,stipple,dotted,dither,pattern,tile,bitmap,hash});root.HeistCutawayRenderer={create};
+ // Palette icons for the obstacle editor, drawn with the board's own pixels (one art pixel = k canvas pixels).
+ function pieceIcon(canvas,kind,dir='E'){const g=canvas.getContext('2d'),w=canvas.width,h=canvas.height,k=Math.max(1,Math.floor(Math.min(w,h)/18));g.imageSmoothingEnabled=false;rect(g,0,0,w,h,WALL);const ox=Math.floor((w-18*k)/2),oy=Math.floor((h-18*k)/2),px=(x,y,ww,hh,c)=>rect(g,ox+x*k,oy+y*k,ww*k,hh*k,c);
+  px(0,15,18,3,MIST);px(0,15,18,1,HAZE);
+  if(kind==='wall'){px(3,1,12,14,INK);for(const [y,off] of [[4,0],[8,3],[12,0]]){px(3,y,12,1,NIGHT);}for(const [x,y] of [[7,1],[11,1],[5,5],[9,5],[13,5],[7,9],[11,9],[5,13],[9,13]])px(x,y,1,3,NIGHT);}
+  else if(kind==='laser'){const flip=dir==='W';px(flip?13:3,4,2,11,INK);px(flip?12:2,14,4,1,INK);px(flip?11:4,6,3,3,INK);px(flip?12:5,7,1,1,SIG);const bx=flip?1:7,bw=10;px(bx,6,bw,3,INK);px(bx,7,bw,1,SIG);for(let i=0;i<bw;i+=3)px(bx+i,7,1,1,PAPER);}
+  else if(kind==='camera'){const flip=dir==='W';for(let i=0;i<7;i++){const x=flip?7-i:10+i;for(let j=-Math.floor(i/2)-1;j<=Math.floor(i/2)+1;j++)if(((x+j)&1)===0)px(x,6+j,1,1,SIG);}px(flip?12:2,1,4,1,INK);px(flip?13:3,2,2,1,INK);px(flip?8:3,3,7,4,INK);px(flip?9:4,4,5,2,MIST);px(flip?10:5,4,2,1,PAPER);px(flip?7:10,4,1,2,INK);px(flip?7:10,4,1,1,SIG);}
+ }
+ root.HeistPixels=Object.freeze({INK,PAPER,SIG,PAL,rect,box,text,label,sprite,mask,stipple,dotted,dither,pattern,tile,bitmap,hash});root.HeistCutawayRenderer={create,pieceIcon};
 })(globalThis);

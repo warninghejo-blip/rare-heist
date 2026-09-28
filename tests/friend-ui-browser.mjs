@@ -11,9 +11,10 @@ const b=await chromium.launch(),ctx=await b.newContext({viewport:{width:1440,hei
 await ctx.route('https://rpc.mainnet.chain.robinhood.com/**',r=>r.abort());
 const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
 await p.goto('file://'+html);await p.waitForTimeout(800);
-// 1. The home portrait walks (its pixels change over time) unless MOTION is off.
+// 1. The home portrait breathes on its own idle frames (its pixels change over time) unless MOTION is off.
+// It is calm by design (one idle frame per ~0.3 s, facing the viewer), so sample it across two full idle cycles.
 const portrait=()=>p.evaluate(()=>document.querySelector('.hero-portrait').toDataURL());
-const a1=await portrait();await p.waitForTimeout(1300);const a2=await portrait();ok('home portrait is animated',a1!==a2);
+const a1=await portrait(),seen=new Set([a1]);for(let i=0;i<16;i++){await p.waitForTimeout(300);seen.add(await portrait());}ok('home portrait is animated ('+seen.size+' distinct frames in 4.8 s)',seen.size>1);
 // 2. Lesson 1 without rewinds ends as LESSON CLEARED with a first-clear celebration, not as practice.
 await p.locator('.play-now').click();await p.waitForTimeout(600);
 const lesson=levels.find(l=>l.id==='cut-00'),route=solve(lesson);for(const a of route.actions){await p.keyboard.press(key[a]);await p.waitForTimeout(110);}await p.waitForTimeout(1700);

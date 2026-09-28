@@ -45,7 +45,7 @@
   else if(c==='1'||c==='2'){title='CIRCUIT '+c;body='Step ONTO the switch to toggle it. Staying here or waiting does not toggle again. Connected devices are disabled when ON.';}
   else if(c==='p'||c==='P'){title='PRESSURE PLATE '+(c==='p'?'P1':'P2');body='Held by you or a crate. '+(c==='p'?'G':'H')+' gates stay open only while all matching plates are held.';}
   else if(c==='v'){title='VENT';body='Stand here, then press E to use the other vent. '+(l.ventsWithRelic===false?'Cannot carry the trophy through.':'Trophy transport allowed.');}
-  else if(c==='o'){title='OPTIONAL INTEL';body='Extra challenge, not required for extraction. The ALL INTEL target can be earned separately from the PAR target.';}
+  else if(c==='o'){const taken=!!(s.intel&(1<<E.positions(l,'o').findIndex(q=>E.same(q,p))));title=taken?'INTEL / PLANS TAKEN':'INTEL / SECURITY PLANS';body=(taken?'Taken. ':'Optional. Step onto it to take the security plans. ')+'Once you hold any plans, every patrol route (with its turn points and heading), every camera sweep and every laser clock stays drawn on the building for the rest of this job. Taking every folder earns the ALL INTEL mark.';}
   else{title=c==='S'?'ENTRY':'FLOOR';body='One cell per turn. Security moves after you. A safe next step is not a promise that the whole route is safe.';}
   const dx=p.x-s.x,dy=p.y-s.y,action=dx===0&&dy===0?'WAIT':Math.abs(dx)+Math.abs(dy)===1?(dx>0?'E':dx<0?'W':dy>0?'S':'N'):null;
   return {title,body,at,signals,origin,position:p,preview:action?preview(l,s,action):null};
