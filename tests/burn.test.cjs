@@ -10,7 +10,7 @@ test('calldata is a standard transfer to 0x…dEaD with a trailing tag',()=>{
  assert.equal(d.slice(10,74),w(B.DEAD));
  assert.equal(BigInt('0x'+d.slice(74,138)),25n*E18);
  assert.equal(d.length,2+8+64*3);
- assert.deepEqual(B.parseInput(d),{amount:25n*E18,tag:{item:'trail',friendId:'7730'}});
+ assert.deepEqual(B.parseInput(d),{amount:25n*E18,tag:{item:'trail',friendId:'7730',nonce:0}});
 });
 test('tags round-trip and reject foreign data',()=>{
  for(const it of B.ITEMS)assert.equal(B.readTag(B.tag(it.id,'3412')).item,it.id);
@@ -18,6 +18,15 @@ test('tags round-trip and reject foreign data',()=>{
  assert.equal(B.readTag('00'.repeat(32)),null);
  assert.equal(B.parseInput('0xa9059cbb'+w(P)+w(1)),null,'transfer to another address is not a burn');
  assert.equal(B.parseInput('0xa9059cbb'+w(B.DEAD)+w(5)).tag,null,'untagged burns are not Rare Heist purchases');
+});
+test('attempt nonce round-trips in the two reserved tag bytes; old tags decode as zero',()=>{
+ const nonce=0x3a7f,tag=B.tag('ash','3412',nonce),data=B.calldata(E18,'ash','3412',nonce);
+ assert.equal(tag.slice(12,16),'3a7f');
+ assert.deepEqual(B.readTag(tag),{item:'ash',friendId:'3412',nonce});
+ assert.deepEqual(B.parseInput(data),{amount:E18,tag:{item:'ash',friendId:'3412',nonce}});
+ assert.deepEqual(B.readTag(B.tag('ash','3412')),{item:'ash',friendId:'3412',nonce:0});
+ assert.equal(B.newNonce()>0,true);
+ for(const bad of [-1,65536,1.5,'1'])assert.throws(()=>B.tag('ash','3412',bad),/nonce/);
 });
 test('amount parsing is exact and bounded',()=>{
  assert.equal(B.units('2.5',18),25n*10n**17n);

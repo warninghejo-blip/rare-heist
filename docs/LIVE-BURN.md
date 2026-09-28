@@ -30,11 +30,11 @@ LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this
 
 ## Pending transactions
 
-Before opening the wallet request, Rare Heist saves an `awaiting-wallet` pending state and blocks burns in every open window. Once the wallet returns a transaction hash, it stores that hash, sender and item. If a burn is not confirmed within 180 seconds, the page shows the full hash and **CHECK AGAIN**. Reloading with a hash checks that same receipt before another burn can be sent. Do not confirm another burn while one is pending.
+Before opening the wallet request, Rare Heist generates a random nonzero 16-bit attempt nonce, saves it in an `awaiting-wallet` pending state and blocks burns in every open window. The nonce occupies the two formerly zero bytes after the item code in the 32-byte calldata tag. Once the wallet returns a transaction hash, it stores that hash, sender and item. If a burn is not confirmed within 180 seconds, the page shows the full hash and **CHECK AGAIN**. Reloading with a hash checks that same receipt before another burn can be sent. Do not confirm another burn while one is pending.
 
 If the wallet request times out or has a network error after `eth_sendTransaction` starts, Rare Heist cannot know whether the wallet sent it. The lock stays in place and a single **UNKNOWN OUTCOME** panel appears on every screen and in every tab. Reloading while the request has no hash, or opening the game while another tab owns that lock, shows the same panel. Its exact message is: “We don't know if your wallet sent the burn. Check your wallet's activity before trying again.”
 
-- **RESTORE FROM CHAIN** searches the pending player's tagged transfer logs. Before asking the wallet to send, the game saves the current block number. Only a new, uncached burn at that block or later with the same item, sufficient amount and Friend can clear this attempt's lock. If the block number was unavailable, RESTORE cannot clear the lock; check the wallet and use RELEASE LOCK if appropriate. If no matching burn is found yet, the lock stays and you can check again.
+- **RESTORE FROM CHAIN** searches the pending player's tagged transfer logs. Before asking the wallet to send, the game saves the current block number. Only an uncached burn in a *later* block with the same item, sufficient amount, Friend and attempt nonce in its transaction input can clear this attempt's lock. Older pending records without a nonce or saved block number cannot be cleared by RESTORE; check the wallet and use RELEASE LOCK if appropriate. If no matching burn is found yet, the lock stays and you can check again. Legacy tags with zero in the nonce bytes still appear in history and the Hall of Ash.
 - **RELEASE LOCK** opens a separate confirmation. Check your wallet activity first, then tick “I checked my wallet: the burn was not sent or was rejected. If it was sent, retrying burns RF again.” and confirm. Releasing is an explicit choice; if the original burn was sent, confirming another still burns more RF.
 - An explicit wallet rejection (`4001` or `ACTION_REJECTED`) and errors before the burn request is sent clear the lock. Other errors after the wallet request starts keep UNKNOWN OUTCOME, even if their message contains “rejected” or “denied”. A receipt resolves a transaction by its hash: success unlocks the item and a failed receipt clears the lock.
 
@@ -52,7 +52,7 @@ If the wallet request times out or has a network error after `eth_sendTransactio
 | **RF AT 0x…dEaD** | 1 RF higher |
 | **HALL OF ASH** | your Friend, or your short address if you have no Friend |
 | Block explorer, transaction page | one RF `Transfer` from you to `0x000000000000000000000000000000000000dEaD` |
-| Block explorer, input data | ends with 32 bytes starting `52485354 01 09`: `RHST`, version 1, item 9 (tribute) |
+| Block explorer, input data | ends with 32 bytes starting `52485354 01 09`: `RHST`, version 1, item 9 (tribute), then a two-byte attempt nonce |
 
 Reload the page, return to LIVE BURN and press **RESTORE FROM CHAIN**. The burn should come back from the chain alone.
 

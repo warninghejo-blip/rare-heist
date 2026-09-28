@@ -52,7 +52,7 @@ async function begin(p,item='lilac'){
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
-const burnInput=(amount=10n*10n**18n)=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+amount.toString(16).padStart(64,'0')+'5248535401'+'02'+'0000'+''.padStart(64,'0');
+const burnInput=(amount=10n*10n**18n,nonce=0)=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+amount.toString(16).padStart(64,'0')+'5248535401'+'02'+nonce.toString(16).padStart(4,'0')+''.padStart(48,'0');
 try{
  {
   const {p,ctx}=await setup();await p.evaluate(()=>{window.__holdHash=true;const original=window.setTimeout;window.setTimeout=(fn,ms,...args)=>original(fn,ms===300000?1000:ms,...args);});await begin(p);
@@ -102,7 +102,8 @@ try{
  }
  {
   const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdBeforeSend=true);await beginWaiting(p);const firstCalls=await p.evaluate(()=>window.__sendCalls);
-  const match={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n*10n**18n,block:'0x3f0c3a6',input:burnInput()};setExtraBurns([match]);await p.reload();await p.waitForTimeout(350);
+  const nonce=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending.nonce);
+  const match={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n*10n**18n,block:'0x3f0c3a6',input:burnInput(10n*10n**18n,nonce)};setExtraBurns([match]);await p.reload();await p.waitForTimeout(350);
   const restoreAvailable=await p.locator('#burnUnknownRestore').count()>0;if(restoreAvailable){await p.locator('#burnUnknownRestore').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null,null,{timeout:7000}).catch(()=>{});}
   const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,panel:!document.getElementById('burnUnknownPanel'),calls:window.__sendCalls}));
   check('RESTORE FROM CHAIN finds the matching player burn and clears the lock',restoreAvailable&&state.pending===null&&state.burns.some(x=>x.item==='lilac'&&x.tx===match.hash.toLowerCase())&&state.panel===true&&firstCalls+state.calls===1,JSON.stringify(state));await ctx.close();

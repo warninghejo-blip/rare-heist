@@ -52,7 +52,7 @@ async function begin(p,item='lilac'){
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
-const burnInput=(amount=10n*10n**18n)=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+amount.toString(16).padStart(64,'0')+'5248535401'+'02'+'0000'+''.padStart(64,'0');
+const burnInput=(amount=10n*10n**18n,nonce=0)=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+amount.toString(16).padStart(64,'0')+'5248535401'+'02'+nonce.toString(16).padStart(4,'0')+''.padStart(48,'0');
 try {
  for(const msg of ['RPC response rejected: upstream connection closed','Access denied while retrieving transaction result']) {
  const {p,ctx}=await setup();await p.evaluate(msg=>window.__postSendError=msg,msg);await begin(p);await p.waitForTimeout(300);
@@ -62,7 +62,8 @@ try {
  }
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p,'ash');const firstCalls=await p.evaluate(()=>window.__sendCalls);
- const old={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x1000',input:burnInput(10n**18n).replace('524853540102','524853540109')};
+ const attempt=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const old={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x1000',input:burnInput(10n**18n,attempt.nonce).replace('524853540102','524853540109')};
  setExtraBurns([old]);await p.reload();await p.waitForTimeout(350);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(700);
  const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null);
  await p.locator('nav button[data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
@@ -74,7 +75,7 @@ try {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p,'ash');const firstCalls=await p.evaluate(()=>window.__sendCalls);
  await p.reload();await p.waitForTimeout(350);
  const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
- const fresh={hash:'0x'+(0xd001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x'+(BigInt(pending.sentBlock)+1n).toString(16),input:burnInput(10n**18n).replace('524853540102','524853540109')};
+ const fresh={hash:'0x'+(0xd001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x'+(BigInt(pending.sentBlock)+1n).toString(16),input:burnInput(10n**18n,pending.nonce).replace('524853540102','524853540109')};
  setExtraBurns([fresh]);await p.locator('#burnUnknownRestore').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null).catch(()=>{});
  const state=await p.evaluate(()=>({sends:window.__sendCalls,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  check('NEW_RESTORE accepts a new matching burn after sentBlock',state.pending===null&&state.burns.some(b=>b.tx===fresh.hash)&&firstCalls+state.sends===1,JSON.stringify(state));await ctx.close();
@@ -82,7 +83,7 @@ try {
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p,'ash');await p.reload();await p.waitForTimeout(350);
  const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
- const cached={hash:'0x'+(0xd003n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x'+(BigInt(pending.sentBlock)+1n).toString(16),input:burnInput(10n**18n).replace('524853540102','524853540109')};
+ const cached={hash:'0x'+(0xd003n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x'+(BigInt(pending.sentBlock)+1n).toString(16),input:burnInput(10n**18n,pending.nonce).replace('524853540102','524853540109')};
  setExtraBurns([cached]);await p.evaluate(row=>{const save=JSON.parse(localStorage.getItem('rh-cutaway-v1'));save.live.burns.push(row);localStorage.setItem('rh-cutaway-v1',JSON.stringify(save));},{tx:cached.hash,block:cached.block,from:cached.from,item:'ash',amount:cached.amount.toString(),friendId:null});
  await p.reload();await p.waitForTimeout(350);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(500);
  const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
@@ -90,7 +91,8 @@ try {
  }
  {
  const {p,ctx,setExtraBurns}=await setup();await p.evaluate(()=>{window.__holdHash=true;window.__missingHead=true;});await begin(p,'ash');await p.reload();await p.waitForTimeout(350);
- const fresh={hash:'0x'+(0xd002n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x3f0c3a6',input:burnInput(10n**18n).replace('524853540102','524853540109')};
+ const pending=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending);
+ const fresh={hash:'0x'+(0xd002n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x3f0c3a6',input:burnInput(10n**18n,pending.nonce).replace('524853540102','524853540109')};
  setExtraBurns([fresh]);await p.locator('#burnUnknownRestore').click();await p.waitForTimeout(500);
  const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,panel:document.getElementById('burnUnknownPanel')?.innerText||''}));
  check('MISSING_HEAD cannot release an unknown burn',state.pending?.status==='unknown-outcome'&&state.pending.sentBlock===null&&state.panel.includes(unknownText),JSON.stringify(state));await ctx.close();
