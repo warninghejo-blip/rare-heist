@@ -12,7 +12,7 @@ function handler(chain,ACCOUNT){
  let chainId='0x1';const owned=['3412','7730'];
  const RF='0x0779369854d3ecdea927206718ffd7730c67b71f',DEAD='0x000000000000000000000000000000000000dead',T='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',E=10n**18n;
  const OTHER='0x5555555555555555555555555555555555555555',bal={[ACCOUNT.toLowerCase()]:12345n*E/10n,[DEAD]:1000n*E,[OTHER]:50n*E};
- // One earlier tagged burn by another player: 7 RF tribute for Friend #1234.
+ // One earlier tagged burn by another player: a 7 RF Tribute (retired code 09) for Friend #1234. It must still decode.
  const txs=[{hash:'0x'+w(0xa001),from:OTHER,to:RF,dest:DEAD,amount:7n*E,block:'0x1000',input:'0xa9059cbb'+w(DEAD)+w(7n*E)+'5248535401'+'09'+'0000'+w(1234).slice(16)}];
  return async({method,params})=>{
   if(method==='eth_requestAccounts'||method==='eth_accounts')return [ACCOUNT];
@@ -27,7 +27,7 @@ function handler(chain,ACCOUNT){
   if(method==='eth_getLogs'){const t=params[0].topics;if(t[2]===null||t.length===2&&t[1])return t.length===2?[]:owned.map((id,i)=>({blockNumber:'0x'+(100+i).toString(16),logIndex:'0x0',topics:['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef','0x'+w(0),'0x'+w(ACCOUNT),'0x'+w(id)]}));return owned.map((id,i)=>({blockNumber:'0x'+(100+i).toString(16),logIndex:'0x0',topics:['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef','0x'+w(0),'0x'+w(ACCOUNT),'0x'+w(id)]}));}
   if(method==='eth_call'){const {to,data}=params[0],sel=data.slice(2,10),a=data.slice(10),arg=i=>BigInt('0x'+a.slice(64*i,64*i+64)).toString();
    if(to.toLowerCase()===G){if(sel==='70a08231')return '0x'+w(owned.length);if(sel==='6352211e')return '0x'+w(owned.includes(arg(0))?ACCOUNT:'0x2222222222222222222222222222222222222222');if(sel==='7d71dc35')return '0x'+w(1);}
-   if(to.toLowerCase()===RF){if(sel==='313ce567')return '0x'+w(18);if(sel==='70a08231'){const who='0x'+BigInt(arg(0)).toString(16).padStart(40,'0');return '0x'+w(bal[who]??42n*E);}}
+   if(to.toLowerCase()===RF){if(sel==='313ce567')return '0x'+w(18);if(sel==='70a08231'){const who='0x'+BigInt(arg(0)).toString(16).padStart(40,'0');if(globalThis.__poor&&who===ACCOUNT.toLowerCase())return '0x'+w(5n*E);return '0x'+w(bal[who]??42n*E);}}
    if(to.toLowerCase()===G&&sel==='0be76ed6')return '0x'+w('0x3333333333333333333333333333333333333333');
    if(to.toLowerCase()===R){const t=chain.ids[arg(0)]||{family:3,seed:Number(arg(0))};if(sel==='32bd63d1')return '0x'+w(t.family);if(sel==='82829f74')return '0x'+w(t.seed);if(sel==='ead2ca3c'){const f=chain.frames[arg(0)+':'+arg(1)]||chain.frames['0:3412'];return '0x'+f.map(x=>w(x)).join('');}}
    throw Object.assign(new Error('unknown call '+sel),{code:-32000});}
@@ -63,26 +63,29 @@ await p.locator('#closeDialog').click().catch(()=>{});await p.waitForTimeout(150
 await p.getByRole('button',{name:/^STUDIO$/}).click();await p.waitForTimeout(1500);
 const rfA=await p.locator('#rfAccount').innerText(),rfF=await p.locator('#rfFriend').innerText();
 ok('real RF balances read: wallet '+rfA+', Friend wallet '+rfF,rfA==='1,234.50 RF'&&rfF==='42.00 RF');
-// LIVE BURN (beta): opt-in, real RF to 0x…dEaD, verified from the receipt, Hall of Ash from tagged history.
+// LIVE BURN (beta): opt-in, real RF to 0x…dEaD, verified from the receipt, burn ledger from tagged history.
 ok('Studio opens in DEMO mode',(await p.locator('[data-mode="demo"]').getAttribute('aria-selected'))==='true');
 await p.locator('[data-mode="live"]').click();await p.waitForTimeout(1500);
 const txt=id=>p.locator(id).innerText();
 ok('LIVE shows real RF balance '+(await txt('#lvYour')),(await txt('#lvYour'))==='1,234.50 RF');
 ok('LIVE shows RF at 0x…dEaD '+(await txt('#lvDead')),(await txt('#lvDead'))==='1,000.00 RF');
-ok('Hall of Ash lists the earlier tagged burn: '+(await txt('#hallList')).replace(/\s+/g,' '),/FRIEND #1234/i.test(await txt('#hallList'))&&(await txt('#lvAll'))==='7.00 RF');
+ok('burn ledger lists the earlier legacy Tribute: '+(await txt('#ledgerList')).replace(/\s+/g,' '),/TRIBUTE/.test(await txt('#ledgerList'))&&/FRIEND #1234/i.test(await txt('#ledgerList'))&&(await txt('#lvAll'))==='7.00 RF'&&(await txt('#ledgerTotal'))==='7.00 RF');
+ok('the shop has no Tribute, no amount field and no ranks',(await p.locator('[data-burn="ash"],[data-burn="bounty"],#ashAmount,.ashrank,#rankStrip,#hallList').count())===0);
 await p.locator('[data-burn="trail"]').click();await p.waitForTimeout(200);
 ok('burn needs an explicit confirmation',await p.locator('#burnGo').isDisabled());
 await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(2500);
 const sent=await p.evaluate(()=>globalThis.__txs||[]);
 ok('one plain RF transfer to 0x…dEaD, 25 RF, tagged GOLDEN TRAIL for Friend #3412',sent.length===1&&sent[0].to.toLowerCase()==='0x0779369854d3ecdea927206718ffd7730c67b71f'&&sent[0].data.slice(0,74)==='0xa9059cbb'+'0'.repeat(24)+'000000000000000000000000000000000000dead'&&BigInt('0x'+sent[0].data.slice(74,138))===25n*10n**18n&&sent[0].data.slice(138,150)==='524853540101'&&BigInt('0x'+sent[0].data.slice(154))===3412n&&!sent[0].value?.replace(/^0x0*$/,''));
 ok('after the receipt: trail unlocked, counters updated ('+(await txt('#lvMine'))+' / '+(await txt('#lvYour'))+')',(await p.locator('[data-use="trail"]').count())===1&&(await txt('#lvMine'))==='25.00 RF'&&(await txt('#lvYour'))==='1,209.50 RF'&&(await txt('#lvAll'))==='32.00 RF');
-ok('Hall of Ash ranks Friend #3412 first',/^\s*FRIEND #3412/i.test((await p.locator('#hallList li').first().innerText())));
-await p.fill('#ashAmount','2.5');await p.locator('[data-burn="ash"]').click();await p.waitForTimeout(200);await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(2500);
-ok('tribute of 2.5 RF burned: '+(await txt('#lvMine')),(await txt('#lvMine'))==='27.50 RF');
+const top=await p.locator('#ledgerList li').first();
+ok('ledger: the new burn is listed first, newest block first ('+(await top.innerText()).replace(/\s+/g,' ')+')',/GOLDEN TRAIL/.test(await top.innerText())&&/25\.00 RF/.test(await top.innerText())&&/FRIEND #3412/.test(await top.innerText()));
+ok('ledger row links the transaction on the Robinhood Chain explorer',/^https:\/\/robinhoodchain\.blockscout\.com\/tx\/0x[0-9a-f]{64}$/.test(await top.locator('a.txlink').getAttribute('href')));
+await p.locator('[data-burn="citrus"]').click();await p.waitForTimeout(200);await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(2500);
+ok('Signal Paper for 10 RF burned: '+(await txt('#lvMine')),(await txt('#lvMine'))==='35.00 RF'&&(await txt('#ledgerTotal'))==='42.00 RF');
 await p.evaluate(()=>{globalThis.__reject=true;});await p.locator('[data-burn="lilac"]').click();await p.waitForTimeout(200);await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(800);
 ok('wallet rejection burns nothing: '+(await txt('#burnStatus')),/Nothing was burned/.test(await txt('#burnStatus'))&&(await p.evaluate(()=>globalThis.__txs.length))===2);
 await p.evaluate(()=>{globalThis.__reject=false;});await p.locator('#closeDialog').click();await p.waitForTimeout(150);
-await p.fill('#ashAmount','99999');await p.locator('[data-burn="ash"]').click();await p.waitForTimeout(200);await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(800);
+await p.evaluate(()=>{globalThis.__poor=true;});await p.locator('[data-burn="archive-pack"]').click();await p.waitForTimeout(200);await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(800);await p.evaluate(()=>{globalThis.__poor=false;});
 ok('not enough RF is refused before the wallet is asked: '+(await txt('#burnStatus')),/Not enough RF/.test(await txt('#burnStatus'))&&(await p.evaluate(()=>globalThis.__txs.length))===2);
 await p.locator('#closeDialog').click();await p.waitForTimeout(150);
 await p.reload();await p.waitForTimeout(1200);await p.getByRole('button',{name:/^STUDIO$/}).click();await p.waitForTimeout(400);

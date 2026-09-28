@@ -1,4 +1,5 @@
-// D3′: a paid cosmetic remains unlocked after 200 newer tagged Tribute burns. Run after `node build.mjs`.
+// D3′: a paid cosmetic remains unlocked after 200 newer tagged Tribute burns. Tribute is retired (not sold), but its
+// code 09 still decodes, so this also checks that old burns keep their place in RESTORE. Run after `node build.mjs`.
 import {chromium} from 'playwright';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';

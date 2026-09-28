@@ -1,4 +1,4 @@
-// Astra's pending/account-change/Tribute browser probes, adapted to this worktree.
+// Astra's pending/account-change browser probes, adapted to this worktree. Tribute and Vault Bounty are retired items.
 // Run after `node build.mjs`: node tests/burn-pending-browser.mjs
 import {chromium} from 'playwright';
 import {readFileSync} from 'node:fs';
@@ -159,13 +159,16 @@ try{
   check('RESTORE finds one old player purchase among 200 newer unrelated transfers',count===1,'restored count='+count);
   await ctx.close();
  }
- // D4: UI blocks Tribute < 1 RF before opening the confirmation dialog.
+ // D4: Tribute and Vault Bounty are not sold: no button, no amount field, and a direct call is refused before the wallet.
  {
-  const {p,ctx}=await setup();await p.fill('#ashAmount','0.000001');await p.locator('[data-burn="ash"]').click();await p.waitForTimeout(150);
-  let count=await sentCount(p);if(await p.locator('#modal').evaluate(e=>e.open)){await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(250);count=await sentCount(p);}
-  check('Tribute below 1 RF is refused before the wallet dialog',!(await p.locator('#modal').evaluate(e=>e.open))&&count===0,'modalOpen='+await p.locator('#modal').evaluate(e=>e.open)+' sends='+count);
+  const {p,ctx}=await setup();
+  const shop=await p.evaluate(()=>[...document.querySelectorAll('[data-burn]')].map(b=>b.dataset.burn).sort().join(','));
+  check('the shop sells exactly the four fixed-price items',shop==='archive-pack,citrus,lilac,trail'&&(await p.locator('#ashAmount,#bountyAmount,#bountyBurn').count())===0,shop);
+  const direct=await p.evaluate(async()=>{const out=[];for(const item of ['ash','bounty']){try{await HeistBurn.burn(window.__probeProvider||{request:async()=>{throw Error('wallet must not be asked');}},{account:'0x1111111111111111111111111111111111111111',item,amount:'5',poll:0,timeout:0});out.push(item+':sent');}catch(e){out.push(item+':'+e.message);}}return out.join('|');});
+  const count=await sentCount(p);
+  check('a direct burn of a retired item is refused before the wallet',/ash:This item is no longer sold/.test(direct)&&/bounty:This item is no longer sold/.test(direct)&&count===0,direct+' sends='+count);
   await ctx.close();
  }
 }finally{await b.close();}
 if(failures.length)throw new Error(failures.length+' burn regression probe(s) failed:\n'+failures.join('\n'));
-console.log('All pending and Tribute browser probes passed.');
+console.log('All pending browser probes passed.');

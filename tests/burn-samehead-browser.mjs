@@ -52,13 +52,15 @@ async function begin(p,item='lilac'){
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
-const burnInput=nonce=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+(10n**18n).toString(16).padStart(64,'0')+'5248535401'+'09'+nonce.toString(16).padStart(4,'0')+''.padStart(48,'0');
+// Chain rows for a pending Signal Paper (citrus, code 03, 10 RF) attempt. The retired Tribute used to play this role.
+const TEN=10n*10n**18n;
+const burnInput=nonce=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+TEN.toString(16).padStart(64,'0')+'5248535401'+'03'+nonce.toString(16).padStart(4,'0')+''.padStart(48,'0');
 try {
  const {p,ctx,setExtraBurns}=await setup();
- const old={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x3f0c3a5',input:burnInput(0)};
+ const old={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:TEN,block:'0x3f0c3a5',input:burnInput(0)};
  setExtraBurns([old]);
  await p.evaluate(()=>window.__holdHash=true);
- await begin(p,'ash');
+ await begin(p,'citrus');
  const before=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs.length,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  check('old block equals head saved BEFORE current send',before.pending.sentBlock===old.block,JSON.stringify(before));
  check('old hash absent from local cache',!before.burns.some(b=>b.tx===old.hash));
@@ -68,10 +70,11 @@ try {
  const after=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns,toast:document.getElementById('toast').textContent}));
  console.log('SAME_HEAD_RESTORE',JSON.stringify(after));
  await p.locator('nav button[data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
- if(after.pending===null)await begin(p,'ash');else await p.locator('[data-burn="ash"]').click();
+ // The head-block row is now cached, so Signal Paper shows as unlocked; the retry uses Hatchwork, which is still for sale.
+ if(after.pending===null)await begin(p,'lilac');else await p.locator('[data-burn="lilac"]').click();
  const retry=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs?.length||0}));
  console.log('SAME_HEAD_TOTAL',JSON.stringify({sends:before.sends+retry.sends,transfers:before.transfers+retry.transfers,RF:before.transfers+retry.transfers}));
- check('current burn remains locked against old head-block Tribute',after.pending?.status==='unknown-outcome'&&before.sends+retry.sends===1);
+ check('current burn remains locked against an old head-block burn',after.pending?.status==='unknown-outcome'&&before.sends+retry.sends===1);
  await ctx.close();
 }finally{await browser.close();}
 if(failures.length)throw Error(failures.join('\n'));

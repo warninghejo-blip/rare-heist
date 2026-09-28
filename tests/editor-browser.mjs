@@ -30,7 +30,9 @@ const cell=(p,x,y)=>p.evaluate(([x,y])=>{const c=document.getElementById('gameCa
 async function drag(p,kind,to){const bb=await p.locator('.piece[data-tool="'+kind+'"]').boundingBox(),from={x:bb.x+bb.width/2,y:bb.y+bb.height/2},t=await cell(p,to.x,to.y);await p.mouse.move(from.x,from.y);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(from.x+(t.x-from.x)*i/10,from.y+(t.y-from.y)*i/10);await p.waitForTimeout(20);}await p.mouse.up();await p.waitForTimeout(250);}
 const check=(p,id)=>p.locator('.checks [data-check="'+id+'"]');
 const settled=async p=>{for(let i=0;i<40&&await check(p,'beatable').getAttribute('data-s')==='run';i++)await p.waitForTimeout(100);};
-async function toEditor(p,fresh){if(fresh){await p.locator('#newSprint').click();await p.waitForTimeout(900);}else{await p.evaluate(()=>document.querySelector('nav [data-route="last"]').click());await p.waitForTimeout(1500);}
+async function toEditor(p,fresh){if(fresh){await p.locator('#newSprint').click();await p.waitForTimeout(900);}else{await p.evaluate(()=>document.querySelector('nav [data-route="last"]').click());await p.waitForTimeout(1500);
+  // Last Heist opens on the stake round now; the editor scenario plays the free standard round.
+  await p.locator('.roundlist button:not(.stake)').first().click();await p.waitForTimeout(900);}
  await p.locator('#raidShared').click();await p.waitForTimeout(2600);await play(p,route);await p.locator('#submitShared').click();await p.waitForTimeout(1500);await p.locator('#fortifyShared').click();await p.waitForTimeout(900);}
 
 // ---- desktop: drag and drop ----

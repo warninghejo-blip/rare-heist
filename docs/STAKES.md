@@ -30,14 +30,14 @@ Example: 7 entrants make a 350 DEMO RF pot. `#7730 took 245 DEMO RF · 105 DEMO 
 
 - **Is it worth entering?** In an `n`-entrant round, a player who wins with probability `p` expects `p × 0.7 × 50n − 50`. It pays when `p > 1 / (0.7n)`: with 5 entrants a player who wins more than 29% of the time comes out ahead. Stronger players are paid by weaker ones, and the 30% burn is the cost of a contested round.
 - **Self-dealing always loses.** A payout needs two clearing sessions. One person running two sessions to fake a contest stakes 100 and gets back 70, losing 30 every time. Without a real opponent the round is uncontested and the stakes simply come back. The burn makes collusion cost money; it can't be avoided by playing against yourself.
-- **The burn only grows with real contests.** Refunded rounds burn nothing. The RF ECONOMY calculator's optional stake term is `days × stake rounds a day × entrants × 50 × share of rounds with a winner × 30%`.
+- **The burn only grows with real contests.** Refunded rounds burn nothing. The RF ECONOMY calculator's stake term is `days × stake rounds a day × entrants × 50 × share of rounds with a winner × 30%` (defaults: 10 rounds a day, 6 entrants, 80% with a winner: 21,600 RF a month if the stakes were real RF).
 
 ### In the game
 
-- **Last Heist lobby, stake round tab** (dashed outline, the RF ECONOMY key for "simulated"): the pot, a 70/30 bar showing what the winner would take and what would burn if the round ended now, entrants as their Friends (#ID and sprite), your DEMO wallet, and a live counter: *"With real RF, stake rounds would have burned N RF so far."* Every stake surface carries a **DEMO, PLAY MONEY** badge.
+- **Last Heist opens on the stake round.** Its tab comes first and is selected by default (dashed outline, the RF ECONOMY key for "simulated"): the pot, a 70/30 bar showing what the winner would take and what would burn if the round ended now, entrants as their Friends (#ID and sprite), your DEMO wallet, and a live counter: *"With real RF, stake rounds would have burned N RF so far."* Every stake surface carries a **DEMO, PLAY MONEY** badge.
 - **STAKE 50 DEMO RF AND RAID** opens a sheet with the rules and your wallet before and after, then stakes and starts the raid.
 - **Settlement card** when the round ends: `Friend #7730 took 245 DEMO RF · 105 DEMO RF burned`, or `Every stake refunded: 100 DEMO RF back to 2 entrants.` The lobby also lists the last settled stake rounds.
-- **Studio → RF ECONOMY**: a dashed STAKE ROUNDS pipe, the DEMO ledger totals read from the server with its invariant check, and the calculator's optional stake term (off by default, so the base projection is unchanged).
+- **Studio → RF ECONOMY leads with stake rounds**: DEMO RF in live pots, entrants, DEMO RF burned so far, settled rounds, the last winners, the server ledger line with its invariant check, and a **From DEMO RF to real RF** roadmap card (the steps in section 2 and "Why the MVP stays simulated"). Below: a dashed STAKE ROUNDS pipe next to the live shop pipe, and the calculator's stake term.
 
 ### Server ledger
 

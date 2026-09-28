@@ -25,11 +25,12 @@ const TOKEN='0x0779369854d3ecdea927206718ffd7730c67b71f',DEAD='0x000000000000000
 const O1='0x5555555555555555555555555555555555555555',O2='0x6666666666666666666666666666666666666666',O3='0x7777777777777777777777777777777777777777';
 const chain={head:0x200,hold:false,sent:[],balances:{[ACCOUNT]:500n*E,[DEAD]:1000n*E},times:new Map(),txs:[]};
 function addTx(from,item,rf,friend,block,time){const amount=BigInt(Math.round(rf*1e6))*10n**12n,hash='0x'+w(0xa000+chain.txs.length);chain.txs.push({hash,from,amount,block:'0x'+block.toString(16),input:B.calldata(amount,item,friend,1)});chain.times.set(block,time);return hash;}
-addTx(O1,'trail',25,'3412',0x100,T0/1000-3600);        // ash only
-addTx(O2,'bounty',12,'7730',0x101,T0/1000-1);         // one second before both rounds: no round
-addTx(O2,'bounty',5,null,0x102,T0/1000);              // exactly at createdAt: both rounds
-addTx(O1,'bounty',70,'3412',0x103,T0/1000+10);        // inside both rounds
-addTx(O3,'bounty',3,null,0x104,END/1000);             // exactly at the sprint end: standard only
+// Earlier tagged burns by other players, including the retired Vault Bounty code (10): they must still decode.
+addTx(O1,'trail',25,'3412',0x100,T0/1000-3600);
+addTx(O2,'bounty',12,'7730',0x101,T0/1000-1);
+addTx(O2,'bounty',5,null,0x102,T0/1000);
+addTx(O1,'bounty',70,'3412',0x103,T0/1000+10);
+addTx(O3,'bounty',3,null,0x104,END/1000);
 const frames=Object.fromEntries(RF_ART.map(x=>[x.familyId+':'+x.seed,x.frames])),ids={'3412':{family:0,seed:3412},'7730':{family:5,seed:7730}},owned=['3412','7730'];
 async function rpc({method,params=[]}){
  if(method==='eth_requestAccounts'||method==='eth_accounts')return [ACCOUNT];
@@ -62,15 +63,16 @@ async function open(viewport={width:1440,height:1000},legacyPending=null){
  await ctx.route(origin+'/',async r=>{const res=await r.fetch(),body=(await res.text()).replace(/\r\n/g,'\n'),hashes=[...body.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>"'sha256-"+createHash('sha256').update(m[1]).digest('base64')+"'"),headers={...res.headers()};headers['content-security-policy']=headers['content-security-policy'].replace(/script-src [^;]+;/,'script-src '+hashes.join(' ')+';');await r.fulfill({response:res,body,headers});});
  const p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin+'/');await p.waitForTimeout(900);await p.evaluate(()=>document.getElementById('friendReveal')?.remove());return {p,ctx};
 }
+// Opens the burn confirmation for one shop item. Each scenario uses an item no earlier scenario has sent, because a
+// sent burn is restored from the mock chain and then shows as unlocked (no BURN button).
 async function ready(p,item){await p.locator('#wallet').click();await p.locator('#walletConnect').click();await p.waitForTimeout(600);await p.locator('#closeDialog').click();
- if(item==='bounty'){await p.locator('nav [data-route="last"]').click();await p.locator('#bountyBurn').waitFor();await p.locator('#bountyBurn').click();await p.fill('#bountyAmount','2.123456');await p.locator('#bountyNext').click();}
- else{await p.locator('nav [data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.fill('#ashAmount','2.123456');await p.locator('[data-burn="ash"]').click();}
+ await p.locator('nav [data-route="studio"]').click();await p.locator('[data-mode="live"]').click();await p.locator('[data-burn="'+item+'"]').click();
  await p.locator('#burnAgree').check();}
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(test,ms=5000){const end=Date.now()+ms;while(Date.now()<end){if(await test())return;await pause(25);}throw Error('Timed out waiting for wallet call');}
 async function pair(item){const {p,ctx}=await open();await ready(p,item);const q=await ctx.newPage();q.on('pageerror',e=>errors.push(e.message));await q.goto(origin+'/');await q.waitForTimeout(300);await q.evaluate(()=>document.getElementById('friendReveal')?.remove());await ready(q,item);return {p,q,ctx};}try{
  for(let trial=0;trial<2;trial++){
-  const {p,q,ctx}=await pair('ash');chain.hold=true;
+  const {p,q,ctx}=await pair(['lilac','citrus'][trial]);chain.hold=true;
   const cd=await ctx.newCDPSession(q);await cd.send('Debugger.enable');
   await q.evaluate(()=>{const native=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='rh-cutaway-v1'&&window.__pauseSave){window.__pauseSave=false;debugger;}return native.call(this,k,v);};window.__pauseSave=true;});
   const paused=new Promise(r=>cd.once('Debugger.paused',r));
@@ -90,6 +92,7 @@ async function pair(item){const {p,ctx}=await open();await ready(p,item);const q
   ok('one send after concurrent ordinary persist trial '+trial,chain.sent.length===start+1);
   await ctx.close();chain.hold=false;
  }
+ // Locks saved before Tribute (ash) and Vault Bounty were retired must still load, migrate and lock.
  const legacy={status:'unknown-outcome',ownerId:'legacy-tab',walletRequested:true,from:ACCOUNT,item:'ash',amount:'2',amountUnits:'2000000000000000000',friendId:null,sentAt:Date.now(),sentBlock:null,nonce:null,decimals:18};
  const migrated=await open(undefined,legacy);
  const state=await migrated.p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),common:JSON.parse(localStorage.getItem('rh-cutaway-v1'))}));

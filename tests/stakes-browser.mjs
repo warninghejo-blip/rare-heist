@@ -80,8 +80,9 @@ try{
  await nav('studio');await p.locator('[data-mode="economy"]').click();await until(()=>/Ledger check/.test(document.getElementById('ecStakes')?.textContent||''));
  ok('diagram: a dashed STAKE ROUNDS pipe (simulated)',(await p.locator('.pipe.sim',{hasText:'STAKE ROUNDS'}).count())===1&&(await p.locator('.pipe.sim').evaluate(e=>getComputedStyle(e).borderTopStyle))==='dashed');
  ok('DEMO ledger line from the server: '+(await txt('#ecStakes')),/2 settled, 45 DEMO RF burned, 105 paid to winners, 50 refunded, 0 in live pots/.test(await txt('#ecStakes'))&&/Ledger check passes/.test(await txt('#ecStakes')));
- ok('calculator: stake term off by default, base projection unchanged ('+(await txt('#calcMonth'))+')',(await txt('#calcStakes'))==='0 RF'&&(await txt('#calcMonth'))==='4,500 RF');
- await p.fill('#calc-stakeRounds','10');ok('10 stake rounds a day × 6 entrants × 50 × 80% × 30% × 30 days = 21,600 RF ('+(await txt('#calcStakes'))+')',(await txt('#calcStakes'))==='21,600 RF'&&(await txt('#calcMonth'))==='26,100 RF');
+ ok('calculator: stake term first, by default 10 rounds a day × 6 entrants × 50 × 80% × 30% × 30 days = 21,600 RF of 27,000 RF ('+(await txt('#calcStakes'))+' / '+(await txt('#calcMonth'))+')',(await txt('#calcStakes'))==='21,600 RF'&&(await txt('#calcMonth'))==='27,000 RF');
+ await p.fill('#calc-stakeRounds','20');ok('20 stake rounds a day doubles the stake term: 43,200 RF ('+(await txt('#calcStakes'))+')',(await txt('#calcStakes'))==='43,200 RF'&&(await txt('#calcMonth'))==='48,600 RF');
+ ok('RF ECONOMY headline: settled stake totals and the last winner from the server ('+(await txt('#ecStakeBurned'))+')',(await txt('#ecStakeBurned'))==='45 DEMO RF'&&(await txt('#ecSettled'))==='2'&&/took 105 DEMO RF · 45 DEMO RF burned/.test(await txt('#ecWinners')));
  await p.locator('.econmap').screenshot({path:path.join(shots,'rf-economy-stakes-flow.png')});await p.locator('.calc').screenshot({path:path.join(shots,'rf-economy-stakes-calc.png')});
  // Phone: a guest opens a fresh stake round and stakes on it.
  {const made=await C('POST','/api/rounds',{profile:'standard',stake:true});await C('POST','/api/rounds/'+made.id+'/stake',{heroId:'5555'});}

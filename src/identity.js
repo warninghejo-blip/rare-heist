@@ -22,15 +22,15 @@
  function words(s,count){if(typeof s!=='string'||!new RegExp('^0x[0-9a-fA-F]{'+(64*count)+'}$').test(s))throw Error('Invalid chain response');return Array.from({length:count},(_,i)=>BigInt('0x'+s.slice(2+64*i,66+64*i)));}
  function address(s){if(typeof s!=='string'||!/^0x[\da-f]{40}$/i.test(s))throw Error('Invalid wallet account');return s.toLowerCase();}
  const short=a=>a?a.slice(0,6)+'…'+a.slice(-4):'';
- const WALLET_METHODS=['eth_chainId','eth_blockNumber','eth_accounts','eth_requestAccounts','eth_call','eth_getLogs','wallet_switchEthereumChain','wallet_addEthereumChain','eth_sendTransaction','eth_getTransactionReceipt','eth_getTransactionByHash','eth_getBlockByNumber'];
+ const WALLET_METHODS=['eth_chainId','eth_blockNumber','eth_accounts','eth_requestAccounts','eth_call','eth_getLogs','wallet_switchEthereumChain','wallet_addEthereumChain','eth_sendTransaction','eth_getTransactionReceipt','eth_getTransactionByHash'];
  async function request(p,method,params,timeout=15000){
   if(!p||typeof p.request!=='function')throw Error('No browser wallet found. Install one, or play as a guest.');
   if(!WALLET_METHODS.includes(method))throw Error('Forbidden wallet action');
   let timer;try{return await Promise.race([Promise.resolve().then(()=>p.request({method,...(params?{params}:{})})),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('The wallet did not answer in time. Retry.')),timeout);})]);}finally{clearTimeout(timer);}
  }
- // Public RPC for reads without a wallet (PREVIEW, VIEW HOLDER, Hall of Ash). Never ownership claims.
+ // Public RPC for reads without a wallet (PREVIEW, VIEW HOLDER, burn ledger). Never ownership claims.
  async function rpc(method,params,{fetchImpl=globalThis.fetch,timeout=15000,retries=2}={}){
-  if(!['eth_call','eth_blockNumber','eth_chainId','eth_getLogs','eth_getTransactionReceipt','eth_getTransactionByHash','eth_getBlockByNumber'].includes(method))throw Error('Forbidden RPC method');
+  if(!['eth_call','eth_blockNumber','eth_chainId','eth_getLogs','eth_getTransactionReceipt','eth_getTransactionByHash'].includes(method))throw Error('Forbidden RPC method');
   const ctl=typeof AbortController==='function'?new AbortController():null,timer=setTimeout(()=>ctl?.abort(),timeout);
   try{const r=await fetchImpl(MANIFEST.rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:ctl?.signal});
    // The public RPC rate-limits bursts (429 seen after ~250 calls/min); one 429 must not abort a 65-call discovery.

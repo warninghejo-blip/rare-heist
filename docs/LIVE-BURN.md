@@ -1,12 +1,12 @@
 # LIVE BURN: checking it with a real wallet
 
-LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this checklist for the first burn with real RF on Robinhood Chain. Start with the smallest amount.
+LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this checklist for the first burn with real RF on Robinhood Chain. Start with the cheapest item.
 
 ## You need
 
 - A browser wallet with Robinhood Chain (chain ID 4663). The game offers to add the network if the wallet does not know it.
 - A little ETH on Robinhood Chain for gas.
-- At least 1 RF (`0x0779369854d3EcdEA927206718FFD7730C67B71f`).
+- At least 10 RF (`0x0779369854d3EcdEA927206718FFD7730C67B71f`). The cheapest shop items, Hatchwork and Signal Paper, cost 10 RF.
 - A Rare Friend is optional. Without one, the burn is recorded with no Friend.
 
 ## Steps
@@ -16,17 +16,17 @@ LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this
 3. **CONNECT WALLET.**
    - **YOUR RF** should match the RF balance your wallet shows.
    - **RF AT 0x…dEaD** shows the burn address's balance.
-4. On **TRIBUTE**, enter `1` and press **BURN FOR THE HALL**.
-5. Read the confirmation, tick the box and press **BURN 1 RF**.
+4. On **SIGNAL PAPER**, press **BURN 10 RF**.
+5. Read the confirmation, tick the box and press **BURN 10 RF**.
 6. In the wallet, check the request before approving:
 
    | Field | Expected |
    |---|---|
    | To | the RF token `0x0779…B71f`. It must not be an unknown contract. |
    | Value | 0 ETH |
-   | Data | starts with `0xa9059cbb` then `…000000000000000000000000000000000000dead`. Most wallets show this as "Transfer 1 RF to 0x…dEaD". |
+   | Data | starts with `0xa9059cbb` then `…000000000000000000000000000000000000dead`. Most wallets show this as "Transfer 10 RF to 0x…dEaD". |
 
-7. Wait for **Sent … Waiting for Robinhood Chain…**, then the toast **Burned 1.00 RF on chain**.
+7. Wait for **Pending transaction … Waiting for Robinhood Chain**, then the toast **Burned 10.00 RF on chain. SIGNAL PAPER unlocked.**
 
 ## Pending transactions
 
@@ -34,31 +34,27 @@ Before opening the wallet request, Rare Heist takes a browser Web Lock shared by
 
 If the wallet request times out or has a network error after `eth_sendTransaction` starts, Rare Heist cannot know whether the wallet sent it. The lock stays in place and a single **UNKNOWN OUTCOME** panel appears on every screen and in every tab. Reloading while the request has no hash, or opening the game while another tab owns that lock, shows the same panel. Its exact message is: “We don't know if your wallet sent the burn. Check your wallet's activity before trying again.”
 
-- **RESTORE FROM CHAIN** searches the pending player's tagged transfer logs. Before asking the wallet to send, the game saves the current block number. Only an uncached burn in a *later* block with the same item, sufficient amount, Friend and attempt nonce in its transaction input can clear this attempt's lock. Older pending records without a nonce or saved block number cannot be cleared by RESTORE; check the wallet and use RELEASE LOCK if appropriate. If no matching burn is found yet, the lock stays and you can check again. Legacy tags with zero in the nonce bytes still appear in history and the Hall of Ash.
+- **RESTORE FROM CHAIN** searches the pending player's tagged transfer logs. Before asking the wallet to send, the game saves the current block number. Only an uncached burn in a *later* block with the same item, sufficient amount, Friend and attempt nonce in its transaction input can clear this attempt's lock. Older pending records without a nonce or saved block number cannot be cleared by RESTORE; check the wallet and use RELEASE LOCK if appropriate. If no matching burn is found yet, the lock stays and you can check again. Legacy tags with zero in the nonce bytes still appear in history and the burn ledger.
 - **RELEASE LOCK** opens a separate confirmation. Check your wallet activity first, then tick “I checked my wallet: the burn was not sent or was rejected. If it was sent, retrying burns RF again.” and confirm. Releasing is an explicit choice; if the original burn was sent, confirming another still burns more RF.
 - An explicit wallet rejection (`4001` or `ACTION_REJECTED`) and errors before the burn request is sent clear the lock. Other errors after the wallet request starts keep UNKNOWN OUTCOME, even if their message contains “rejected” or “denied”. A receipt resolves a transaction by its hash: success unlocks the item and a failed receipt clears the lock.
 
 - A successful receipt that proves the RF transfer unlocks the item.
 - A failed receipt clears the pending state and reports that no RF was burned.
 - If you replaced or cancelled the transaction in your wallet, use **I replaced/cancelled it in my wallet — forget this tx** and confirm. The warning explains that RF will still burn if the original transaction later succeeds.
-- RESTORE keeps paid cosmetic purchases even when the wallet has more than 200 Tribute receipts. The Hall and local cache keep at most 200 Tribute entries.
+- Tribute (code 9) and Vault Bounty (code 10) are retired: they cannot be bought, but old burns and old locks with them still decode, show in the ledger and go through the same lock and RESTORE rules. RESTORE keeps paid shop purchases even when a wallet has more than 200 such any-amount receipts; the local cache keeps at most 200 of them.
 
 ## What to verify
 
 | Where | Expected |
 |---|---|
-| **YOU BURNED VIA RARE HEIST** | 1.00 RF |
-| **YOUR RF** | 1 RF lower |
-| **RF AT 0x…dEaD** | 1 RF higher |
-| **HALL OF ASH** | your Friend, or your short address if you have no Friend |
+| **YOU BURNED HERE** | 10.00 RF |
+| **YOUR RF** | 10 RF lower |
+| **RF AT 0x…dEaD** | 10 RF higher |
+| **BURN LEDGER** | SIGNAL PAPER, 10.00 RF, your Friend (or your short address), and a TX link that opens the transaction on `robinhoodchain.blockscout.com` |
 | Block explorer, transaction page | one RF `Transfer` from you to `0x000000000000000000000000000000000000dEaD` |
-| Block explorer, input data | ends with 32 bytes starting `52485354 01 09`: `RHST`, version 1, item 9 (tribute), then a two-byte attempt nonce |
+| Block explorer, input data | ends with 32 bytes starting `52485354 01 03`: `RHST`, version 1, item 3 (Signal Paper), then a two-byte attempt nonce |
 
 Reload the page, return to LIVE BURN and press **RESTORE FROM CHAIN**. The burn should come back from the chain alone.
-
-### Vault Bounty
-
-On the Last Heist page (online build), press **BURN A BOUNTY**, enter `1`, **CONTINUE**, then confirm as above. The input data tag starts `52485354 01 0a` (item 10, bounty). After the receipt, the round's banner adds 1.00 RF (it re-reads the chain right after the receipt), your Friend's ash grows by 1 RF, and nothing unlocks. While this bounty is pending or its outcome is unknown, no other burn (bounty, Tribute or cosmetic) can be sent.
 
 ## If something goes wrong
 

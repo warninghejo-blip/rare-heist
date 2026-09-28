@@ -35,7 +35,7 @@ test('RESTORE finds an older tagged player burn after 200 unrelated dEaD transfe
  assert.equal(result.truncated,false);
 });
 
-test('direct Tribute rejects less than 1 RF before calling the wallet',async()=>{
+test('a direct burn of a retired item (Tribute, Bounty) is refused before calling the wallet',async()=>{
  const calls=[],w=I.word,p={request:async({method,params})=>{
   calls.push(method);if(method==='eth_chainId')return '0x1237';
   if(method==='eth_call'){const selector=params[0].data.slice(2,10);return '0x'+w(selector==='313ce567'?18:100000n*E);}
@@ -43,13 +43,15 @@ test('direct Tribute rejects less than 1 RF before calling the wallet',async()=>
   if(method==='eth_getTransactionReceipt')return null;
   throw Error('unexpected '+method);
  }};
- let error;try{await B.burn(p,{account:P,item:'ash',amount:'0.000001',poll:0,timeout:0});}catch(e){error=e;}
- assert.equal(calls.filter(x=>x==='eth_sendTransaction').length,0,'subminimum Tribute must never be sent');
- assert.deepEqual(calls,[],'validation must happen before any wallet request');
- assert.match(error?.message||'',/at least 1 RF/);
+ for(const [item,amount] of [['ash','0.000001'],['ash','5'],['bounty','5']]){
+  let error;try{await B.burn(p,{account:P,item,amount,poll:0,timeout:0});}catch(e){error=e;}
+  assert.equal(calls.filter(x=>x==='eth_sendTransaction').length,0,'a retired item must never be sent');
+  assert.deepEqual(calls,[],'validation must happen before any wallet request');
+  assert.match(error?.message||'',/no longer sold/);
+ }
 });
 
-test('player RESTORE keeps bounty receipts next to tributes and never treats them as unlocks',async()=>{
+test('player RESTORE still decodes legacy bounty (10) and tribute (9) receipts next to purchases, never as unlocks',async()=>{
  const rows=[['0x'+w(1),'bounty',37n*E],['0x'+w(2),'trail',25n*E],['0x'+w(3),'ash',2n*E]];
  const logs=rows.map(([tx,,amount],i)=>({address:I.RF_TOKEN,transactionHash:tx,blockNumber:'0x'+(i+1).toString(16),logIndex:'0x0',topics:[I.TRANSFER,'0x'+w(P),'0x'+w(B.DEAD)],data:'0x'+w(amount)}));
  const txs=new Map(rows.map(([tx,item,amount])=>[tx,{from:P,to:I.RF_TOKEN,input:B.calldata(amount,item,'3412',1)}]));
@@ -57,5 +59,5 @@ test('player RESTORE keeps bounty receipts next to tributes and never treats the
  const r=await B.history(provider,{player:P});
  assert.deepEqual(r.burns.map(b=>b.item).sort(),['ash','bounty','trail']);
  assert.deepEqual(B.unlocked(r.burns),['trail']);
- assert.equal(B.ashByFriend(r.burns).get('3412'),64n*E);
+ assert.equal(B.ledger(r.burns).total,64n*E,'the ledger counts legacy burns');
 });

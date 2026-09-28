@@ -388,17 +388,26 @@ button.burn:hover:not(:disabled){background:var(--signal);color:#000;box-shadow:
 button.burn:disabled{opacity:.45}
 .burncard label{display:grid;gap:4px;margin:4px 0;font-size:11px}
 .burncard input{font:inherit;border:2px solid #000;padding:6px 8px;min-height:38px}
-.hall{border:3px solid #000;background:#000;color:#fff;padding:16px 18px;margin:26px 0;box-shadow:6px 6px 0 var(--signal)}
-.hall h3{color:var(--signal);margin:0 0 4px;font-size:18px}
-.hall .note{margin:0 0 10px;color:var(--mist)}
-.hall ol{margin:0;padding-left:28px;display:grid;gap:6px}
-.hall li{display:grid;grid-template-columns:34px 1fr auto auto;gap:12px;align-items:center;border-bottom:1px dashed var(--haze);padding-bottom:6px;font-size:13px}
-.hall ol.empty-hall{padding-left:0;list-style:none}
-.hall li.hall-wait{display:block}
-.hall li.hall-empty{display:flex;flex-direction:column;align-items:flex-start;gap:8px;border:2px dashed var(--signal);padding:14px 16px}
-.hall-empty strong{color:var(--signal);font-size:16px}
-.hall-empty span{color:var(--mist);font-size:12px;line-height:1.55;max-width:60ch}
-.hall li b{color:var(--signal)}.hall li small{opacity:.75}
+.cards.shop{grid-template-columns:repeat(4,minmax(0,1fr))}
+.burncard.lead{border-color:var(--signal);box-shadow:4px 4px 0 var(--signal)}
+/* BURN LEDGER: the plain, transparent record of every tagged Rare Heist burn. Real RF, so it keeps the black-and-lime
+   treatment; no ranking, the newest block first. */
+.ledger{border:3px solid #000;background:#000;color:#fff;padding:16px 18px;margin:26px 0;box-shadow:6px 6px 0 var(--signal)}
+.ledger-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 18px;margin-bottom:4px}
+.ledger-head h3{color:var(--signal);margin:0;font-size:18px}
+.ledger-head p{font-size:13px;color:var(--mist)}
+.ledger-head strong{font-size:22px;color:#fff;margin-left:6px;white-space:nowrap}
+.ledger .note{margin:0 0 10px;color:var(--mist)}
+.ledger ol{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.brow{display:grid;grid-template-columns:34px minmax(0,1.2fr) minmax(0,.8fr) minmax(0,1fr) auto;gap:4px 12px;align-items:center;border-bottom:1px dashed var(--haze);padding:0 0 6px;font-size:13px}
+.ledger li b{color:var(--signal)}
+.brow .amt{color:#fff;text-align:right}
+.brow .bwho{color:var(--mist);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ledger li.ledger-wait{display:block;color:var(--mist)}
+.ledger li.ledger-empty{display:block;border:2px dashed var(--signal);padding:12px 14px;color:var(--mist);font-size:12px;line-height:1.55}
+.txlink{color:var(--signal);font-size:12px;white-space:nowrap}
+.txlink:hover,.txlink:focus-visible{background:var(--signal);color:#000}
+.myburns li.brow{padding:7px 0}.myburns .brow b{color:#fff}.myburns .txlink{color:var(--wall)}
 .burnfacts{padding-left:20px;display:grid;gap:6px;font-size:12px;line-height:1.55}
 .burnfacts li{overflow-wrap:anywhere}
 .check{display:flex;gap:8px;align-items:center;margin:12px 0;font-weight:bold}
@@ -661,7 +670,8 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .livestats .statblock{padding:8px}.livestats strong{font-size:15px}.livestats small{font-size:10px}
  .modeswitch{width:100%}
  .modeswitch button{flex:1;padding:8px 8px;font-size:12px}
- .hall li{grid-template-columns:34px 1fr auto}.hall li small{display:none}
+ .cards.shop{grid-template-columns:1fr}
+ .brow{grid-template-columns:34px minmax(0,1fr) auto}.brow .bwho{grid-column:2}.brow .txlink{grid-column:3;text-align:right}
  footer{font-size:10px;padding:10px 12px;flex-wrap:wrap}
  .dialoginner{padding:16px}
  .dialoginner h2{font-size:18px}
@@ -696,54 +706,6 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 .hud-friend i{display:block;font-style:normal;font-size:10px;color:var(--muted)}
 
-/* ASH RANKS. Heat in a 1-bit palette: a dashed ember, a solid cinder, a lit furnace, and the ash lord wearing the
-   real-money tape. The same four steps frame the Friend on the home card and the reveal. Titles only. */
-.ashrank{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:3px 7px 3px 5px;border:1px dashed var(--signal);color:var(--signal);font-size:10px;line-height:1.2;letter-spacing:.6px;white-space:nowrap;vertical-align:middle;text-transform:uppercase}
-.ashrank i{width:8px;height:10px;flex:none;background:currentColor;clip-path:polygon(38% 0,62% 0,62% 20%,88% 20%,88% 50%,100% 50%,100% 100%,0 100%,0 50%,12% 50%,12% 20%,38% 20%)}
-.ashrank small{font-size:10px;margin-left:4px;opacity:.85}
-.ashrank.r-cinder{border-style:solid}
-.ashrank.r-furnace{background:var(--signal);color:#000;border:1px solid #000}
-.ashrank.r-ashlord{background:#000;color:var(--signal);border:2px solid var(--signal);box-shadow:3px 3px 0 #000}
-.hero-friend[data-rank="ember"]{border-style:dashed;border-color:var(--signal)}
-.hero-friend[data-rank="cinder"]{border-color:var(--signal)}
-.hero-friend[data-rank="furnace"]{border-color:var(--signal);box-shadow:6px 6px var(--signal)}
-.hero-friend[data-rank="ashlord"]{border:6px solid;border-image:var(--tape) 6;box-shadow:6px 6px var(--signal)}
-.hero-rank:empty{display:none}
-.hero-rank{grid-column:1/-1;order:4}
-.hero-rank .ashrank{margin-left:0}
-.reveal.r-ember{border:3px dashed var(--signal)}
-.reveal.r-cinder{border-color:var(--signal)}
-.reveal.r-furnace{border-color:var(--signal);box-shadow:8px 8px 0 var(--signal),16px 16px 0 #000}
-.reveal.r-ashlord{border:6px solid;border-image:var(--tape) 6}
-.reveal-facts .ashrank{margin-left:0}
-#revealAsh{display:contents}
-.res-friend .ashrank{margin:0 8px 0 0}
-.leader .ashrank,.eventlist .ashrank{margin-left:4px}
-.rankstrip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 18px;align-items:center;margin:22px 0 0;padding:12px 14px;border:2px solid var(--haze);background:var(--night)}
-.rankstrip p{font-size:12px;line-height:1.6;color:var(--muted);max-width:68ch}
-.rankstrip p b{color:#fff}
-.rankstrip p strong{color:var(--signal)}
-.rankladder{display:flex;margin:0;padding:0;list-style:none;border:2px solid #000}
-.rung{display:grid;padding:6px 10px;border-right:2px solid #000;background:var(--deep);color:var(--mist);font-size:10px;letter-spacing:.5px;min-width:72px}
-.rung:last-child{border-right:0}
-.rung b{font-size:11px;color:inherit}
-.rung.lit{background:var(--signal);color:#000}
-.rung.here{background:#000;color:var(--signal);box-shadow:inset 0 -4px 0 var(--signal)}
-/* VAULT BOUNTY on the Last Heist round: real RF, so it wears the tape once it holds any. */
-.bounty{margin:14px 0 12px;border:2px dashed var(--haze);background:var(--night);padding:12px 14px;display:grid;gap:6px}
-.bounty.hot{border:6px solid transparent;background:linear-gradient(var(--night),var(--night)) padding-box,var(--tape) border-box}
-.bounty-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
-.bounty-head strong{font-size:18px;color:#fff;letter-spacing:.2px}
-.bounty.hot .bounty-head strong{color:var(--signal)}
-.bounty p{font-size:12px;line-height:1.55;color:var(--wall);max-width:60ch}
-.bounty .note{color:var(--muted);font-size:11px}
-.bounty .toolbar{margin:4px 0 0}
-.bounty-winner{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
-.bounty-winner span:last-child{color:var(--muted)}
-.breaker{display:inline-block;background:var(--signal);color:#000;border:2px solid #000;padding:2px 8px;font-size:11px;letter-spacing:.5px;white-space:nowrap;box-shadow:2px 2px 0 #000}
-.pastrounds .breaker{margin-left:6px}
-.bountycard{border-style:dashed}
-#dialogContent label input#bountyAmount{display:block;width:100%;margin-top:4px;border:2px solid #000;padding:6px 8px;min-height:40px}
 /* RF ECONOMY: a pipeline, left to right. Solid lines are live on chain, dashed are simulated, dotted are only designed. */
 .econmap{margin:0 0 22px}
 .econmap h2{margin:0 0 12px}
@@ -799,9 +761,6 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .pipe{margin:0 0 0 22px}
  .pipe::after{display:none}
  .econlanes,.calcgrid{grid-template-columns:1fr}
- .rankstrip{grid-template-columns:1fr}
- .rankladder{flex-wrap:wrap}
- .rung{flex:1}
 }
 /* DEMO STAKE ROUNDS on Last Heist. Play money, so it wears the dashed "simulated" line of the RF ECONOMY key and never
    the striped tape of real RF. The one loud element is the pot bar: lime for the winner's 70%, black ash for the 30% burned. */
@@ -846,4 +805,51 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 @media(max-width:560px){
  .potbar b{font-size:16px}
  .stakes-head strong{font-size:17px}
+}
+/* RF ECONOMY headline: stake rounds, the core loop. DEMO, so the dashed "simulated" line; the one loud element is the
+   big 70/30 pot bar. The roadmap below is dotted ("designed only") and numbered because it is a real sequence. */
+.stakehero{border:2px dashed var(--mist);background:var(--night);padding:16px 18px;margin:0 0 22px;display:grid;gap:12px}
+.stakehero-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px}
+.stakehero-head h2{font-size:26px;color:#fff}
+.stakehero-rule{font-size:13px;line-height:1.6;color:var(--wall);max-width:72ch}
+.stakehero-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.stakehero-pot{display:grid;gap:8px}
+.stakehero-big{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:13px;color:var(--mist)}
+.stakehero-big strong{font-size:48px;line-height:1;color:var(--signal)}
+.potbar.potbig{min-height:78px;box-shadow:5px 5px 0 #000}
+.potbar.potbig b{font-size:30px}
+.potbar.potbig span{font-size:11px;padding:8px 12px}
+.stakehero-pot .note{margin:0;font-size:11px}
+.stakehero-facts{margin:0;display:grid;gap:8px}
+.stakehero-facts div{border:2px solid var(--haze);padding:8px 12px;background:var(--deep)}
+.stakehero-facts dt{font-size:11px;color:var(--muted)}
+.stakehero-facts dd{margin:2px 0 0;font-size:20px;color:#fff;overflow-wrap:anywhere}
+.stakehero-sub{font-size:14px;margin-top:4px}
+.stakehero .stakehist{margin:0}
+.stakehero .ledgerline{border-left:3px dashed var(--mist);padding-left:8px;font-size:11px;color:var(--wall)}
+.stakehero .toolbar{margin:0}
+.roadmap{border:2px dotted var(--haze);background:var(--night);padding:16px 18px;margin:0 0 26px}
+.roadmap h2{font-size:20px}
+.roadmap-lede{font-size:12px;color:var(--muted);margin:4px 0 12px;max-width:72ch}
+.roadsteps{list-style:none;margin:0;padding:0;counter-reset:road;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.roadsteps li{counter-increment:road;position:relative;display:grid;align-content:start;gap:4px;padding:12px 12px 12px 50px;border:2px dotted var(--haze);background:var(--deep);min-width:0}
+.roadsteps li::before{content:counter(road);position:absolute;left:12px;top:10px;font-size:26px;line-height:1;color:var(--haze)}
+.roadsteps li b{font-size:13px;color:#fff}
+.roadsteps li span{font-size:11px;line-height:1.55;color:var(--muted)}
+.roadsteps li.now{border:2px dashed var(--mist);background:#000}
+.roadsteps li.now::before{color:var(--signal)}
+.roadsteps li em{justify-self:start;font-style:normal;font-size:10px;letter-spacing:.8px;background:var(--signal);color:#000;padding:1px 7px;margin-top:2px}
+.roadmap .note{margin:12px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.calcin .shopopt{margin-top:0}
+@media(max-width:1120px){
+ .cards.shop{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .roadsteps{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ .cards.shop{grid-template-columns:1fr}
+ .stakehero,.roadmap{padding:12px}
+ .stakehero-grid,.roadsteps{grid-template-columns:1fr}
+ .stakehero-head h2{font-size:20px}
+ .stakehero-big strong{font-size:38px}
+ .potbar.potbig{min-height:64px}.potbar.potbig b{font-size:22px}
 }

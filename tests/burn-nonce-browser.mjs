@@ -52,13 +52,15 @@ async function begin(p,item='lilac'){
 }
 async function beginWaiting(p,item='lilac'){await p.locator('[data-burn="'+item+'"]').click();await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>globalThis.__sendCalls>0);}
 const unknownText="We don't know if your wallet sent the burn. Check your wallet's activity before trying again.";
-const burnInput=(nonce)=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+(10n**18n).toString(16).padStart(64,'0')+'5248535401'+'09'+nonce.toString(16).padStart(4,'0')+''.padStart(48,'0');
+// Chain rows for a pending Signal Paper (citrus, code 03, 10 RF) attempt. The retired Tribute used to play this role.
+const TEN=10n*10n**18n;
+const burnInput=(nonce)=>'0xa9059cbb'+BigInt(DEAD).toString(16).padStart(64,'0')+TEN.toString(16).padStart(64,'0')+'5248535401'+'03'+nonce.toString(16).padStart(4,'0')+''.padStart(48,'0');
 try {
  const {p,ctx,setExtraBurns}=await setup();
- const wrong={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:10n**18n,block:'0x3f0c3a6',input:burnInput(1)};
+ const wrong={hash:'0x'+(0xc001n).toString(16).padStart(64,'0'),from:ACCOUNT.toLowerCase(),to:TOKEN,dest:DEAD,amount:TEN,block:'0x3f0c3a6',input:burnInput(1)};
  setExtraBurns([wrong]);
  await p.evaluate(()=>window.__holdHash=true);
- await begin(p,'ash');
+ await begin(p,'citrus');
  const before=await p.evaluate(()=>({sends:window.__sendCalls,transfers:window.__txs.length,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1')),burns:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns}));
  check('different nonce is in a later block and uncached',BigInt(wrong.block)>BigInt(before.pending.sentBlock)&&!before.burns.some(b=>b.tx===wrong.hash),JSON.stringify(before));
  check('pending stores a nonzero nonce',Number.isInteger(before.pending.nonce)&&before.pending.nonce>0&&before.pending.nonce<=65535);
@@ -81,7 +83,7 @@ try {
  await ctx.close();
  const legacy=await setup();
  await legacy.p.evaluate(()=>window.__holdHash=true);
- await begin(legacy.p,'ash');
+ await begin(legacy.p,'citrus');
  const legacyNonce=await legacy.p.evaluate(()=>{const pending=JSON.parse(localStorage.getItem('rh-live-pending-v1'));const nonce=pending.nonce;delete pending.nonce;localStorage.setItem('rh-live-pending-v1',JSON.stringify(pending));return nonce;});
  legacy.setExtraBurns([{...wrong,hash:'0x'+(0xc003n).toString(16).padStart(64,'0'),input:burnInput(legacyNonce)}]);
  await legacy.p.reload();await legacy.p.waitForTimeout(350);await legacy.p.locator('#burnUnknownRestore').click();await legacy.p.waitForTimeout(700);
