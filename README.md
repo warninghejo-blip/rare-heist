@@ -6,7 +6,7 @@
 
 **Sneak your own Rare Friend through a cutaway building, one move at a time.<br>Then leave the next thief a harder way in.**
 
-[**▶ PLAY IN YOUR BROWSER**](https://rareheist-bc89faa0.sslip.io/) &nbsp;·&nbsp; [mirror](https://warninghejo-blip.github.io/rare-heist/) &nbsp;·&nbsp; [**WATCH THE TRAILER**](media/rare-heist-trailer-720p.mp4) &nbsp;·&nbsp; [1080p](media/rare-heist-trailer.mp4)
+[**▶ PLAY IN YOUR BROWSER**](https://rareheist-bc89faa0.sslip.io/) &nbsp;·&nbsp; [mirror](https://warninghejo-blip.github.io/rare-heist/) &nbsp;·&nbsp; [**WATCH THE TRAILER**](media/rare-heist-trailer-720p.mp4) &nbsp;·&nbsp; [1080p](media/rare-heist-trailer.mp4) &nbsp;·&nbsp; [**THE PITCH, ON ONE PAGE**](https://warninghejo-blip.github.io/rare-heist/pitch/)
 
 Every level, solved (proof video, 2:44: all 23 levels beaten by the stored solutions in `src/solutions.js`, drawn by the game's own engine and renderer): [720p](https://github.com/warninghejo-blip/rare-heist/blob/main/media/all-levels-solved-720p.mp4) · [1080p](https://github.com/warninghejo-blip/rare-heist/blob/main/media/all-levels-solved.mp4)
 
