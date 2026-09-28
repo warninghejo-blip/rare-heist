@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="media/rare-heist.gif" alt="Rare Heist: your Rare Friend slips past a drone, takes the trophy and escapes clean" width="880">
+<img src="media/rare-heist.gif" alt="Rare Heist: your Rare Friend slips behind a guard with a flashlight, takes the trophy and escapes unseen" width="880">
 
 # RARE HEIST
 
@@ -16,7 +16,7 @@ Rare Friends Vibeathon 2026 · Character Spotlight · Token Activity · free, no
 
 ## The pitch
 
-Every building has a way in. You move one cell, then security moves. Click where you want to go and your Friend walks there, stopping the moment the next step would be seen. Cameras, lasers and patrol drones all run on a readable clock, so a perfect heist is always possible. You just have to see it.
+Every building has a way in. You move one cell, then security moves. Click where you want to go and your Friend walks there, stopping the moment the next step would be seen. Cameras, lasers, patrol drones and guards on foot all run on a readable clock, so a perfect heist is always possible. You just have to see it. One detection ends the job.
 
 The thief is **your** Rare Friend: its original 16×16 frames, read from Robinhood Chain. And in **Last Heist**, the vault itself is written by the players.
 
@@ -30,12 +30,12 @@ The thief is **your** Rare Friend: its original 16×16 frames, read from Robinho
 <td><b>Last Heist: one vault, every clear changes it.</b><br>Clear the shared vault, then add one wall, laser or camera that breaks the last winning route, and prove your version is still solvable. The server re-runs every route. The last thief standing when the clock runs out takes the prize.</td>
 </tr>
 <tr>
-<td><img src="media/22-heists.gif" alt="Sixteen buildings solved at once"></td>
-<td><img src="media/caught.gif" alt="An alarm, a flash, caught"></td>
+<td><img src="media/22-heists.gif" alt="Twenty-two heists solved at once"></td>
+<td><img src="media/caught.gif" alt="Spotted: one detection ends the job"></td>
 </tr>
 <tr>
-<td><b>22 handmade heists.</b><br>Four lessons, a 14-job campaign and a 3-job Black Archive. Keycards, pressure plates, circuits, blackouts, vents, lockdowns and drones you hide from in a ladder hatch. Every level ships with a clean solution found by an automated solver.</td>
-<td><b>Read the clock or get caught.</b><br>INSPECT shows any laser's next eight beats without spending a turn. Get it wrong and the field report shows exactly what saw you, and when.</td>
+<td><b>22 handmade heists.</b><br>Five lessons, a 14-job campaign and a 3-job Black Archive. Guards on foot with flashlights, keycards, pressure plates, circuits, blackouts, vents, lockdowns and drones you hide from in a ladder hatch. Every level ships with a clean solution found by an automated solver.</td>
+<td><b>Read the clock or get caught.</b><br>INSPECT shows any device's next beats without spending a turn. Guards see three cells ahead, one in the dark, and EMP does not stop them; cut the lights or wait in a hatch. Get it wrong and the field report shows exactly what saw you, and when.</td>
 </tr>
 </table>
 
@@ -106,16 +106,18 @@ Open `index.html` directly to play solo without a server. The GitHub Pages mirro
 
 | Command | What it proves |
 |---|---|
-| `npm test` | All 22 levels are valid engine maps, follow the cutaway rules and have a clean route without EMP. Also covers LIVE BURN encoding and receipt-forgery checks, plus a shared-mode HTTP test against the real Node/SQLite server |
+| `npm test` | All 23 levels are valid engine maps, follow the cutaway rules and have a clean route without EMP. Also covers LIVE BURN encoding and receipt-forgery checks, plus a shared-mode HTTP test against the real Node/SQLite server |
 | `node tests/campaign-browser.mjs` | Every campaign job is won through the real UI with the keyboard |
-| `node tests/travel-browser.mjs` | Click-to-travel walks real turns and stops before any step that would raise an alarm |
+| `node tests/travel-browser.mjs` | Click-to-travel walks real turns and stops before any step that would be seen |
 | `node tests/wallet-browser.mjs` | The whole wallet flow against a mock EIP-6963 wallet that answers like the Generations, registry and RF contracts, including LIVE BURN: confirm, burn, receipt check, unlock, Hall of Ash, rejection and not enough RF |
+| `node tests/burn-pending-browser.mjs`, `burn-inflight-browser.mjs`, `burn-unknown-browser.mjs`, `burn-restore-tribute-browser.mjs` | One burn at a time: no second transaction while a burn is pending or its outcome is unknown (wallet timeout, reload, another tab); unlocks survive restore; Tribute from 1 RF |
+| `cd sdk && npx friendsdk check games/rare-heist && npx friendsdk test games/rare-heist` | The FriendSDK Friend Edition is valid and passes the SDK's own browser fixture at 960 and 360 px |
 
 The trailer is made by the game itself: `trailer/` renders every scene with the real engine and renderer, and the score in `trailer/music.py` is synthesised from scratch.
 
 ## Honest limits
 
-- The wallet flow and LIVE BURN are tested against a mock wallet. They have not yet been run with a real holder or real RF, on Safari or on physical phones. LIVE BURN is marked BETA for that reason.
+- LIVE BURN is tested against a mock wallet and reviewed independently; Friend discovery was checked read-only against a real holder wallet on mainnet. Safari and physical phones were not tested by hand. LIVE BURN stays marked BETA.
 - The server labels attempts with a Friend ID but does not verify ownership, and guest sessions are not unique people. No real-value prize should depend on the guest version.
 - Difficulty is tuned with a solver. It has not been playtested with players.
 
