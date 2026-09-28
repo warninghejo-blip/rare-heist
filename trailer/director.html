@@ -1,101 +1,222 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Rare Heist director</title>
-<style>html,body{margin:0;background:#000;overflow:hidden}canvas#c{display:block;width:100vw;height:100vh}</style></head>
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas#c{display:block;width:100vw;height:100vh;image-rendering:pixelated}</style></head>
 <body><canvas id="c" width="1920" height="1080"></canvas>
 <script src="../src/pixel-font.js"></script><script src="../src/engine.js"></script><script src="../src/art.js"></script>
 <script src="../src/cutaway-render.js"></script><script src="data.js"></script>
 <script>
-// Trailer scenes rendered with the game's own engine and renderer. #scene=<name>
-// Time comes from performance.now() so Playwright's clock gives exact 30 fps frames.
+// Trailer and GIF scenes rendered by the game's own engine (src/engine.js) and renderer
+// (src/cutaway-render.js). Every route is a real solver route or a real one-step deviation from it
+// (see precompute.cjs). Nothing here draws game UI: only the board, the Friend and title type.
+// #scene=<name>          live preview (requestAnimationFrame)
+// #scene=<name>&rec=1    recorder mode: window.__frame(t) draws the frame at t seconds
+// #w=960&h=540           frame size (GIF scenes)
 'use strict';
 const q=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
-const C=document.getElementById('c'),c=C.getContext('2d'),W=1920,H=1080,SIG='#ccff00',E=HeistEngine,P=HeistPixels,D=window.TRAILER;
+const C=document.getElementById('c'),c=C.getContext('2d');
+const W=+q.w||1920,H=+q.h||1080;C.width=W;C.height=H;
+const E=HeistEngine,P=HeistPixels,D=window.TRAILER,{INK,PAPER,SIG}=P,{night:NIGHT,dusk:DUSK,haze:HAZE,mist:MIST,wall:WALL}=P.PAL;
+const G=HeistPixel.glyphs,BPM=128,BEAT=60/BPM,BAR=BEAT*4,HALF=BEAT/2,QUART=BEAT/4;
+const F={skel:RF_ART.find(x=>x.tokenId==='3412'),hover:RF_ART.find(x=>x.tokenId==='7730')};
+const HERO=F.hover;
+const ease=t=>t<=0?0:t>=1?1:1-Math.pow(1-t,3),inout=t=>t<=0?0:t>=1?1:t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const URL_TEXT='RAREHEIST-BC89FAA0.SSLIP.IO';
 c.imageSmoothingEnabled=false;
-const G=HeistPixel.glyphs,T0=performance.now(),BEAT=60/128,BAR=BEAT*4,STEP=BEAT/2;
-const F={a:RF_ART.find(x=>x.tokenId==='3412'),b:RF_ART.find(x=>x.tokenId==='7730')};
-const ease=t=>t<0?0:t>1?1:1-Math.pow(1-t,3),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function txt(s,x,y,k,col,align='left',count=Infinity,ctx=c){s=String(s).toUpperCase();const w=s.length*6*k-k;if(align==='center')x-=w/2;else if(align==='right')x-=w;let i=0;for(const ch of s){if(i++>=count)break;const g=(G[ch]||G['?']||'').split('/');ctx.fillStyle=col;for(let r=0;r<g.length;r++)for(let j=0;j<g[r].length;j++)if(g[r][j]==='1')ctx.fillRect(Math.round(x+j*k),Math.round(y+r*k),k,k);x+=6*k;}return w;}
-function stipple(x,y,w,h,step,col){c.fillStyle=col;for(let yy=y;yy<y+h;yy+=step)for(let xx=x+((yy/step)%2?step/2:0);xx<x+w;xx+=step)c.fillRect(xx,yy,3,3);}
-function ground(){stipple(0,H-110,W,110,12,'#262626');c.fillStyle=SIG;c.fillRect(0,H-114,W,4);}
+
+// ---------- type: the game's own 5x7 pixel font ----------
+function txt(s,x,y,k,col,align='left',count=Infinity,ctx=c){s=String(s).toUpperCase();const w=s.length*6*k-k;if(align==='center')x-=w/2;else if(align==='right')x-=w;x=Math.round(x);y=Math.round(y);let i=0;ctx.fillStyle=col;
+ for(const ch of s){if(i++>=count)break;const g=(G[ch]||G['?']||'').split('/');for(let r=0;r<g.length;r++)for(let j=0;j<g[r].length;j++)if(g[r][j]==='1')ctx.fillRect(x+j*k,y+r*k,k,k);x+=6*k;}return w;}
+const tw=(s,k)=>String(s).length*6*k-k;
+// Caption: ink plate sized to the full line, text typed in, block cursor while typing.
+function caption(str,t,t0,t1,{k=6,x=96,y=H-96-7*6,col=PAPER,cps=38,align='left',plate=INK}={}){
+ if(t<t0||t>=t1)return;const w=tw(str,k),pad=2*k,n=Math.floor((t-t0)*cps)+1,bx=align==='center'?x-w/2:align==='right'?x-w:x;
+ c.fillStyle=plate;c.fillRect(Math.round(bx-pad*2),Math.round(y-pad),w+pad*4,7*k+pad*2);
+ txt(str,bx,y,k,col,'left',n);if(n<str.length){c.fillStyle=col;c.fillRect(Math.round(bx+Math.min(n,str.length)*6*k),y,5*k,7*k);}}
 function shake(t,dur,amp){if(t<0||t>dur)return[0,0];const k=(1-t/dur)*amp;return[Math.round(Math.sin(t*90)*k),Math.round(Math.cos(t*70)*k*.6)];}
-function flash(t,dur,col='#fff',max=.85){if(t<0||t>dur)return;c.globalAlpha=max*(1-t/dur);c.fillStyle=col;c.fillRect(0,0,W,H);c.globalAlpha=1;}
-function slam(t,draw){const s=1+.45*(1-ease(t/.16));c.save();c.translate(W/2,H/2);c.scale(s,s);c.translate(-W/2,-H/2);draw();c.restore();}
-function letterbox(){c.fillStyle='#000';c.fillRect(0,0,W,70);c.fillRect(0,H-70,W,70);}
-function sheet(level,route,mode='operative'){const l=E.normalize(level),st=[E.create(l,mode)];for(const a of route){const r=E.step(l,st.at(-1),a);if(!r.changed)break;st.push(r.state);}return {l,st};}
-// Game view with a following camera. Returns the hero's on-screen position.
-function playView(view,t,{zoom=1,sample=F.b,step=STEP,ox=0,oy=0,trace=false,mutation=null,frameH=1000}={}){
- const i=clamp(Math.floor(t/step),0,view.st.length-1),s=view.st[i],prev=view.st[Math.max(0,i-1)],ms=t*1000,start=i*step*1000;
- if(view.last!==i){view.last=i;if(i>0)view.r.pulse(s.events,ms);}
- view.r.render(view.l,s,{sample,time:ms,width:W,height:frameH,anim:i>0?{from:{x:prev.x,y:prev.y},start,end:start+140}:null,forecast:false,trace:trace?view.st.slice(0,i+1):null,mutation});
- const g=view.r.metrics(),u=clamp((ms-start)/140,0,1),fx=g.x0+((prev.x+(s.x-prev.x)*u)+.5)*g.cw,fy=g.top[s.y]+g.hh[s.y]/2;
- view.cx=view.cx==null?fx:view.cx+(fx-view.cx)*.12;view.cy=view.cy==null?fy:view.cy+(fy-view.cy)*.12;
- const sw=W/zoom,sh=H/zoom,sx=clamp(view.cx-sw/2,0,W-sw),sy=clamp(view.cy-sh/2,-(H-frameH)/2,frameH-sh+(H-frameH)/2);
- c.fillStyle='#fff';c.fillRect(0,0,W,H);c.drawImage(view.cv,sx,sy,sw,sh,ox,oy,W,H);return {s,i,done:i>=view.st.length-1};
-}
-function makeView(level,route,mode){const v=sheet(level,route,mode);v.cv=document.createElement('canvas');v.r=HeistCutawayRenderer.create(v.cv);return v;}
-const byId=id=>D.grid.find(g=>g.id===id);
+function flash(t,dur,col=PAPER,max=.85){if(t<0||t>dur)return;c.globalAlpha=max*(1-t/dur);c.fillStyle=col;c.fillRect(0,0,W,H);c.globalAlpha=1;}
+function slam(t,draw,cx=W/2,cy=H/2){const s=1+.45*(1-ease(t/.16));c.save();c.translate(cx,cy);c.scale(s,s);c.translate(-cx,-cy);draw();c.restore();}
+function bars(h=56){c.fillStyle=INK;c.fillRect(0,0,W,h);c.fillRect(0,H-h,W,h);}
+
+// ---------- the night backdrop for title cards, on the Friend's pixel grid (1 art px = U screen px) ----------
+const U=Math.max(1,Math.round(W/480));
+function skyCanvas(seed,{moon=true,skyline=true,ground=true}={}){const iw=Math.ceil(W/U),ih=Math.ceil(H/U),cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+ const gy=ground?ih-26:ih;P.rect(g,0,0,iw,ih,NIGHT);for(const [f,lv] of [[.5,2],[.66,4],[.8,7],[.9,10]]){const yy=Math.floor(gy*f);P.dither(g,0,yy,iw,gy-yy,lv,DUSK);}
+ for(let i=0;i<iw*gy/700;i++){const x=Math.floor(P.hash(i,1,seed)*iw),y=Math.floor(P.hash(i,2,seed)*gy*.6);P.rect(g,x,y,1,1,P.hash(i,3,seed)<.3?MIST:HAZE);}
+ if(moon){const mx=Math.floor(iw*.84),my=Math.floor(gy*.2),r=9;for(let yy=-r;yy<=r;yy++){const half=Math.floor(Math.sqrt(r*r-yy*yy));P.rect(g,mx-half,my+yy,half*2+1,1,PAPER);const bite=Math.floor(Math.sqrt(Math.max(0,r*r-(yy+1)*(yy+1))));if(bite>0)P.rect(g,mx-half+8,my+yy,Math.max(0,half*2+1-8),1,WALL);}}
+ if(skyline)for(const [depth,col] of [[.5,DUSK],[.8,NIGHT]]){let x=-4,i=0;while(x<iw){const bw=12+Math.floor(P.hash(i,7,seed+depth*99)*26),bh=Math.floor(gy*(depth>.6?.1:.2)+P.hash(i,8,seed+depth*99)*gy*(depth>.6?.14:.24)),top=gy-bh;P.rect(g,x,top,bw,bh,col);
+   for(let yy=top+3;yy<gy-3;yy+=4)for(let xx=x+2;xx<x+bw-2;xx+=3)if(P.hash(xx,yy,seed+depth*7)<(depth>.6?.12:.07))P.rect(g,xx,yy,1,1,depth>.6?HAZE:DUSK);x+=bw+(P.hash(i,10,seed)<.3?2:0);i++;}}
+ if(ground){P.rect(g,0,gy,iw,ih-gy,NIGHT);P.rect(g,0,gy,iw,1,HAZE);P.rect(g,0,gy+1,iw,2,DUSK);P.rect(g,0,gy+3,iw,1,INK);P.dither(g,0,gy+4,iw,ih-gy-4,2,DUSK);for(let x=seed%9;x<iw;x+=18)P.rect(g,x,gy+15,8,1,HAZE);}
+ cv.groundY=gy*U;return cv;}
+function blitSky(cv,ox=0){c.imageSmoothingEnabled=false;c.drawImage(cv,0,0,cv.width,cv.height,Math.round(ox),0,cv.width*U,cv.height*U);}
+
+// ---------- game views: engine states + the real renderer + a follow camera ----------
+function view(level,{route=null,states=null,mode='operative',w=W,h=H,sample=HERO}={}){
+ const l=E.normalize(level);let st=states;
+ if(!st){st=[E.create(l,mode)];for(const a of route){const r=E.step(l,st.at(-1),a);if(!r.changed)throw new Error('route breaks at '+st.length+' '+a+' in '+l.id);st.push(r.state);}}
+ const cv=document.createElement('canvas'),r=HeistCutawayRenderer.create(cv);return {l,st,cv,r,T:[-1e9],last:-1,cam:null,w,h,sample,lastT:null};}
+// times: [[fromIndex,toIndex,tStart,step]] -> T[i] = time the move into state i starts
+function schedule(v,segs){const first=Math.min(...segs.map(x=>x[0]));for(let i=1;i<first;i++)v.T[i]=-1000+i;for(const [a,b,t0,step] of segs)for(let i=a;i<=b;i++)v.T[i]=t0+(i-a)*step;for(let i=1;i<v.st.length;i++)if(v.T[i]==null)v.T[i]=1e9;return v;}
+function footC(g,y){return y%2?g.top[y]+g.hh[y]-g.pixel:g.top[y]+g.hh[y]/2+5*g.scale;}
+function drawView(v,t,o={}){
+ let i=0;while(i+1<v.st.length&&v.T[i+1]<=t)i++;const s=v.st[i],p=v.st[Math.max(0,i-1)];
+ if(i!==v.last){if(i>v.last)for(let j=Math.max(1,v.last+1);j<=i;j++)if(j>(v.quiet??0))v.r.pulse(v.st[j].events,v.T[j]*1000);v.last=i;}
+ const next=v.T[i+1]??v.T[i]+.4,dur=Math.max(80,Math.min(o.tween??190,(next-v.T[i])*1000*.92)),start=v.T[i]*1000;
+ const anim=i>0&&!o.reduced?{from:{x:p.x,y:p.y},start,end:start+dur}:null;
+ v.r.render(v.l,s,{sample:o.sample||v.sample,time:t*1000,width:v.w,height:v.h,anim,forecast:false,trace:o.trace?v.st.slice(0,i+1):null,mutation:o.mutation||null,reduced:o.reduced,thumbnail:o.thumbnail,hideHero:o.hideHero});
+ const g=v.r.metrics(),u=anim?ease((t*1000-start)/dur):1,hx=g.x0+(lerp(p.x,s.x,u)+.5)*g.cw,hy=lerp(footC(g,p.y),footC(g,s.y),u)-7*g.scale;
+ const gd=E.threats(v.l,s).guards.map(q=>({x:g.x0+(q.x+.5)*g.cw,y:footC(g,q.y)-10*g.pixel}));
+ return {i,s,hx,hy,g,guards:gd};}
+// Follow camera: exponential smoothing on sequential frames; crop is snapped so art pixels stay whole.
+function shoot(v,t,tx,ty,z,{tau=.16,snap=false,ox=0,oy=0,x=0,y=0,w=W,h=H}={}){
+ const dt=v.lastT==null?1:clamp(t-v.lastT,0,.2);v.lastT=t;
+ if(!v.cam||snap)v.cam={x:tx,y:ty};else{const k=1-Math.exp(-dt/tau);v.cam.x+=(tx-v.cam.x)*k;v.cam.y+=(ty-v.cam.y)*k;}
+ const sw=w/z,sh=h/z;let sx=clamp(v.cam.x-sw/2+ox,0,Math.max(0,v.w-sw)),sy=clamp(v.cam.y-sh/2+oy,0,Math.max(0,v.h-sh));sx=Math.round(sx*z)/z;sy=Math.round(sy*z)/z;
+ c.imageSmoothingEnabled=false;c.drawImage(v.cv,sx,sy,sw,sh,x,y,w,h);return {sx,sy,z};}
+const toScreen=(cam,px,py)=>[(px-cam.sx)*cam.z,(py-cam.sy)*cam.z];
+// Zoom that keeps a board point (px,py) at screen point (ax,ay). zoomLerp is geometric.
+function anchored(v,t,px,py,z,ax=W/2,ay=H/2){return shoot(v,t,px+(W/2-ax)/z,py+(H/2-ay)/z,z,{snap:true});}
+const zoomLerp=(a,b,u)=>a*Math.pow(b/a,clamp(u,0,1));
+function barsFor(z){const h=Math.round(64*clamp((z-1.05)/.4,0,1));if(h)bars(h);}
+const level=id=>(D.grid.find(g=>g.id===id)||{}).level;
+const routeOf=id=>D.routes[id]||(D.grid.find(g=>g.id===id)||{}).route;
+function statesOf(id,actions,mode='operative'){const l=E.normalize(level(id));const st=[E.create(l,mode)];for(const a of actions){const r=E.step(l,st.at(-1),a);if(!r.changed)throw new Error('bad '+id+' '+a);st.push(r.state);}return st;}
+
+// ---------- the big Friend: original 16x16 frame, integer scale, ink on a paper halo ----------
+function bigFriend(sample,cx,cy,k,t,{grid=0,facing='down',walking=false,frameAt}={}){
+ const L=Math.round(cx-8*k),T=Math.round(cy-8*k);
+ if(grid>0){c.globalAlpha=grid;c.fillStyle=DUSK;for(let i=0;i<=16;i++){c.fillRect(L+i*k-1,T-1,2,16*k+2);c.fillRect(L-1,T+i*k-1,16*k+2,2);}c.fillStyle=HAZE;const m=k*.6;for(const [a,b] of [[L,T],[L+16*k,T],[L,T+16*k],[L+16*k,T+16*k]]){c.fillRect(a-m/2,b-2,m,4);c.fillRect(a-2,b-m/2,4,m);}c.globalAlpha=1;}
+ P.sprite(c,sample,cx,T+15*k,k,facing,walking,frameAt??Math.floor(t*1000/120));}
+
+// =====================================================================================
 const scenes={
- intro(t){c.fillStyle='#000';c.fillRect(0,0,W,H);
-  if(!this.v){this.v=makeView(byId('cut-10').level,[]);}
-  this.v.r.render(this.v.l,this.v.st[0],{sample:F.a,time:0,width:W,height:1000,reduced:true});
-  const z=1.25+t*.05;c.globalAlpha=Math.min(.22,t*.12);c.filter='invert(1) grayscale(1)';c.drawImage(this.v.cv,(W-W*z)/2,(H-H*z)/2,W*z,H*z);c.filter='none';c.globalAlpha=1;
-  const a='EVERY BUILDING',b='HAS A WAY IN.',n=Math.floor(t*16);txt(a,W/2,390,16,'#fff','center',n);txt(b,W/2,560,16,SIG,'center',Math.max(0,n-a.length-3));
-  if(Math.floor(t*2.4)%2===0&&n>a.length+b.length)c.fillRect(W/2+b.length*48+20,560,16*5,16*7);
- },
- logo(t){const [sx,sy]=shake(t,.35,18);c.fillStyle='#000';c.fillRect(0,0,W,H);c.save();c.translate(sx,sy);ground();
-  slam(t,()=>{const k=26;txt('RARE',W/2,210,k,'#fff','center');const w=5*6*k-k;c.fillStyle=SIG;c.fillRect(W/2-w/2-k,210+8*k+20,w+2*k,9*k);txt('HEIST',W/2,210+8*k+20+k,k,'#000','center');});
-  if(t>.5)txt('A STEALTH HEIST STARRING YOUR RARE FRIEND',W/2,790,6,'#fff','center',Math.floor((t-.5)*50));
-  const x=(t*300)%(W+400)-200;P.sprite(c,F.a,x,H-114,8,'right',true,Math.floor(t*9));P.sprite(c,F.b,x-260,H-114,8,'right',true,Math.floor(t*9)+3);
-  c.restore();flash(t,.3);
- },
- friend(t){c.fillStyle='#000';c.fillRect(0,0,W,H);ground();const second=t>=BAR,tt=second?t-BAR:t,f=second?F.b:F.a;
-  const k=34,[sx,sy]=shake(tt,.25,14);P.sprite(c,f,560+sx,H-114+sy,k,'down',false,Math.floor(t*8));
-  txt('THIS IS',1000,300,13,'#fff','left',Math.floor(t*20));txt('YOUR FRIEND.',1000,300+13*9,13,SIG,'left',Math.max(0,Math.floor(t*20)-7));
-  txt('#'+f.tokenId+' '+f.familyName,1004,620,7,'#fff');txt('ORIGINAL 16X16 FRAMES. NEVER REDRAWN.',1004,700,4,'#9a9a9a');
-  flash(tt,.22,SIG,.5);
- },
- heist(t){if(!this.v){this.v=makeView(byId('cut-01').level,D.routes['cut-01']);}
-  const lead=.6,z=1+.95*ease(t/1.4),r=playView(this.v,Math.max(0,t-lead),{zoom:z,sample:F.b});
-  if(t<lead+.2){c.fillStyle='#000';c.fillRect(0,H-150,W,150);txt('NIGHT GALLERY',60,H-118,9,'#fff');txt('JOB 07 / 4 FLOORS',60,H-40,4,SIG);}
-  if(r.done){const tt=t-lead-(this.v.st.length-1)*STEP;if(tt>.25){slam(tt-.25,()=>{c.save();c.translate(W/2,H/2);c.rotate(-.06);c.fillStyle='#000';c.fillRect(-470,-150,940,300);c.fillStyle=SIG;c.fillRect(-450,-130,900,260);txt('CLEAN',0,-95,24,'#000','center');c.restore();});txt('46 TURNS / 0 ALARMS / TROPHY SECURED',W/2,H-120,5,'#000','center');flash(tt-.25,.2,'#fff',.6);}}
-  letterbox();
- },
- caught(t){if(!this.v){this.v=makeView(byId('cut-02').level,D.routes.caught,'operative');this.alarms=[];}
-  const step=.34,r=playView(this.v,t,{zoom:1.7,sample:F.b,step});
-  const s=r.s;if(s.events.includes('alarm')||s.events.includes('caught')){const at=r.i*step;if(!this.alarms.includes(at))this.alarms.push(at);}
-  for(const at of this.alarms)flash(t-at,.25,SIG,.55);
-  if(s.status==='lost'){const tt=t-r.i*step;const [sx,sy]=shake(tt,.4,22);c.fillStyle='rgba(0,0,0,.75)';c.fillRect(0,0,W,H);c.save();c.translate(sx,sy);slam(tt,()=>{c.fillStyle=SIG;c.fillRect(0,H/2-150,W,300);txt('CAUGHT.',W/2,H/2-95,27,'#000','center');});c.restore();txt('READ THE CLOCK. TRY AGAIN.',W/2,H/2+210,6,'#fff','center',Math.floor(tt*40));}
-  letterbox();
- },
- lasttitle(t){const [sx,sy]=shake(t,.3,16);c.fillStyle='#000';c.fillRect(0,0,W,H);c.save();c.translate(sx,sy);slam(t,()=>{txt('LAST',W/2,250,24,'#fff','center');const w=5*6*24-24;c.fillStyle=SIG;c.fillRect(W/2-w/2-24,250+24*8+16,w+48,24*9);txt('HEIST',W/2,250+24*8+16+24,24,'#000','center');});c.restore();
-  txt('ONE VAULT. EVERY CLEAR CHANGES IT.',W/2,830,6,'#fff','center',Math.floor(t*48));flash(t,.25);
- },
- evolve(t){const n=D.evolution.length,idx=clamp(Math.floor(t/BAR),0,n-1),tt=t-idx*BAR,e=D.evolution[idx];
-  if(!this.v||this.idx!==idx){this.idx=idx;this.v=makeView(e.level,e.route,'ghost');}
-  const step=Math.min(.045,(BAR-.55)/e.route.length),r=playView(this.v,Math.max(0,tt-.35),{zoom:1,sample:idx%2?F.a:F.b,step,trace:true,mutation:e.change?{x:e.change.x,y:e.change.y}:null,frameH:920});
-  c.fillStyle='#000';c.fillRect(0,0,W,120);c.fillRect(0,H-90,W,90);
-  const label=idx===0?'V0 / THE ORIGINAL VAULT':'V'+idx+' / +'+e.change.kind.toUpperCase()+' BY #'+(idx%2?'3412':'7730');
-  txt(label,60,34,8,idx===0?'#fff':SIG,'left',Math.floor(tt*60));
-  txt('REVISION '+idx+' / 12',W-60,44,5,'#fff','right');
-  for(let i=0;i<12;i++){c.fillStyle=i<idx?SIG:'#333';c.fillRect(60+i*56,H-60,44,22);}
-  txt(idx===0?'CLEAR IT FIRST':'OLD ROUTE BROKEN. NEW ROUTE: '+e.route.length+' TURNS',W-60,H-62,4,'#fff','right');
-  if(idx>0)flash(tt,.18,SIG,.45);
- },
- grid(t){c.fillStyle='#000';c.fillRect(0,0,W,H);if(!this.tiles){this.tiles=D.grid.map((g,i)=>{const v=sheet(g.level,g.route,'ghost');v.cv=document.createElement('canvas');v.r=HeistCutawayRenderer.create(v.cv);v.name=g.name;v.sample=i%2?F.a:F.b;return v;});}
-  const cols=4,tw=W/cols,th=(H-150)/4,z=1+.08*(1-ease(t/1.5));
-  c.save();c.translate(W/2,(H-150)/2);c.scale(z,z);c.translate(-W/2,-(H-150)/2);
-  this.tiles.forEach((v,i)=>{const x=(i%cols)*tw,y=Math.floor(i/cols)*th,step=.11,j=clamp(Math.floor(Math.max(0,t-i*.04)/step),0,v.st.length-1),s=v.st[j],p=v.st[Math.max(0,j-1)],ms=t*1000,st=j*step*1000;
-   v.r.render(v.l,s,{sample:v.sample,time:ms,width:Math.round(tw-12),height:Math.round(th-12),thumbnail:true,anim:j?{from:{x:p.x,y:p.y},start:st,end:st+90}:null});
-   c.drawImage(v.cv,x+6,y+6);c.fillStyle=s.status==='won'?SIG:'#000';c.fillRect(x+6,y+th-30,tw-12,24);txt(s.status==='won'?'CLEAN / '+v.name:v.name,x+12,y+th-25,2,s.status==='won'?'#000':'#fff');});
-  c.restore();c.fillStyle='#000';c.fillRect(0,H-150,W,150);const w1=txt('22 HANDMADE HEISTS.',60,H-112,9,'#fff','left',Math.floor(t*30));txt('ONE THIEF: YOURS.',60+19*54+40,H-112,9,SIG,'left',Math.max(0,Math.floor(t*30)-20));
- },
- outro(t){c.fillStyle='#000';c.fillRect(0,0,W,H);ground();slam(t,()=>{const k=20;txt('RARE',W/2,150,k,'#fff','center');const w=5*6*k-k;c.fillStyle=SIG;c.fillRect(W/2-w/2-k,150+8*k+16,w+2*k,9*k);txt('HEIST',W/2,150+8*k+16+k,k,'#000','center');});
-  if(t>.4)txt('PLAY AS YOUR OWN RARE FRIEND',W/2,620,6,'#fff','center',Math.floor((t-.4)*50));
-  if(t>1.2){txt('FREE IN YOUR BROWSER / NO WALLET NEEDED TO TRY',W/2,700,4,'#9a9a9a','center');txt(q.url||'WARNINGHEJO-BLIP.GITHUB.IO/RARE-HEIST',W/2,780,5,SIG,'center');}
-  const x=(t*260)%(W+400)-200;P.sprite(c,F.b,x,H-114,8,'right',true,Math.floor(t*9));P.sprite(c,F.a,x-230,H-114,8,'right',true,Math.floor(t*9)+3);
-  txt('RARE FRIENDS VIBEATHON 2026',60,60,4,'#9a9a9a');flash(t,.3);
- }
+// HOOK (2 bars): a walking guard's flashlight in a rolling blackout, the Friend on his back.
+hook:{init(){this.v=schedule(view(level('drill-walker'),{route:routeOf('drill-walker').slice(0,25)}),[[16,24,.25,HALF]]);},
+ frame(t){const v=this.v,r=drawView(v,t),gd=r.guards[0];
+  // the pair (Friend + guard) held centred, then the whole building
+  const mx=lerp(r.hx,gd.x,.5),my=r.hy;if(!this.m)this.m={x:mx,y:my};const k=1-Math.exp(-1/30/.25);this.m.x+=(mx-this.m.x)*k;this.m.y+=(my-this.m.y)*k;
+  const pull=inout((t-2.5)/1.05),z=zoomLerp(2.5,1,pull),ax=lerp(W/2,this.m.x,pull),ay=lerp(H/2,this.m.y,pull);
+  c.fillStyle=NIGHT;c.fillRect(0,0,W,H);anchored(v,t,this.m.x,this.m.y,z,ax,ay);barsFor(z);
+  caption('HE SEES THREE CELLS AHEAD.',t,.08,1.9);caption('NOTHING BEHIND HIM.',t,1.95,3.75);}},
+// LOGO (2 bars)
+logo:{init(){this.sky=skyCanvas(11);},
+ frame(t){const [sx,sy]=shake(t,.35,18);c.save();c.translate(sx,sy);blitSky(this.sky);
+  const gy=this.sky.groundY,k=26,y0=190;
+  slam(t,()=>{txt('RARE',W/2,y0,k,PAPER,'center');const w=tw('HEIST',k),by=y0+8*k+18;c.fillStyle=INK;c.fillRect(W/2-w/2-k-8,by-k-8,w+2*k+16,9*k+16);c.fillStyle=SIG;c.fillRect(W/2-w/2-k,by-k,w+2*k,9*k);txt('HEIST',W/2,by,k,INK,'center');});
+  if(t>.55)txt('A STEALTH HEIST STARRING YOUR RARE FRIEND',W/2,y0+17*k+64,6,PAPER,'center',Math.floor((t-.55)*44));
+  const x=(t*300)%(W+400)-200;P.sprite(c,F.hover,x,gy,8,'right',true,Math.floor(t*9));P.sprite(c,F.skel,x-230,gy,8,'right',true,Math.floor(t*9)+3);
+  c.restore();flash(t,.3);}},
+// FRIEND (2 bars): the character, huge and exact; then the match-cut position for the heist.
+friend:{init(){this.sky=skyCanvas(5,{moon:false,skyline:false,ground:false});},
+ frame(t){blitSky(this.sky);const second=t>=BAR,tt=second?t-BAR:t,f=second?F.hover:F.skel,k=32;
+  const go=ease((t-3.28)/.42),cx=lerp(1470,W/2,go),cy=lerp(H/2+10,H/2,go),grid=clamp(1-go,0,1)*(.9);
+  // swap: the new Friend is revealed row by row, like a frame being read
+  if(second&&tt<.24){const rows=Math.floor(tt/.24*16);c.save();c.beginPath();c.rect(0,0,W,Math.round(cy-8*k+rows*k));c.clip();bigFriend(f,cx,cy,k,t,{grid});c.restore();c.save();c.beginPath();c.rect(0,Math.round(cy-8*k+rows*k),W,H);c.clip();bigFriend(F.skel,cx,cy,k,t,{grid});c.restore();c.fillStyle=SIG;c.fillRect(cx-8*k-20,Math.round(cy-8*k+rows*k)-2,16*k+40,4);}
+  else bigFriend(f,cx,cy,k,t,{grid});
+  if(t<3.3){const a=clamp((3.3-t)/.2,0,1);c.globalAlpha=a;
+   if(grid>.1){txt('16 X 16',cx+8*k,cy+8*k+24,4,HAZE,'right');txt(second?'#7730':'#3412',cx-8*k,cy+8*k+24,4,HAZE,'left');}
+   txt('THIS IS',150,300,13,PAPER,'left',Math.floor(t*22));txt('YOUR FRIEND.',150,300+13*9,13,PAPER,'left',Math.max(0,Math.floor(t*22)-7));
+   txt(second?'#7730 HOVERER':'#3412 SKELETON',154,560,7,MIST,'left',Math.floor(Math.max(0,tt-.1)*40));
+   txt(second?'CONNECT A WALLET. PLAY THE ONE YOU OWN.':'ORIGINAL 16X16 FRAMES FROM THE CHAIN.',154,650,4,MIST,'left',Math.floor(Math.max(0,tt-.35)*60));
+   txt('NEVER REDRAWN. NEVER RECOLOURED.',154,700,4,HAZE,'left',second?99:Math.floor(Math.max(0,tt-.9)*60));
+   c.globalAlpha=1;}
+  if(second)flash(tt,.2,PAPER,.35);}},
+// HEIST 1 (4 bars): match cut from the big sprite into The Last Floor; lights out.
+heist1:{init(){this.v=schedule(view(level('cut-10'),{route:routeOf('cut-10').slice(0,31)}),[[1,7,.92,HALF],[8,30,2.62,.17]]);},
+ frame(t){const v=this.v,r=drawView(v,t);
+  const out=inout((t-.2)/1.75),back=inout((t-3.1)/1.2);c.fillStyle=NIGHT;c.fillRect(0,0,W,H);let z;
+  if(t<3.1){z=zoomLerp(8,1,out);anchored(v,t,r.hx,r.hy,z,lerp(W/2,r.hx,out),lerp(H/2,r.hy,out));}
+  else{z=zoomLerp(1,1.75,back);shoot(v,t,lerp(v.w/2,r.hx,back),lerp(v.h/2,r.hy,back),z,{tau:.12});}
+  barsFor(z);
+  caption('YOUR FRIEND. YOUR HEIST.',t,.5,2.25);caption('CUT THE LIGHTS.',t,2.35,3.9);caption('IN THE DARK THEY SEE ONE CELL.',t,3.95,5.8);caption('EVERYTHING RUNS ON A CLOCK.',t,5.85,7.8);}},
+// MONTAGE (4 bars): eight half-bar close-ups, one mechanic each, all from real solver routes.
+montage:{init(){
+  const dist=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+  const pick=(word,id,test,subject,before,after,z=2.25)=>{const l=E.normalize(level(id)),st=statesOf(id,routeOf(id));let at=st.findIndex((s,i)=>i>0&&test(s,st[i-1],l));if(at<0){console.error('montage: no moment for '+word);at=Math.floor(st.length/2);}
+   const a=Math.max(0,at-before),b=Math.min(st.length-1,at+after),sub=subject?subject(l,st[at]):null;return {word,id,st,a,b,sub,z};};
+  const ev=e=>s=>s.events.includes(e);
+  const nearest=(list,s)=>list.reduce((m,d)=>!m||dist(d,s)<dist(m,s)?d:m,null);
+  const drones=(l,s)=>E.threats(l,s).guards.filter((g,i)=>l.guards[i].kind!=='walker'),walkers=(l,s)=>E.threats(l,s).guards.filter((g,i)=>l.guards[i].kind==='walker');
+  const P0=[
+   pick('LASERS.','cut-02',(s,p,l)=>E.threats(l,s).lasers.some(q=>dist(q,s)===1),(l,s)=>nearest(l.lasers,s),3,2),
+   pick('CAMERAS.','cut-03',(s,p,l)=>E.threats(l,s).vision.some(q=>q.type==='camera'&&dist(q,s)<=1),(l,s)=>nearest(l.cameras,s),3,2),
+   pick('DRONES.','cut-01',(s,p,l)=>drones(l,s).some(g=>g.y===s.y&&Math.abs(g.x-s.x)<=2),(l,s)=>nearest(drones(l,s),s),3,2),
+   pick('KEYCARDS.','cut-10',ev('key'),null,3,2),
+   pick('PRESSURE PLATES.','drill-weight',(s,p,l)=>E.held(l,s,0)&&!E.held(l,p,0),(l,s)=>E.positions(l,'G')[0]||s,3,2,1.75),
+   pick('VENTS.','cut-12',ev('vent'),null,3,2,2),
+   pick('BLACKOUTS.','archive-02',ev('lights-off'),null,2,3,1.5),
+   pick('GUARDS.','drill-walker',(s,p,l)=>walkers(l,s).some(g=>g.y===s.y&&dist(g,s)===1),(l,s)=>nearest(walkers(l,s),s),3,2)];
+  this.items=P0.map((p,i)=>{const v=view(level(p.id),{states:p.st.slice(0,p.b+1),sample:i%2?F.hover:F.skel});const n=p.b-p.a;schedule(v,[[p.a+1,p.b,.12,(BAR/2-.34)/Math.max(1,n)]]);v.quiet=p.a;return {...p,v};});},
+ frame(t){const per=BAR/2,idx=clamp(Math.floor(t/per),0,7),it=this.items[idx],tt=t-idx*per,v=it.v;if(this.cur!==idx){this.cur=idx;v.last=it.a;v.lastT=null;v.cam=null;}
+  const r=drawView(v,tt),g=r.g;c.fillStyle=NIGHT;c.fillRect(0,0,W,H);
+  const win=v.st.slice(it.a),cx=win.reduce((a,s)=>a+s.x,0)/win.length,cy=win.reduce((a,s)=>a+s.y,0)/win.length;
+  let fx=g.x0+(cx+.5)*g.cw,fy=footC(g,Math.round(cy))-8*g.scale;if(it.sub){fx=(fx+g.x0+(it.sub.x+.5)*g.cw)/2;fy=(fy+footC(g,it.sub.y)-8*g.scale)/2;}
+  if(!it.sub&&it.z>1.6){fx=r.hx;fy=r.hy;}
+  shoot(v,tt,fx,fy,it.z,{tau:it.sub?1:.12,snap:v.cam==null});bars(64);
+  const k=16,w=tw(it.word,k);c.fillStyle=INK;c.fillRect(64,H-64-7*k-48,w+64,7*k+48);txt(it.word,96,H-64-7*k-24,k,PAPER);
+  flash(tt,.1,PAPER,.3);}},
+// CAUGHT (2 bars): same job, same Friend, one step too far behind the guard.
+caught:{init(){const route=routeOf('cut-10'),c0=D.caughtAll.find(x=>x.id==='cut-10'&&x.at===44);const acts=[...c0.prefix,c0.wrong];this.v=schedule(view(level('cut-10'),{states:statesOf('cut-10',acts)}),[[1,38,-50,.01],[39,44,.2,HALF],[45,45,BAR-.05,1]]);},
+ frame(t){const v=this.v,r=drawView(v,t,{tween:300}),gd=r.guards[0],lost=r.s.status==='lost',tl=t-(BAR-.05);
+  const push=ease(tl/.5),z=zoomLerp(2.75,3.25,push);c.fillStyle=NIGHT;c.fillRect(0,0,W,H);
+  if(!this.m)this.m={x:lerp(r.hx,gd.x,.5),y:r.hy};const kk=1-Math.exp(-1/30/.2);if(!lost){this.m.x+=(lerp(r.hx,gd.x,.5)-this.m.x)*kk;this.m.y+=(r.hy-this.m.y)*kk;}
+  anchored(v,t,this.m.x,this.m.y+10,z,W/2,lerp(H/2,H*.64,ease((tl-.45)/.3)));bars(64);
+  caption('STAY BEHIND HIM.',t,.15,BAR-.1);
+  if(lost&&tl>.5){const tt=tl-.5,[sx,sy]=shake(tt,.4,22),y0=150;c.save();c.translate(sx,sy);slam(tt,()=>{c.fillStyle=INK;c.fillRect(0,y0-12,W,262);c.fillStyle=SIG;c.fillRect(0,y0,W,238);txt('CAUGHT.',W/2,y0+30,25,INK,'center');},W/2,y0+119);c.restore();
+   caption('ONE DETECTION ENDS THE JOB.',tt,.3,99,{x:W/2,align:'center',y:H-64-7*6-40,k:6});}}},
+// HEIST 2 (4 bars): undo five moves (the game's own UNDO), read the clock, escape clean.
+heist2:{init(){const route=routeOf('cut-10'),c0=D.caughtAll.find(x=>x.id==='cut-10'&&x.at===44),good=statesOf('cut-10',route),bad=statesOf('cut-10',[...c0.prefix,c0.wrong]);
+  const st=[bad[45],bad[44],bad[43],bad[42],bad[41],good[40],...good.slice(41)];this.n=st.length;this.v=schedule(view(level('cut-10'),{states:st}),[[1,5,.34,.11],[6,10,.95,HALF-.003],[11,st.length-1,2.12,(BAR*3-.225-2.12)/(st.length-12)]]);this.win=BAR*3;this.v.quiet=5;},
+ frame(t){const v=this.v,r=drawView(v,t,{tween:t<.9?100:190}),rewind=t>=.3&&t<.95;
+  const wide=inout((t-3.0)/1.6),z=zoomLerp(2.75,1,wide);c.fillStyle=NIGHT;c.fillRect(0,0,W,H);
+  if(!this.m)this.m={x:r.hx,y:r.hy};const kk=1-Math.exp(-1/30/.2);this.m.x+=(r.hx-this.m.x)*kk;this.m.y+=(r.hy-this.m.y)*kk;
+  anchored(v,t,this.m.x,this.m.y,z,lerp(W/2,this.m.x,wide),lerp(H/2,this.m.y,wide));
+  if(rewind){c.globalAlpha=.22;c.fillStyle=MIST;for(let y=(Math.floor(t*900))%24;y<H;y+=24)c.fillRect(0,y,W,4);c.globalAlpha=1;}
+  barsFor(z);
+  if(t<1.95)caption(t<.95?'<< UNDO 5 MOVES':'UNDO. READ THE CLOCK.',t,t<.95?.3:.95,t<.95?.95:1.95,{col:t<.95?SIG:PAPER,cps:60});
+  caption('TAKE THE LADDER. LET HIM PASS.',t,2.0,3.6);
+  const tc=t-this.win;if(tc>0){const [sx,sy]=shake(tc,.3,14);c.save();c.translate(sx,sy);slam(tc,()=>{c.save();c.translate(W/2,H/2-40);c.rotate(-.05);c.fillStyle=INK;c.fillRect(-500,-150,1000,300);c.fillStyle=SIG;c.fillRect(-480,-130,960,260);txt('CLEAN',0,-95,26,INK,'center');c.restore();});c.restore();
+   caption('64 TURNS / 0 DETECTIONS / TROPHY OUT',tc,.3,99,{x:W/2,align:'center',y:H/2+170,k:6});flash(tc,.2,PAPER,.5);}}},
+// GRID (3 bars): all 22 jobs solved at once by their solver routes.
+grid:{init(){this.tiles=D.grid.map((g,i)=>{const v=view(g.level,{route:g.route,sample:i%2?F.skel:F.hover});v.name=g.name;const n=g.route.length,step=Math.min(.12,3.9/n),t0=.15+(i%6)*.05+Math.floor(i/6)*.07;schedule(v,[[1,n,t0,step]]);return v;});},
+ frame(t){c.fillStyle=NIGHT;c.fillRect(0,0,W,H);const cols=6,rows=4,gap=12,m=24,tw_=Math.floor((W-2*m-(cols-1)*gap)/cols),th=Math.floor((H-2*m-(rows-1)*gap)/rows);
+  const z=1+.06*(1-ease(t/1.4));c.save();c.translate(W/2,H/2);c.scale(z,z);c.translate(-W/2,-H/2);
+  this.tiles.forEach((v,i)=>{const x=m+(i%cols)*(tw_+gap),y=m+Math.floor(i/cols)*(th+gap);v.w=tw_;v.h=th-30;const r=drawView(v,t,{thumbnail:true,tween:90});c.drawImage(v.cv,x,y);
+   const won=r.s.status==='won',nm=v.name.toUpperCase().slice(0,Math.floor((tw_-(won?96:24))/12));c.fillStyle=won?SIG:INK;c.fillRect(x,y+th-30,tw_,30);if(won)txt('CLEAN',x+10,y+th-22,2,INK);txt(nm,x+tw_-10,y+th-22,2,won?INK:PAPER,'right');});
+  const x=m+4*(tw_+gap),y=m+3*(th+gap),bw=2*tw_+gap;c.fillStyle=INK;c.fillRect(x,y,bw,th);
+  txt('22 HANDMADE',x+32,y+40,8,PAPER,'left',Math.floor(t*24));txt('HEISTS.',x+32,y+40+8*9,8,PAPER,'left',Math.max(0,Math.floor(t*24)-11));txt('EVERY ONE HAS A CLEAN SOLUTION.',x+34,y+th-44,3,MIST,'left',Math.max(0,Math.floor((t-.8)*40)));
+  c.restore();}},
+// LAST HEIST title (1 bar)
+lasttitle:{init(){this.sky=skyCanvas(23);},
+ frame(t){const [sx,sy]=shake(t,.3,16);c.save();c.translate(sx,sy);blitSky(this.sky);slam(t,()=>{const k=24;txt('LAST',W/2,210,k,PAPER,'center');const w=tw('HEIST',k),by=210+8*k+18;c.fillStyle=INK;c.fillRect(W/2-w/2-k-8,by-k-8,w+2*k+16,9*k+16);c.fillStyle=SIG;c.fillRect(W/2-w/2-k,by-k,w+2*k,9*k);txt('HEIST',W/2,by,k,INK,'center');});c.restore();
+  txt('ONE SHARED VAULT. EVERY CLEAR CHANGES IT.',W/2,820,6,PAPER,'center',Math.floor(t*52));flash(t,.25);}},
+// EVOLVE (4 bars): a real Last Heist evolution; each obstacle breaks the previous winning route.
+evolve:{init(){this.views=D.evolution.map((e,i)=>{const v=view(e.level,{route:e.route,mode:'ghost',h:H-200,sample:i%2?F.skel:F.hover});const n=e.route.length,step=Math.min(.042,(BAR-.62)/n);schedule(v,[[1,n,.36,step]]);return v;});},
+ frame(t){const n=this.views.length,idx=clamp(Math.floor(t/BAR),0,n-1),tt=t-idx*BAR,e=D.evolution[idx],v=this.views[idx];c.fillStyle=NIGHT;c.fillRect(0,0,W,H);
+  if(this.cur!==idx){this.cur=idx;v.last=-1;}
+  drawView(v,tt,{trace:true,mutation:e.change?{x:e.change.x,y:e.change.y}:null});c.imageSmoothingEnabled=false;c.drawImage(v.cv,0,110);
+  c.fillStyle=INK;c.fillRect(0,0,W,110);c.fillRect(0,H-90,W,90);
+  const label=idx===0?'V0  THE COMMON HOUSE':'V'+idx+'  +'+e.change.kind.toUpperCase();txt(label,64,30,8,idx===0?PAPER:SIG,'left',Math.floor(tt*60));
+  txt('OBSTACLES '+idx+' / 12',W-64,40,5,MIST,'right');
+  for(let i=0;i<12;i++){c.fillStyle=i<idx?SIG:DUSK;c.fillRect(64+i*52,H-58,40,24);}
+  txt(idx===0?'CLEAR IT FIRST. THEN CHANGE IT.':'OLD ROUTE BLOCKED. NEW ROUTE: '+e.route.length+' TURNS',W-64,H-60,4,PAPER,'right',Math.floor(Math.max(0,tt-.2)*70));
+  if(idx>0)flash(tt,.16,SIG,.35);}},
+// OUTRO (3 bars + tail)
+outro:{init(){this.sky=skyCanvas(31);},
+ frame(t){blitSky(this.sky);const gy=this.sky.groundY;slam(t,()=>{const k=18;txt('RARE',W/2,120,k,PAPER,'center');const w=tw('HEIST',k),by=120+8*k+14;c.fillStyle=INK;c.fillRect(W/2-w/2-k-8,by-k-8,w+2*k+16,9*k+16);c.fillStyle=SIG;c.fillRect(W/2-w/2-k,by-k,w+2*k,9*k);txt('HEIST',W/2,by,k,INK,'center');});
+  if(t>.35)txt('PLAY AS YOUR OWN RARE FRIEND',W/2,560,8,PAPER,'center',Math.floor((t-.35)*44));
+  if(t>1.0)txt('FREE IN YOUR BROWSER. NO WALLET NEEDED TO TRY.',W/2,650,4,MIST,'center',Math.floor((t-1)*70));
+  if(t>1.5){const w=tw(URL_TEXT,6);c.fillStyle=INK;c.fillRect(W/2-w/2-28,722,w+56,42+40);c.fillStyle=SIG;c.fillRect(W/2-w/2-24,726,w+48,42+32);txt(URL_TEXT,W/2,742,6,INK,'center',Math.floor((t-1.5)*50));}
+  txt('RARE FRIENDS VIBEATHON 2026',64,56,4,MIST);txt('CHARACTER SPOTLIGHT',W-64,56,4,MIST,'right');
+  const x=(t*240)%(W+500)-250;P.sprite(c,F.hover,x,gy,12,'right',true,Math.floor(t*9));P.sprite(c,F.skel,x-300,gy,12,'right',true,Math.floor(t*9)+3);
+  flash(t,.3);}},
+// PHONECARD (static, 960x540): backdrop for mobile.gif; the phone recording sits on the left.
+phonecard:{init(){this.sky=skyCanvas(17,{moon:true,skyline:true,ground:true});},
+ frame(t){blitSky(this.sky);const x=Math.round(W*.37),u=W/960,y=Math.round(150*u);
+  txt('ON YOUR PHONE TOO.',x,y,Math.round(5*u),PAPER);
+  txt('TOUCH CONTROLS.',x,y+Math.round(70*u),Math.round(3*u),MIST);txt('THE CAMERA FOLLOWS YOUR FRIEND.',x,y+Math.round(104*u),Math.round(3*u),MIST);
+  txt(URL_TEXT,x,y+Math.round(160*u),Math.round(3*u),SIG);}},
 };
-const scene=scenes[q.scene||'logo'];
-function frame(){const t=Math.max(0,(performance.now()-(window.__T0??T0))/1000);c.save();scene.call(scene,t);c.restore();requestAnimationFrame(frame);}
-frame();
+const scene=scenes[q.scene||'logo'];scene.init?.();
+window.__frame=t=>{c.save();c.setTransform(1,0,0,1,0,0);c.imageSmoothingEnabled=false;scene.frame.call(scene,t);c.restore();};
+window.__ready=true;
+if(!q.rec){const T0=performance.now();const loop=()=>{window.__frame((performance.now()-T0)/1000%(+q.loop||30));requestAnimationFrame(loop);};loop();}
 </script></body></html>

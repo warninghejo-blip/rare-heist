@@ -70,7 +70,7 @@ try{
   const state=await second.evaluate(()=>({sent:window.__txs?.length||0,toast:document.getElementById('toast').textContent,pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending}));
   const firstSends=await p.evaluate(()=>window.__txs?.length||0);
   check('B1′ a second window cannot send while the first wallet request is unresolved',firstSends+state.sent===1,'combined eth_sendTransaction count='+(firstSends+state.sent));
-  check('B1′ the second window reads the shared hashless pending state',state.pending?.status==='awaiting-wallet'&&/Confirm or reject the previous burn in your wallet first/.test(state.toast),state.toast+' '+JSON.stringify(state.pending));
+  check('B1′ the second window reads the shared hashless pending state as unknown',state.pending?.status==='awaiting-wallet'&&/We don't know if your wallet sent the burn/.test(state.toast)&&await second.locator('#burnUnknownPanel').isVisible(),state.toast+' '+JSON.stringify(state.pending));
   await p.evaluate(()=>{window.__pending=false;window.__holdHash=false;window.__hashResolvers?.forEach(f=>f());});await p.waitForTimeout(350);await ctx.close();
  }
  {
@@ -83,11 +83,11 @@ try{
   check('a new burn can proceed after the wallet rejects the previous request',state.sends===1&&state.pending?.tx,'sends='+state.sends+' pending='+!!state.pending?.tx);await ctx.close();
  }
  {
-  const {p,ctx}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p);await p.reload();
+  const {p,ctx}=await setup();await p.evaluate(()=>window.__holdHash=true);await begin(p);const firstSends=await p.evaluate(()=>window.__txs?.length||0);await p.reload();
   await p.locator('nav button[data-route="studio"]').click();await p.waitForTimeout(200);if(await p.locator('[data-mode="live"]').count())await p.locator('[data-mode="live"]').click();await p.waitForTimeout(1800);
-  const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,status:document.getElementById('lvStatus')?.textContent||'',restore:!!document.getElementById('lvRestore')}));
-  check('reload clears hashless pending and warns about the unknown wallet outcome',!state.pending&&/cannot tell whether it was sent/i.test(state.status),JSON.stringify(state));
-  check('reload leaves RESTORE FROM CHAIN available',state.restore,'RESTORE FROM CHAIN button present='+state.restore);await ctx.close();
+  const state=await p.evaluate(()=>({pending:JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending,status:document.getElementById('burnUnknownPanel')?.innerText||'',restore:!!document.getElementById('burnUnknownRestore'),sends:window.__txs?.length||0}));
+  check('reload preserves hashless pending as UNKNOWN OUTCOME',state.pending?.status==='unknown-outcome'&&state.status.includes("We don't know if your wallet sent the burn"),JSON.stringify(state));
+  check('reload keeps RESTORE FROM CHAIN available with no second send',state.restore&&firstSends+state.sends===1,'restore='+state.restore+' sends='+(firstSends+state.sends));await ctx.close();
  }
  {
   const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{window.__pending=false;window.__wrongHash=true;});await p.waitForTimeout(1800);

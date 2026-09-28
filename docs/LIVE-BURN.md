@@ -32,7 +32,11 @@ LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this
 
 Before opening the wallet request, Rare Heist saves an `awaiting-wallet` pending state and blocks burns in every open window. Once the wallet returns a transaction hash, it stores that hash, sender and item. If a burn is not confirmed within 180 seconds, the page shows the full hash and **CHECK AGAIN**. Reloading with a hash checks that same receipt before another burn can be sent. Do not confirm another burn while one is pending.
 
-If the page reloads while the wallet has not returned a hash, Rare Heist clears the stale lock and warns that it cannot know whether the wallet sent the transaction. Check the wallet and transaction history, then use **RESTORE FROM CHAIN** to find a mined tagged burn. Wait for the wallet request to finish before starting a burn in another window.
+If the wallet request times out or has a network error after `eth_sendTransaction` starts, Rare Heist cannot know whether the wallet sent it. The lock stays in place and a single **UNKNOWN OUTCOME** panel appears on every screen and in every tab. Reloading while the request has no hash, or opening the game while another tab owns that lock, shows the same panel. Its exact message is: “We don't know if your wallet sent the burn. Check your wallet's activity before trying again.”
+
+- **RESTORE FROM CHAIN** searches the pending player's tagged transfer logs. A matching item, amount and Friend restores the receipt and unlocks the cosmetic, then clears the lock. If no match is found yet, the lock stays and you can check again.
+- **RELEASE LOCK** opens a separate confirmation. Check your wallet activity first, then tick “I checked my wallet: the burn was not sent or was rejected. If it was sent, retrying burns RF again.” and confirm. Releasing is an explicit choice; if the original burn was sent, confirming another still burns more RF.
+- An explicit wallet rejection (`4001`, `reject` or `denied`) and errors before the burn request is sent clear the lock. A receipt resolves a transaction by its hash: success unlocks the item and a failed receipt clears the lock.
 
 - A successful receipt that proves the RF transfer unlocks the item.
 - A failed receipt clears the pending state and reports that no RF was burned.

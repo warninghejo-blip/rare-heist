@@ -1,101 +1,61 @@
 {
  "bpm": 128,
  "xf": 0.25,
+ "tail": 1.6,
  "scenes": [
   {
-   "name": "intro",
-   "src": "dir",
+   "name": "hook",
    "bars": 2
   },
   {
    "name": "logo",
-   "src": "dir",
-   "bars": 2
+   "bars": 2,
+   "in": "cut"
   },
   {
    "name": "friend",
-   "src": "dir",
-   "bars": 2
-  },
-  {
-   "name": "wallet",
-   "src": "ui:04-wallet",
    "bars": 2,
-   "ranges": [
-    [
-     0.3,
-     5.9
-    ]
-   ]
+   "in": "cut"
   },
   {
-   "name": "heist",
-   "src": "dir",
-   "bars": 7
+   "name": "heist1",
+   "bars": 4,
+   "in": "fade"
+  },
+  {
+   "name": "montage",
+   "bars": 4,
+   "in": "cut"
   },
   {
    "name": "caught",
-   "src": "dir",
-   "bars": 2
-  },
-  {
-   "name": "inspect",
-   "src": "ui:08-inspect",
    "bars": 2,
-   "ranges": [
-    [
-     0.8,
-     5.0
-    ]
-   ],
-   "crop": "1600:900:160:150"
+   "in": "cut"
   },
   {
-   "name": "lasttitle",
-   "src": "dir",
-   "bars": 1
-  },
-  {
-   "name": "evolve",
-   "src": "dir",
-   "bars": 4
-  },
-  {
-   "name": "fortify",
-   "src": "ui:10-last",
-   "bars": 2,
-   "ranges": [
-    [
-     7.6,
-     11.2
-    ],
-    [
-     17.8,
-     20.4
-    ]
-   ],
-   "crop": "1600:900:160:150"
+   "name": "heist2",
+   "bars": 4,
+   "in": "cut"
   },
   {
    "name": "grid",
-   "src": "dir",
-   "bars": 4
+   "bars": 3,
+   "in": "pixelize"
   },
   {
-   "name": "mobile",
-   "src": "ui:13-mobile",
-   "bars": 2,
-   "ranges": [
-    [
-     0.4,
-     6.4
-    ]
-   ]
+   "name": "lasttitle",
+   "bars": 1,
+   "in": "cut"
+  },
+  {
+   "name": "evolve",
+   "bars": 4,
+   "in": "cut"
   },
   {
    "name": "outro",
-   "src": "dir",
-   "bars": 3
+   "bars": 2,
+   "in": "fadeblack"
   }
  ]
 }

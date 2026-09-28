@@ -40,7 +40,7 @@
  function caller(req){return async(to,sel,args)=>req('eth_call',[{to,data:'0x'+sel+args.map(I.word).join('')},'latest']);}
  const wait=ms=>new Promise(r=>setTimeout(r,ms));
  // Sends one burn from the connected account and waits for its receipt.
- async function burn(p,{account,item,amount,friendId,onSent,poll=1500,timeout=180000}){
+ async function burn(p,{account,item,amount,friendId,onSent,onWalletRequest,poll=1500,timeout=180000}){
   const it=byId(item);if(!it)throw Error('Unknown item');
   // Tribute has a one-RF floor. Reject it before any wallet method can prompt.
   if(it.any&&units(amount,18)<10n**18n)throw Error('Tribute must be at least 1 RF');
@@ -49,6 +49,7 @@
   const value=it.any?units(amount,dec):price(it,dec);
   const bal=I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(from)]),1)[0];
   if(bal<value)throw Error('Not enough RF in this wallet: '+I.formatRF(bal,dec)+' RF available.');
+  onWalletRequest?.({from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec});
   const tx=await req('eth_sendTransaction',[{from,to:I.RF_TOKEN,value:'0x0',data:calldata(value,it,friendId)}],300000);
   if(typeof tx!=='string'||!/^0x[0-9a-f]{64}$/i.test(tx))throw Error('The wallet did not return a transaction hash');
   onSent?.(tx,{tx,from,item:it.id,amount:value.toString(),friendId:friendId==null?null:String(friendId),decimals:dec});
