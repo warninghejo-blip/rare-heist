@@ -60,7 +60,7 @@ await p.locator('#closeDialog').click();await p.waitForTimeout(150);await p.loca
 ok('view-address lists the holder\'s Friends: '+(await p.locator('#previewStatus').innerText()),/Found 2 Friends/.test(await p.locator('#previewStatus').innerText()));
 await p.locator('[data-view="7730"]').click();await p.waitForTimeout(300);ok('view-address Friend plays as PREVIEW',(await p.locator('#friend').innerText())==='PREVIEW #7730');
 await p.locator('#closeDialog').click().catch(()=>{});await p.waitForTimeout(150);await p.locator('#wallet').click();await p.waitForTimeout(150);await p.locator('#walletConnect').click();await p.waitForTimeout(1500);await p.locator('[data-own="3412"]').click();await p.waitForTimeout(300);
-await p.getByRole('button',{name:/^STUDIO \/ DEMO$/}).click();await p.waitForTimeout(1500);
+await p.getByRole('button',{name:/^STUDIO$/}).click();await p.waitForTimeout(1500);
 const rfA=await p.locator('#rfAccount').innerText(),rfF=await p.locator('#rfFriend').innerText();
 ok('real RF balances read: wallet '+rfA+', Friend wallet '+rfF,rfA==='1,234.50 RF'&&rfF==='42.00 RF');
 // LIVE BURN (beta): opt-in, real RF to 0x…dEaD, verified from the receipt, Hall of Ash from tagged history.
@@ -85,12 +85,12 @@ await p.evaluate(()=>{globalThis.__reject=false;});await p.locator('#closeDialog
 await p.fill('#ashAmount','99999');await p.locator('[data-burn="ash"]').click();await p.waitForTimeout(200);await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(800);
 ok('not enough RF is refused before the wallet is asked: '+(await txt('#burnStatus')),/Not enough RF/.test(await txt('#burnStatus'))&&(await p.evaluate(()=>globalThis.__txs.length))===2);
 await p.locator('#closeDialog').click();await p.waitForTimeout(150);
-await p.reload();await p.waitForTimeout(1200);await p.getByRole('button',{name:/^STUDIO \/ DEMO$/}).click();await p.waitForTimeout(400);
+await p.reload();await p.waitForTimeout(1200);await p.getByRole('button',{name:/^STUDIO$/}).click();await p.waitForTimeout(400);
 ok('after reload the Studio is back in DEMO',(await p.locator('[data-mode="demo"]').getAttribute('aria-selected'))==='true');
 await p.locator('[data-mode="live"]').click();await p.waitForTimeout(1200);
 ok('the unlock survives a reload',(await p.locator('[data-use="trail"]').count())===1);
 await p.screenshot({path:path.join(out,'live-burn.png'),fullPage:true});
-await p.getByRole('button',{name:/^SOLO VAULTS$/}).click();await p.waitForTimeout(300);await p.locator('article').filter({hasText:'Night Gallery'}).first().getByRole('button',{name:'OPERATIVE'}).click();await p.waitForTimeout(600);
+await p.getByRole('button',{name:/^SOLO VAULTS$/}).click();await p.waitForTimeout(300);await p.locator('article').filter({hasText:'Night Gallery'}).first().getByRole('button',{name:'PLAY',exact:true}).click();await p.waitForTimeout(600);
 if(await p.evaluate(()=>document.getElementById('modal')?.open))await p.locator('#closeDialog').click();
 for(let i=0;i<4;i++){await p.keyboard.press('ArrowRight');await p.waitForTimeout(260);}await p.waitForTimeout(300);
 const lime=await p.evaluate(()=>{const c=document.querySelector('#boardWrap canvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]===204&&d[i+1]===255&&d[i+2]===0)n++;return n;});

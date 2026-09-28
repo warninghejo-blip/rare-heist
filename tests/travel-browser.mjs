@@ -6,7 +6,7 @@ const E=require('../src/engine.js'),L=require('../src/cutaway-levels.js');
 const b=await chromium.launch(),p=await b.newPage({viewport:{width:1440,height:900}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
 let pass=0,fail=0;const ok=(n,c)=>{c?pass++:fail++;console.log((c?'PASS ':'FAIL ')+n);};
 await p.goto('file://'+path.join(root,'index.html'));await p.waitForTimeout(700);
-async function open(title){await p.getByRole('button',{name:/^SOLO VAULTS$/}).click();await p.waitForTimeout(250);await p.locator('article').filter({hasText:title}).first().getByRole('button',{name:'OPERATIVE'}).click();await p.waitForTimeout(500);}
+async function open(title){await p.getByRole('button',{name:/^SOLO VAULTS$/}).click();await p.waitForTimeout(250);await p.locator('article').filter({hasText:title}).first().getByRole('button',{name:'PLAY',exact:true}).click();await p.waitForTimeout(500);}
 async function clickCell(x,y){const pt=await p.evaluate(([x,y])=>{const g=RareHeistView().geometry,c=document.getElementById('gameCanvas').getBoundingClientRect(),k=c.width/g.w;return {x:c.left+(g.x0+(x+.5)*g.cw)*k,y:c.top+(g.top[y]+g.hh[y]*.6)*k};},[x,y]);await p.mouse.click(pt.x,pt.y);}
 const view=()=>p.evaluate(()=>RareHeistView());
 // 1. Night Gallery: start (1,1) -> down the hatch to F3 and walk east to column 6 (the keycard)

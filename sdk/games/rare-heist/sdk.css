@@ -1,7 +1,7 @@
 /* Rare Heist: Friend Edition layout for the FriendSDK 960 x 640 frame.
    heist.generated.css (the standalone style.css) loads first; these rules fit the same
    interface into the sandboxed frame. The SDK toolbar overlays the bottom band of the frame,
-   so no control is placed there. Colours stay black, white and the one lime signal. */
+   so no control is placed there. Colours follow the night-shift palette of the standalone game. */
 :root { --rh-band: 52px; --rh-bar: 40px; }
 @media (max-width: 518px) { :root { --rh-band: 44px; } }
 @media (max-width: 620px), (max-height: 420px) { :root { --rh-bar: 30px; } }
@@ -10,13 +10,13 @@ html, body { height: 100%; overflow: hidden; background: #000; }
 .rh-frame, .rh-mount { position: absolute; inset: 0; }
 
 /* Loading and error states before the game mounts. */
-.rh-status { position: absolute; inset: 0 0 var(--rh-band); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; text-align: center; background: #fff; font-size: 13px; }
+.rh-status { position: absolute; inset: 0 0 var(--rh-band); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; text-align: center; background: #1d1940; color: #e9e5f7; font-size: 13px; }
 .rh-status-title { font-size: 18px; background: #000; color: #fff; padding: 4px 10px; }
 .rh-status-title span { color: #cf0; }
 .rh-status p { max-width: 520px; }
 
 #rhSdk { position: absolute; inset: 0; display: flex; flex-direction: column; background: #000; padding-bottom: var(--rh-band); font-size: 13px; line-height: 1.45; }
-#rhSdk #screens { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #fff; }
+#rhSdk #screens { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--bg); }
 #rhSdk .page { padding: 0; }
 
 /* Top strip: menu, job, play tools, sound, motion, help. */
@@ -39,7 +39,7 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
 /* Lobby: the Friend, four lessons and fourteen jobs. */
 #rhSdk .rh-lobby { flex: 1; min-height: 0; overflow: auto; padding: 12px; }
 #rhSdk .rh-lobbygrid { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 14px; min-height: 100%; }
-#rhSdk .rh-friend { border: 2px solid #000; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+#rhSdk .rh-friend { background: var(--dusk); border: 2px solid #000; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
 #rhSdk .rh-friend canvas { image-rendering: pixelated; border: 2px solid #000; box-sizing: content-box; flex: none; }
 #rhSdk .rh-friendtext { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
 #rhSdk .rh-friend h2 { font-size: 30px; line-height: 1.1; }
@@ -47,9 +47,9 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
 #rhSdk .rh-progress { background: #000; color: #fff; padding: 2px 8px; }
 #rhSdk .rh-friend .note { margin: 0; font-size: 11px; }
 #rhSdk .rh-friend #rhNext { font-size: 12px; padding: 8px 10px; min-height: 38px; width: 100%; }
-#rhSdk .rh-link { border: 0; box-shadow: none; background: transparent; min-height: 24px; padding: 2px 4px; font-size: 11px; text-decoration: underline; }
+#rhSdk .rh-link { border: 0; box-shadow: none; background: transparent; color: var(--wall); min-height: 24px; padding: 2px 4px; font-size: 11px; text-decoration: underline; }
 #rhSdk .rh-lists { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-#rhSdk .rh-listhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+#rhSdk .rh-listhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid var(--haze); padding-bottom: 4px; }
 #rhSdk .rh-listhead h3 { font-size: 13px; }
 #rhSdk .rh-listhead small { font-size: 10px; }
 #rhSdk .rh-mode { display: flex; }
@@ -63,25 +63,28 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
 #rhSdk .rh-jobs small { font-size: 10px; text-transform: uppercase; }
 #rhSdk .rh-done { border-left-width: 8px; }
 #rhSdk .rh-marks { display: flex; gap: 3px; }
-#rhSdk .rh-marks i { font-style: normal; font-size: 10px; line-height: 1; border: 1px solid #000; padding: 2px 3px; min-width: 16px; text-align: center; }
-#rhSdk .rh-marks i.on { background: #cf0; }
+#rhSdk .rh-marks i { font-style: normal; font-size: 10px; line-height: 1; border: 1px solid currentColor; padding: 2px 3px; min-width: 16px; text-align: center; }
+#rhSdk .rh-marks i.on { background: #cf0; color: #000; border-color: #cf0; }
 
 /* Play screen: HUD, board, coach and actions above the SDK toolbar band. */
 #rhSdk .playpage { flex: 1; min-height: 0; padding: 6px 8px 6px; gap: 5px; }
-#rhSdk .play-layout { flex: 1; min-height: 0; display: flex; }
+#rhSdk .play-layout { flex: 1; min-height: 0; display: flex; align-items: stretch; }
 #rhSdk .board-column { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 5px; position: relative; }
-#rhSdk .gamehud { flex: none; min-height: 0; padding: 4px 8px; gap: 10px; font-size: 11px; flex-wrap: nowrap; }
-#rhSdk .gamehud .inventoryline { display: flex; gap: 12px; padding: 0; font-size: 11px; justify-content: center; }
-#rhSdk .hudleft, #rhSdk .hudright { gap: 10px; flex-wrap: nowrap; }
-#rhSdk .boardwrap { flex: 1 1 0; min-height: 0; height: auto !important; max-height: none !important; overflow: hidden; }
+#rhSdk .gamehud { display: flex; flex: none; min-height: 0; padding: 4px 8px; gap: 10px; font-size: 11px; flex-wrap: nowrap; }
+#rhSdk .hudgroup { gap: 10px; flex-wrap: nowrap; }
+#rhSdk .hud-bag span + span::before, #rhSdk .hud-where span + span::before { margin-right: 8px; }
+#rhSdk .boardwrap { flex: 1 1 0; min-height: 0; height: auto !important; max-height: none !important; overflow: hidden; border-top: 2px solid #000; }
 #rhSdk .coach { flex: none; min-height: 0; border-top: 2px solid #000; padding: 4px 8px; font-size: 11px; }
 #rhSdk .coach p { font-size: 11px; line-height: 1.35; }
 #rhSdk .coach button { min-height: 26px; padding: 2px 8px; font-size: 11px; }
-#rhSdk .inspectpanel { flex: none; max-height: 34%; overflow: auto; padding: 5px 10px; }
-#rhSdk .actions { flex: none; flex-wrap: nowrap; gap: 5px; padding-top: 0; }
-#rhSdk .actions button { flex: 1 1 0; min-width: 0; min-height: 38px; padding: 4px 6px; font-size: 11px; box-shadow: none; }
-#rhSdk .actions .move { font-size: 17px; flex: 1 1 0; }
-#rhSdk .replaybar { flex: none; padding: 5px 8px; }
+#rhSdk .inspectpanel { flex: none; max-height: 34%; overflow: auto; padding: 5px 10px; border-top: 2px solid #000; }
+#rhSdk .actions { flex: none; display: flex; flex-wrap: nowrap; gap: 5px; padding-top: 0; }
+#rhSdk .actions > div { display: contents; }
+#rhSdk .actions button { flex: 1 1 0; min-width: 0; min-height: 38px; padding: 4px 6px; font-size: 11px; box-shadow: none; justify-content: center; }
+#rhSdk .actions .move { width: auto; flex: 1 1 0; }
+#rhSdk .replaybar { flex: none; padding: 5px 8px; border-top: 2px solid #000; }
+/* Both security modes share the same rules (GHOST only adds score), so the lobby shows one PLAY path. */
+#rhSdk .rh-mode { display: none; }
 #rhSdk .pausecard { padding: 16px; }
 #rhSdk .pausecard h2 { font-size: 20px; }
 
@@ -91,7 +94,11 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
 #rhSdk .dialoginner > p { margin: 8px 0; font-size: 12px; }
 #rhSdk .dialoginner h2 { font-size: 20px; }
 #rhSdk .stamp { font-size: 22px; padding: 4px 12px; margin: 8px 0; }
-#rhSdk .resultstats { grid-template-columns: repeat(4, 1fr); margin: 8px 0; }
+#rhSdk .resultstats { grid-template-columns: repeat(3, 1fr); margin: 8px 0; }
+#rhSdk .verdict { gap: 12px; margin-top: 2px; }
+#rhSdk .verdict p { font-size: 12px; }
+#rhSdk .resultmore { margin-top: 8px; padding-top: 6px; }
+#rhSdk .goalbox { margin-top: 8px; }
 #rhSdk .resultstats strong { font-size: 18px; }
 #rhSdk .dialoginner .toolbar { margin: 8px 0 0; gap: 6px; }
 #rhSdk .dialoginner .toolbar button { min-height: 34px; padding: 6px 10px; }
@@ -129,9 +136,10 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
   #rhSdk .playpage { padding: 3px 4px; gap: 3px; }
   #rhSdk .board-column { gap: 3px; }
   /* HUD floats over the board; the board scrolls with the Friend (see friend-edition.js). */
-  #rhSdk .gamehud { position: absolute; z-index: 2; top: 2px; left: 2px; right: 2px; padding: 1px 4px; gap: 2px 6px; font-size: 8px; line-height: 1.3; flex-wrap: wrap; background: #000c; pointer-events: none; }
-  #rhSdk .gamehud .inventoryline { font-size: 8px; gap: 6px; }
-  #rhSdk .hudleft, #rhSdk .hudright { gap: 6px; }
+  #rhSdk .gamehud { display: flex; position: absolute; z-index: 2; top: 2px; left: 2px; right: 2px; padding: 1px 4px; gap: 2px 6px; font-size: 8px; line-height: 1.3; flex-wrap: wrap; background: #000c; pointer-events: none; }
+  #rhSdk .hudgroup, #rhSdk #inventory { gap: 6px; font-size: 8px; }
+  #rhSdk .hud-bag span + span::before, #rhSdk .hud-where span + span::before { display: none; }
+  #rhSdk .boardwrap { border-top: 2px solid #000; }
   #rhSdk #lightState, #rhSdk #parStatus { display: none; }
   #rhSdk .boardwrap { overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }
   #rhSdk .boardwrap::-webkit-scrollbar { display: none; }
@@ -142,7 +150,16 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
   #rhSdk .inspectpanel { max-height: 42%; padding: 3px 6px; font-size: 9px; }
   #rhSdk .actions { gap: 2px; }
   #rhSdk .actions button { min-height: 34px; padding: 1px; font-size: 8px; }
-  #rhSdk .actions .move { font-size: 14px; min-width: 0; min-height: 34px; }
+  #rhSdk .actions .move { min-width: 0; min-height: 34px; }
+  #rhSdk .actions .arrow { width: 12px; height: 12px; }
+  #rhSdk .verdict p { font-size: 9px; min-width: 0; }
+  #rhSdk .resultmore { gap: 2px 10px; }
+  #rhSdk .resultmain { gap: 4px; margin-top: 2px; }
+  #rhSdk .resultmain button { min-height: 30px; padding: 3px 8px; font-size: 9px; box-shadow: 2px 2px #000; }
+  #rhSdk .resultstats small { display: none; }
+  #rhSdk .verdict { gap: 8px; }
+  #rhSdk .debrief { margin-top: 5px; padding-left: 8px; font-size: 9px; }
+  #rhSdk .resultmore button { min-height: 24px; font-size: 9px; }
   #rhSdk .actions .key { display: none; }
   #rhSdk .pausecard { padding: 8px; max-width: 94%; }
   #rhSdk .pausecard h2 { font-size: 13px; }

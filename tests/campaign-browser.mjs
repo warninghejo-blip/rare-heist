@@ -12,9 +12,9 @@ for(const l of jobs){
   const route=solve(l,{maxNodes:600000});if(!route.ok){console.log('FAIL '+l.id+' no route');continue;}
   await p.getByRole('button',{name:/^SOLO VAULTS$/}).click();await p.waitForTimeout(300);
   const card=p.locator('article').filter({hasText:l.nameEn||l.name}).first();
-  await card.getByRole('button',{name:'OPERATIVE'}).first().click();await p.waitForTimeout(500);
+  await card.getByRole('button',{name:'PLAY',exact:true}).first().click();await p.waitForTimeout(500);
   for(const a of route.actions){await p.keyboard.press(key[a]);await p.waitForTimeout(115);}
-  await p.waitForTimeout(500);const won=await p.evaluate(()=>RareHeistView().state?.status);
+  await p.waitForTimeout(1100);const won=await p.evaluate(()=>RareHeistView().state?.status);
   const ok=won==='won';if(ok)pass++;console.log((ok?'PASS ':'FAIL ')+l.id+' '+route.turns+' turns -> '+won);
   if(process.argv[2]&&l.id==='cut-10')await p.screenshot({path:path.join(process.argv[2],'campaign-cut10.png')});
   await p.keyboard.press('Escape');await p.waitForTimeout(200);

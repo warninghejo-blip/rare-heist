@@ -90,7 +90,7 @@ All burned. No randomness, no consumables, no gameplay advantage, no payouts. DE
 | I | inspect a device (free) | L | light switch |
 | Q | EMP: sensors off for 4 turns | Z / R | rewind (practice) / retry |
 
-Touch: tap any cell to walk there, or use the on-screen buttons. Hovering with a mouse previews the route. SOUND and MOTION toggles sit in the top bar.
+Touch: tap any cell to walk there, or use the on-screen buttons. Hovering with a mouse previews the route. SOUND and MOTION sit in the settings menu (top right); `?` opens How to play.
 
 ## Run it yourself
 

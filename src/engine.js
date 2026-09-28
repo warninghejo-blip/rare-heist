@@ -35,9 +35,15 @@
       for(const d of ds){
         if(!d||typeof d!=='object'){errors.push(`Invalid ${key} item`);continue;}
         if(key==='guards'){
+          if(d.kind!=null&&d.kind!=='drone'&&d.kind!=='walker')errors.push('Invalid guard kind');
           if(d.range!=null&&(!Number.isInteger(d.range)||d.range<0||d.range>14))errors.push('Guard range must be 0–14');
           if(!Array.isArray(d.path)||d.path.length<2||d.path.length>24||d.path.some(p=>!Array.isArray(p)||p.length!==2||!p.every(Number.isInteger)||p[0]<1||p[1]<1||p[0]>=w-1||p[1]>=h-1||tile(raw,p[0],p[1])==='#'))errors.push('Guard path must stay on the floor');
-          else for(let i=0;i<d.path.length;i++){const p=d.path[i],q=d.path[(i+1)%d.path.length];if(Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])>1)errors.push('Guard path must loop using adjacent cells');}
+          else{
+            for(let i=0;i<d.path.length;i++){const p=d.path[i],q=d.path[(i+1)%d.path.length];if(Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])>1)errors.push('Guard path must loop using adjacent cells');}
+            // A walker is a person: one floor, no ladders or vents, and no power circuit to cut.
+            if(d.kind==='walker'&&d.path.some(p=>p[1]!==d.path[0][1]))errors.push('Walker must patrol one floor');
+          }
+          if(d.kind==='walker'&&d.circuit!=null)errors.push('Walkers are not on a circuit');
         }else{
           if(!Number.isInteger(d.x)||!Number.isInteger(d.y)||d.x<1||d.y<1||d.x>=w-1||d.y>=h-1)errors.push('Device out of bounds');
           if(typeof d.dir!=='string'||!Object.hasOwn(DIRS,d.dir))errors.push('Invalid device direction');
@@ -68,7 +74,7 @@
     if(raw.ventsWithRelic!=null&&typeof raw.ventsWithRelic!=='boolean')errors.push('ventsWithRelic must be boolean');
     if(raw.lockdown!=null&&(!Number.isInteger(raw.lockdown)||raw.lockdown<6||raw.lockdown>200))errors.push('Lockdown must be 6–200 turns');
     if(raw.emps!=null&&(!Number.isInteger(raw.emps)||raw.emps<0||raw.emps>3))errors.push('EMP stock must be 0–3');
-    if(raw.maxAlarms!=null&&(!Number.isInteger(raw.maxAlarms)||raw.maxAlarms<1||raw.maxAlarms>3))errors.push('Alarm limit must be 1–3');
+    // maxAlarms is a legacy field (old workshop maps). Any detection now ends the job, so it is accepted and ignored.
     if(raw.name!=null&&(typeof raw.name!=='string'||raw.name.length>80))errors.push('Invalid name');
     return {ok:errors.length===0, errors:[...new Set(errors)]};
   }
@@ -79,13 +85,14 @@
       nameEn:String(raw.nameEn||raw.name||'Untitled vault').slice(0,80),
       desc:String(raw.desc||'').slice(0,500),descEn:String(raw.descEn||raw.desc||'').slice(0,500),
       hint:String(raw.hint||'').slice(0,500),hintEn:String(raw.hintEn||raw.hint||'').slice(0,500),
-      tag:String(raw.tag||'CUSTOM').slice(0,30),emps:raw.emps??1,maxAlarms:raw.maxAlarms??3,
+      tag:String(raw.tag||'CUSTOM').slice(0,30),emps:raw.emps??1,maxAlarms:1,
       par:Number.isInteger(raw.par)?Math.max(1,Math.min(999,raw.par)):80,
       lockdown:raw.lockdown??null,ventsWithRelic:raw.ventsWithRelic!==false,
       lasers:[],cameras:[],guards:[]};
     for(const k of ['lasers','cameras','guards'])for(const d of raw[k]||[]){
       const n={};for(const v of ['x','y','dir','range','period','on','phase','circuit','speed'])if(d[v]!=null)n[v]=d[v];
       if(d.afterRelic)n.afterRelic=true;
+      if(k==='guards'&&d.kind==='walker')n.kind='walker'; // drones keep their original shape (no kind)
       if(d.rotation)n.rotation=[...d.rotation];if(d.path)n.path=d.path.map(p=>[...p]);
       l[k].push(n);
     }
@@ -154,9 +161,11 @@
       for(const p of ray(l,s,d.x,d.y,dir,sightRange(l,s,d.range,atTurn)))vision.push({...p,source:i,type:'camera'});
     });
     l.guards.forEach((d,i)=>{
-      const p=guardAt(d,atTurn);guards.push({...p,source:i});
-      if(sensorsPaused(s,atTurn)||d.range===0||(d.afterRelic&&!s.relic)||(d.circuit!=null&&(s.switches&(1<<d.circuit))))return;
-      for(const q of ray(l,s,p.x,p.y,p.dir,sightRange(l,s,d.range||2,atTurn)))vision.push({...q,source:i,type:'guard'});
+      const p=guardAt(d,atTurn),walker=d.kind==='walker';guards.push({...p,source:i});
+      if(d.range===0||(d.afterRelic&&!s.relic))return;
+      // Drones are electronics: EMP and their circuit blind them. A walker is a person: only darkness shortens his sight.
+      if(!walker&&(sensorsPaused(s,atTurn)||(d.circuit!=null&&(s.switches&(1<<d.circuit)))))return;
+      for(const q of ray(l,s,p.x,p.y,p.dir,sightRange(l,s,walker?(d.range??3):(d.range||2),atTurn)))vision.push({...q,source:i,type:walker?'walker':'guard'});
     });
     return {lasers,vision,guards};
   }
@@ -205,12 +214,13 @@
     if(s.lockdownLeft!=null&&!tookRelic)s.lockdownLeft--;
     if(l.lighting&&lightsOn(l,state)!==lightsOn(l,s))s.events.push(lightsOn(l,s)?'lights-on':'lights-off');
     const h=threats(l,s),h0=threats(l,state);
-    const collision=h.guards.some((g,i)=>same(g,s)||(same(h0.guards[i],s)&&same(g,old)&&moved&&action!=='VENT'));
+    const hit=h.guards.findIndex((g,i)=>same(g,s)||(same(h0.guards[i],s)&&same(g,old)&&moved&&action!=='VENT'));
     const spotted=h.lasers.some(p=>same(p,s))||h.vision.some(p=>same(p,s));
-    if(collision){s.status='lost';s.failure={kind:'drone',turn:s.turn,x:s.x,y:s.y};s.events.push('caught');}
+    if(hit>=0){s.status='lost';s.failure={kind:l.guards[hit].kind==='walker'?'walker':'drone',turn:s.turn,x:s.x,y:s.y};s.events.push('caught');}
     else if(spotted){
+      // Any detection fails the job at once, in every mode. maxAlarms is ignored.
       s.alarms++;s.events.push('alarm');
-      if(s.alarms>=(s.mode==='ghost'?1:l.maxAlarms)){s.status='lost';s.failure={kind:h.lasers.some(p=>same(p,s))?'laser':h.vision.find(p=>same(p,s))?.type||'camera',turn:s.turn,x:s.x,y:s.y};s.events.push('caught');}
+      s.status='lost';s.failure={kind:h.lasers.some(p=>same(p,s))?'laser':h.vision.find(p=>same(p,s))?.type||'camera',turn:s.turn,x:s.x,y:s.y};s.events.push('caught');
     }
     // A drone's physical hull remains solid during EMP; its sensors, lasers and cameras pause.
     if(s.status==='playing'&&c==='E'&&s.relic){s.status='won';s.events.push('escape');}
@@ -238,6 +248,7 @@
     if(s.status!=='won')return 0;
     return Math.max(1,1000+countIntel(s)*150+(s.mode==='ghost'?200:0)-s.alarms*180-s.empUsed*60-Math.max(0,s.turn-l.par)*8);
   }
-  function medal(l,s){if(s.status!=='won')return null;return s.alarms===0&&s.empUsed===0&&s.turn<=l.par?'ghost':s.alarms===0?'clean':'escaped';}
+  // A won job never has alarms: 'ghost' = no EMP and within PAR, otherwise 'clean'.
+  function medal(l,s){if(s.status!=='won')return null;return s.empUsed===0&&s.turn<=l.par?'ghost':'clean';}
   return {DIRS,ACTIONS,tile,positions,validate,normalize,create,step,replay,threats,ray,solid,held,doorOpen,deviceAt,guardAt,active,sensorsPaused,period,countIntel,score,medal,interact,xy,same,lightsOn,canToggleLight};
 });

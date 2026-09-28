@@ -11,7 +11,7 @@
  * clean (no-EMP, zero-alarm) solution, or when a headline mechanic is not required.
  *
  * Metrics
- *   witness  turns of the weighted-A* witness from app/tests/solve.cjs (PAR basis)
+ *   witness  turns of the weighted-A* witness from tests/solve.cjs (PAR basis)
  *   opt      exact minimum turns (breadth-first search over the same state key)
  *   nodes    solver nodes expanded for the clean witness (difficulty proxy)
  *   waits    WAIT actions in the clean witness
@@ -27,7 +27,7 @@
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const E = require('../src/engine.js');
 const C = require('../src/cutaway-rules.js');
-const { solve } = require('../../app/tests/solve.cjs');
+const { solve } = require('./solve.cjs');
 
 const args = process.argv.slice(2);
 const opt = (name, dflt) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : dflt; };
@@ -44,7 +44,7 @@ function loadLevels(file) {
 }
 
 // Order in which the UI presents the content (src/ui.js campaign list, then annex, archive).
-const LESSONS = ['cut-00', 'drill-pulse', 'drill-light', 'drill-weight'];
+const LESSONS = ['cut-00', 'drill-pulse', 'drill-light', 'drill-weight', 'drill-walker'];
 const CAMPAIGN = ['cut-02', 'cut-03', 'cut-05', 'cut-06', 'cut-07', 'cut-04', 'cut-01', 'cut-08', 'cut-09', 'cut-10', 'cut-11', 'cut-12'];
 
 // Headline mechanics per level, derived from tag/desc. Each must pass its probe.
@@ -53,20 +53,21 @@ const HEADLINE = {
   'drill-pulse': ['lasers'],
   'drill-light': ['light-switch'],
   'drill-weight': ['crates'],
+  'drill-walker': ['guards'],
   'cut-01': ['guards', 'vents', 'key-a', 'heavy-trophy'],
   'cut-02': ['lasers'],
   'cut-03': ['key-a'],
   'cut-04': ['key-a', 'key-b'],
-  'cut-05': ['crates'],
-  'cut-06': ['switch-1', 'circuit'],
-  'cut-07': ['light-switch'],
+  'cut-05': ['crates', 'guards'],
+  'cut-06': ['switch-1', 'circuit', 'guards'],
+  'cut-07': ['light-switch', 'guards'],
   'cut-08': ['after-relic'],
-  'cut-09': ['lockdown', 'switch-1', 'key-a'],
-  'cut-10': ['switch-1', 'key-a', 'key-b', 'crates', 'lockdown'],
+  'cut-09': ['lockdown', 'switch-1', 'key-a', 'guards'],
+  'cut-10': ['switch-1', 'key-a', 'key-b', 'crates', 'lockdown', 'guards'],
   'cut-11': ['key-a', 'switch-1', 'switch-2', 'light-switch', 'circuit', 'lockdown'],
   'cut-12': ['guards', 'lasers', 'key-a', 'lockdown', 'heavy-trophy'],
   'annex-01': ['light-switch', 'switch-1'],
-  'annex-02': ['light-cycle', 'key-a', 'key-b'],
+  'annex-02': ['light-cycle', 'key-a', 'key-b', 'guards'],
   'archive-01': ['each-crate'],
   'archive-02': ['light-cycle', 'lasers'],
   'archive-03': ['switch-1', 'key-a', 'lockdown', 'vents', 'heavy-trophy'],

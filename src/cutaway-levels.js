@@ -290,7 +290,7 @@
   "id": "cut-05",
   "name": "Weight of Evidence",
   "nameEn": "Weight of Evidence",
-  "tag": "CRATE / PLATE",
+  "tag": "CRATE / GUARD",
   "map": [
    "#############",
    "#S.........E#",
@@ -302,46 +302,82 @@
   ],
   "emps": 1,
   "maxAlarms": 2,
-  "par": 42,
+  "par": 43,
   "lasers": [],
-  "cameras": [
+  "cameras": [],
+  "guards": [
    {
-    "x": 8,
-    "y": 3,
-    "dir": "W",
-    "range": 2,
-    "rotation": [
-     "W",
-     "E"
+    "kind": "walker",
+    "path": [
+     [
+      4,
+      3
+     ],
+     [
+      5,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      9,
+      3
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      5,
+      3
+     ]
     ],
-    "speed": 2
+    "range": 3,
+    "phase": 7
    }
   ],
-  "guards": [],
-  "desc": "The only way into the lower vault is through G. Push the crate onto P1 and leave it there while you extract.",
-  "hint": "Approach the crate from its right side. Push it left onto P1, then pass G. There is no right-hand ladder into the basement.",
-  "descEn": "The only way into the lower vault is through G. Push the crate onto P1 and leave it there while you extract.",
-  "hintEn": "Approach the crate from its right side. Push it left onto P1, then pass G. There is no right-hand ladder into the basement."
+  "desc": "The only way into the lower vault is through G. A night guard walks the middle floor. Push the crate onto P1 and leave it there while you extract.",
+  "hint": "A guard sees three cells ahead and nothing behind. Follow his back while he walks away; wait on a ladder hatch while he passes over you. Push the crate left onto P1.",
+  "descEn": "The only way into the lower vault is through G. A night guard walks the middle floor. Push the crate onto P1 and leave it there while you extract.",
+  "hintEn": "A guard sees three cells ahead and nothing behind. Follow his back while he walks away; wait on a ladder hatch while he passes over you. Push the crate left onto P1."
  },
  {
   "id": "cut-06",
   "name": "Cut the Feed",
   "nameEn": "Cut the Feed",
-  "tag": "CIRCUIT 1",
+  "tag": "CIRCUIT / GUARD",
   "map": [
    "#############",
    "#S.......D.E#",
    "##.#######.##",
-   "#...1.......#",
+   "#1..........#",
    "###.#####.###",
-   "#...#.......#",
+   "#...#..o....#",
    "##.#######.##",
-   "#.T...o.....#",
+   "#.....T.....#",
    "#############"
   ],
   "emps": 1,
   "maxAlarms": 2,
-  "par": 33,
+  "par": 39,
   "lasers": [
    {
     "x": 1,
@@ -351,15 +387,6 @@
     "period": 4,
     "on": 4,
     "circuit": 0
-   },
-   {
-    "x": 11,
-    "y": 7,
-    "dir": "W",
-    "range": 5,
-    "period": 6,
-    "on": 2,
-    "circuit": 0
    }
   ],
   "cameras": [
@@ -371,17 +398,89 @@
     "circuit": 0
    }
   ],
-  "guards": [],
-  "desc": "One circuit powers the security and opens the exit. Flip it once; do not undo your own escape.",
-  "hint": "Walk onto switch 1 to flip it. Security marked 1 shuts down; door D opens.",
-  "descEn": "One circuit powers the security and opens the exit. Flip it once; do not undo your own escape.",
-  "hintEn": "Walk onto switch 1 to flip it. Security marked 1 shuts down; door D opens."
+  "guards": [
+   {
+    "kind": "walker",
+    "path": [
+     [
+      2,
+      7
+     ],
+     [
+      3,
+      7
+     ],
+     [
+      4,
+      7
+     ],
+     [
+      5,
+      7
+     ],
+     [
+      6,
+      7
+     ],
+     [
+      7,
+      7
+     ],
+     [
+      8,
+      7
+     ],
+     [
+      9,
+      7
+     ],
+     [
+      10,
+      7
+     ],
+     [
+      9,
+      7
+     ],
+     [
+      8,
+      7
+     ],
+     [
+      7,
+      7
+     ],
+     [
+      6,
+      7
+     ],
+     [
+      5,
+      7
+     ],
+     [
+      4,
+      7
+     ],
+     [
+      3,
+      7
+     ]
+    ],
+    "range": 3,
+    "phase": 9
+   }
+  ],
+  "desc": "One circuit powers the cameras, the lasers and the exit door. It does not power the night guard in the vault.",
+  "hint": "Walk onto switch 1 to flip it; stepping on it again undoes it. Wait on a vault hatch until the guard walks away, follow him to the trophy and leave before he turns.",
+  "descEn": "One circuit powers the cameras, the lasers and the exit door. It does not power the night guard in the vault.",
+  "hintEn": "Walk onto switch 1 to flip it; stepping on it again undoes it. Wait on a vault hatch until the guard walks away, follow him to the trophy and leave before he turns."
  },
  {
   "id": "cut-07",
   "name": "Lights Out",
   "nameEn": "Lights Out",
-  "tag": "OPTICAL SECURITY",
+  "tag": "LIGHTS / GUARD",
   "map": [
    "#############",
    "#Sl........E#",
@@ -395,7 +494,7 @@
   ],
   "emps": 1,
   "maxAlarms": 2,
-  "par": 43,
+  "par": 51,
   "lasers": [
    {
     "x": 11,
@@ -420,14 +519,78 @@
     "range": 1
    }
   ],
-  "guards": [],
-  "desc": "Cameras can see across the room. Reach the switchboard and turn the lights off before descending.",
-  "hint": "LIGHT next to l costs one turn. Darkness shortens sight to one cell, not laser range.",
+  "guards": [
+   {
+    "kind": "walker",
+    "path": [
+     [
+      1,
+      5
+     ],
+     [
+      2,
+      5
+     ],
+     [
+      3,
+      5
+     ],
+     [
+      4,
+      5
+     ],
+     [
+      5,
+      5
+     ],
+     [
+      6,
+      5
+     ],
+     [
+      7,
+      5
+     ],
+     [
+      8,
+      5
+     ],
+     [
+      7,
+      5
+     ],
+     [
+      6,
+      5
+     ],
+     [
+      5,
+      5
+     ],
+     [
+      4,
+      5
+     ],
+     [
+      3,
+      5
+     ],
+     [
+      2,
+      5
+     ]
+    ],
+    "range": 3,
+    "phase": 9
+   }
+  ],
+  "desc": "Cameras see across the rooms and a guard walks the card floor. Reach the switchboard and turn the lights off before descending.",
+  "hint": "LIGHT next to l costs one turn. Darkness shortens every eye to one cell, the guard's too: you can walk right behind him. Duck into a hatch when he turns.",
   "lighting": {
    "initialOn": true
   },
-  "descEn": "Cameras can see across the room. Reach the switchboard and turn the lights off before descending.",
-  "hintEn": "LIGHT next to l costs one turn. Darkness shortens sight to one cell, not laser range."
+  "descEn": "Cameras see across the rooms and a guard walks the card floor. Reach the switchboard and turn the lights off before descending.",
+  "hintEn": "LIGHT next to l costs one turn. Darkness shortens every eye to one cell, the guard's too: you can walk right behind him. Duck into a hatch when he turns."
  },
  {
   "id": "cut-08",
@@ -504,7 +667,7 @@
   "id": "cut-09",
   "name": "Twenty to Midnight",
   "nameEn": "Twenty to Midnight",
-  "tag": "LOCKDOWN",
+  "tag": "LOCKDOWN / GUARD",
   "map": [
    "#############",
    "#S....#..ARE#",
@@ -518,7 +681,7 @@
   ],
   "emps": 0,
   "maxAlarms": 1,
-  "par": 33,
+  "par": 38,
   "lasers": [
    {
     "x": 11,
@@ -543,12 +706,52 @@
     "speed": 2
    }
   ],
-  "guards": [],
-  "desc": "After the theft, the shutters close in 18 turns. Prepare the circuit and card before taking the trophy.",
-  "hint": "Door R needs the trophy and switch 1. Flip the switch on the way down: only the west ladders get you out in time.",
+  "guards": [
+   {
+    "kind": "walker",
+    "path": [
+     [
+      2,
+      5
+     ],
+     [
+      3,
+      5
+     ],
+     [
+      4,
+      5
+     ],
+     [
+      5,
+      5
+     ],
+     [
+      6,
+      5
+     ],
+     [
+      5,
+      5
+     ],
+     [
+      4,
+      5
+     ],
+     [
+      3,
+      5
+     ]
+    ],
+    "range": 3,
+    "phase": 7
+   }
+  ],
+  "desc": "After the theft, the shutters close in 18 turns. Prepare the circuit and card before taking the trophy. A guard walks the floor above the vault.",
+  "hint": "Door R needs the trophy and switch 1. Only the west ladders get you out in time, and the guard walks right over them: wait on a hatch until his back is turned.",
   "lockdown": 18,
-  "descEn": "After the theft, the shutters close in 18 turns. Prepare the circuit and card before taking the trophy.",
-  "hintEn": "Door R needs the trophy and switch 1. Flip the switch on the way down: only the west ladders get you out in time."
+  "descEn": "After the theft, the shutters close in 18 turns. Prepare the circuit and card before taking the trophy. A guard walks the floor above the vault.",
+  "hintEn": "Door R needs the trophy and switch 1. Only the west ladders get you out in time, and the guard walks right over them: wait on a hatch until his back is turned."
  },
  {
   "id": "cut-10",
@@ -651,18 +854,19 @@
       9
      ]
     ],
-    "range": 1
+    "range": 3,
+    "kind": "walker"
    }
   ],
-  "desc": "Five floors. Two credentials. A pressure gate. Prepare the circuit and escape route before a 28-turn lockdown.",
-  "hint": "Flip switch 1 at the far west before the theft. Push the crate LEFT onto P1. The trophy cannot use the vent: it leaves by the east ladders.",
+  "desc": "Five floors. Two credentials. A pressure gate. A guard in the vault. Prepare the circuit and escape route before a 28-turn lockdown.",
+  "hint": "Flip switch 1 at the far west before the theft. Push the crate LEFT onto P1. Lights off, the vault guard sees one cell. The trophy cannot use the vent: it leaves by the east ladders.",
   "lockdown": 28,
   "ventsWithRelic": false,
   "lighting": {
    "initialOn": true
   },
-  "descEn": "Five floors. Two credentials. A pressure gate. Prepare the circuit and escape route before a 28-turn lockdown.",
-  "hintEn": "Flip switch 1 at the far west before the theft. Push the crate LEFT onto P1. The trophy cannot use the vent: it leaves by the east ladders."
+  "descEn": "Five floors. Two credentials. A pressure gate. A guard in the vault. Prepare the circuit and escape route before a 28-turn lockdown.",
+  "hintEn": "Flip switch 1 at the far west before the theft. Push the crate LEFT onto P1. Lights off, the vault guard sees one cell. The trophy cannot use the vent: it leaves by the east ladders."
  },
  {
   "id": "annex-01",
@@ -729,7 +933,7 @@
   ],
   "emps": 0,
   "maxAlarms": 1,
-  "par": 35,
+  "par": 43,
   "lasers": [
    {
     "x": 1,
@@ -748,17 +952,65 @@
     "range": 6
    }
   ],
-  "guards": [],
-  "desc": "Three turns lit, three dark. Cross the observatory under the moving blackout and bring the lens home.",
-  "hint": "Use WAIT in cover. A manual switch inverts the automatic light cycle.",
+  "guards": [
+   {
+    "kind": "walker",
+    "path": [
+     [
+      5,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      9,
+      3
+     ],
+     [
+      10,
+      3
+     ],
+     [
+      9,
+      3
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      6,
+      3
+     ]
+    ],
+    "range": 3,
+    "phase": 2
+   }
+  ],
+  "desc": "Three turns lit, three dark. A guard walks the observatory. Cross under the moving blackout and bring the lens home.",
+  "hint": "Lit, the guard sees three cells; dark, only one. Wait in a hatch while he passes overhead. A manual switch inverts the automatic light cycle.",
   "lighting": {
    "initialOn": true,
    "period": 6,
    "on": 3,
    "phase": 0
   },
-  "descEn": "Three turns lit, three dark. Cross the observatory under the moving blackout and bring the lens home.",
-  "hintEn": "Use WAIT in cover. A manual switch inverts the automatic light cycle."
+  "descEn": "Three turns lit, three dark. A guard walks the observatory. Cross under the moving blackout and bring the lens home.",
+  "hintEn": "Lit, the guard sees three cells; dark, only one. Wait in a hatch while he passes overhead. A manual switch inverts the automatic light cycle."
  },
  {
   "id": "cut-11",
@@ -824,7 +1076,7 @@
   "id": "cut-12",
   "name": "Graveyard Shift",
   "nameEn": "Graveyard Shift",
-  "tag": "DRONE / LOCKDOWN",
+  "tag": "GUARD / LOCKDOWN",
   "map": [
    "###############",
    "#S......#...AE#",
@@ -952,15 +1204,16 @@
      ]
     ],
     "range": 3,
-    "phase": 2
+    "phase": 2,
+    "kind": "walker"
    }
   ],
   "ventsWithRelic": false,
   "lockdown": 16,
-  "desc": "Card A lies at the far end of the vault, past the trophy. A drone patrols the hall above, and the trophy is too heavy for the vent.",
-  "descEn": "Card A lies at the far end of the vault, past the trophy. A drone patrols the hall above, and the trophy is too heavy for the vent.",
-  "hint": "Take the card before the trophy: shutters close 16 turns after the theft. Vent in safely, or slip through the drone hall by the hatches at columns 10 and 9.",
-  "hintEn": "Take the card before the trophy: shutters close 16 turns after the theft. Vent in safely, or slip through the drone hall by the hatches at columns 10 and 9."
+  "desc": "Card A lies at the far end of the vault, past the trophy. A night guard walks the hall above, and the trophy is too heavy for the vent.",
+  "descEn": "Card A lies at the far end of the vault, past the trophy. A night guard walks the hall above, and the trophy is too heavy for the vent.",
+  "hint": "Take the card before the trophy: shutters close 16 turns after the theft. Vent in safely, or slip through the guard's hall behind his back by the hatches at columns 10 and 9.",
+  "hintEn": "Take the card before the trophy: shutters close 16 turns after the theft. Vent in safely, or slip through the guard's hall behind his back by the hatches at columns 10 and 9."
  },
  {
   "id": "archive-01",
@@ -1195,6 +1448,87 @@
   "descEn": "Push the crate onto P1. Leave it holding the gate while you steal the trophy.",
   "hint": "Push from the left. Stop when the crate reaches P1. Use the middle floor to climb down on the far side of the crate.",
   "hintEn": "Push from the left. Stop when the crate reaches P1. Use the middle floor to climb down on the far side of the crate."
+ },
+ {
+  "id": "drill-walker",
+  "name": "The Night Watchman",
+  "nameEn": "The Night Watchman",
+  "tag": "SECURITY DRILL",
+  "map": [
+   "###########",
+   "#S..#....E#",
+   "##.#####.##",
+   "#.........#",
+   "#####.#####",
+   "#.T.......#",
+   "###########"
+  ],
+  "emps": 0,
+  "maxAlarms": 1,
+  "par": 33,
+  "lasers": [],
+  "cameras": [],
+  "guards": [
+   {
+    "kind": "walker",
+    "path": [
+     [
+      2,
+      3
+     ],
+     [
+      3,
+      3
+     ],
+     [
+      4,
+      3
+     ],
+     [
+      5,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      7,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      5,
+      3
+     ],
+     [
+      4,
+      3
+     ],
+     [
+      3,
+      3
+     ]
+    ],
+    "range": 3,
+    "phase": 11
+   }
+  ],
+  "desc": "A guard walks the middle floor. He sees three cells ahead and nothing behind. Take the trophy downstairs without entering his view.",
+  "hint": "Wait on a ladder hatch while he walks away, then follow his back. He turns at each end of his route. A hatch hides you while he walks overhead.",
+  "descEn": "A guard walks the middle floor. He sees three cells ahead and nothing behind. Take the trophy downstairs without entering his view.",
+  "hintEn": "Wait on a ladder hatch while he walks away, then follow his back. He turns at each end of his route. A hatch hides you while he walks overhead."
  },
  {
   "id": "last-cutaway",

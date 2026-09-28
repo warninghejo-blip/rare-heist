@@ -123,3 +123,31 @@ Findings:
 - **Wait-heavy routes.** archive-02 (7 waits) and cut-11 (9 in the weighted witness, fewer in the exact route) lean on waiting. Some players find that slow; tightening clock periods to 4 would cut idle turns.
 - **Unused space.** Largest pockets: cut-10 (18/60), cut-00 (17/32, intentional), annex-02 (17/41), cut-11 west vault (walled by its laser). Filling them with optional intel or walls would make the plans read more clearly.
 - **Proxy limits.** Node counts come from a weighted A* witness finder, not a proof of optimality, and they measure search effort rather than human effort. Playtest cut-11/12 and the archive pack; archive-03 (6495 nodes) may now be the hardest map in the game.
+
+## 2026-09-28: one detection fails the job; walking guards
+
+Rules (`src/engine.js`, tests in `tests/rules.test.cjs`):
+- Any detection (laser, camera, drone sight, walker sight) ends the job on that turn in every mode. `maxAlarms` is still accepted in input data and ignored; `normalize` now reports `maxAlarms: 1`. A won job always has 0 alarms, so the medal is `ghost` (no EMP, within PAR) or `clean`; `escaped` no longer exists.
+- New guard kind `kind: 'walker'` (a person). Walks one floor only (validator: "Walker must patrol one floor"), sees `range` cells ahead (default 3), and nothing behind. Walls, closed doors and crates block his sight. Darkness cuts it to 1 cell. EMP and circuits do not affect him (he has no circuit; the validator rejects one). Meeting him face to face or swapping cells is a catch (`failure.kind: 'walker'`). A ladder hatch hides you while he walks overhead. Drones (no `kind`) are unchanged apart from instant failure.
+
+Walkers per level ("before → after"; nodes/waits/intel as in the table above; "binds" = optimum turns saved if the walkers are removed):
+
+| id | walkers | wit | opt | par | nodes | waits | intel | binds | design |
+|---|---|---|---|---|---|---|---|---|---|
+| cut-05 | 0 → 1 | 36 → 37 | 36 → 37 | 42 → 43 | 42 → 91 | 0 → 1 | +4 | 5 | First guard (campaign slot 3), replaces the F2 camera. Follow his back down to the crate floor; on the way out wait on the hatch while he passes overhead. |
+| cut-06 | 0 → 1 | 28 → 34 | 28 → 34 | 33 → 39 | 42 → 120 | 0 | +0 → +4 | 6 | The circuit kills cameras and lasers, not people. Trophy moved into the vault (6,7) under the guard's patrol; switch 1 moved to (1,3) so the circuit is a detour again (binds 2); vault laser removed; chip moved to (7,5). Enter the vault from either hatch, follow him to the trophy, leave before he turns. |
+| cut-07 | 0 → 1 | 37 → 44 | 37 → 44 | 43 → 51 | 175 → 433 | 0 → 1 | +14 | 7 | Guard on the card floor. Lights off, he sees one cell: shadow him at arm's length and duck into the hatch when he turns. |
+| cut-09 | 0 → 1 | 28 → 33 | 28 → 33 | 33 → 38 | 830 → 138 | 0 → 5 | +13 → +14 | 5 | Guard walks over the west ladders the escape needs; the lockdown clock does not stop him. |
+| cut-10 | drone → walker | 64 | 64 | 74 | 3105 → 3311 | 2 → 1 | +10 | 2 | Vault drone becomes a range-3 guard; the light switch goes from OPTIONAL to REQUIRED (lights off, follow him in the dark). |
+| cut-12 | drone → walker | 47 | 47 | 54 | 4640 | 6 | +3 | 9 | "Graveyard Shift" gets its night guard; same patrol and sight as the old drone (the level has no EMP). |
+| annex-02 | 0 → 1 | 30 → 37 | 30 → 37 | 35 → 43 | 198 → 630 | 0 → 5 | +12 → +10 | 7 | Observatory guard under the rolling blackout: lit he sees 3, dark 1. Hide in the hatch while he passes. |
+| drill-walker (new) | 1 | 29 | 29 | 33 | 97 | 5 | – | 7 | Lesson: one guard, no other security. Wait on a hatch, follow his back, climb before he turns. |
+
+Unchanged: cut-01 keeps its drone (the drone/EMP contrast). Every walker is checked by `tests/levels.test.cjs` ("its walkers make the optimal route longer").
+
+Findings after this pass: the cut-06 free-intel finding is gone. New: EMP shortens cut-07 by 14 turns (44 → 30), because the EMP route skips the guard's floor; EMP still costs the ghost medal and 60 points. The cut-09 node count fell (830 → 138): the old count came from two decorative devices, and the new difficulty is timing (5 waits), which the node proxy under-counts.
+
+Needs action outside this file:
+1. `drill-walker` is not in the Academy until `src/playfeel.js` `LESSONS` lists it, and it has no coach text in `lesson()`.
+2. UI text that still assumes alarms or drones: `ui.js` HUD `ALARM x/y` (now always `0/1`), `DETECTED` state, result stamp `ESCAPED` and card export `ESCAPED /` (unreachable), catalogue note "OPERATIVE tolerates the shown alarm limit", failure text `Caught by walker`, "You and the drone crossed each other"; `playfeel.js` labels every guard `DRONE` and its INSPECT text mentions EMP; `street.js` daily "One alarm."; the workshop has no walker tool (drone tool only).
+3. `planKey` includes `maxAlarms`, so saved target stars reset for cut-01…cut-08 (their data says `maxAlarms: 2`, normalize now reports 1) and for every level changed above.
