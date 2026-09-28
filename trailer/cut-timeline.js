@@ -1,24 +1,24 @@
 window.CUT={
- "bpm":120,"fps":30,"total":87.5,
+ "bpm":120,"fps":30,"total":110,
  "shots":[
-  {"name":"cold","own":0,"a":0,"b":8},
-  {"name":"reveal","own":8,"a":8,"b":14},
-  {"name":"open","own":14,"a":14,"b":26.2},
-  {"name":"montage","own":26,"a":25.8,"b":32.2},
-  {"name":"heist","own":32,"a":31.8,"b":50.4},
-  {"name":"grid","own":50,"a":50,"b":56},
-  {"name":"lasttitle","own":56,"a":56,"b":58.3},
-  {"name":"editor","own":58,"a":57.8,"b":66},
-  {"name":"stakes","own":66,"a":65.7,"b":72.3},
-  {"name":"burn","own":72,"a":71.8,"b":78},
-  {"name":"title","own":78,"a":78,"b":87.5}
+  {"name":"cold","own":0,"a":0,"b":10},
+  {"name":"reveal","own":10,"a":10,"b":18},
+  {"name":"open","own":18,"a":18,"b":32.2},
+  {"name":"montage","own":32,"a":31.8,"b":38.2},
+  {"name":"heist","own":38,"a":37.8,"b":60.4},
+  {"name":"grid","own":60,"a":60,"b":66},
+  {"name":"lasttitle","own":66,"a":66,"b":71.3},
+  {"name":"editor","own":71,"a":70.8,"b":83},
+  {"name":"stakes","own":83,"a":82.7,"b":93},
+  {"name":"burn","own":93,"a":92.5,"b":102},
+  {"name":"title","own":102,"a":102,"b":110}
  ],
  "transitions":[
-  {"from":"open","to":"montage","t0":25.87,"t1":26.13,"kind":"whipL"},
-  {"from":"montage","to":"heist","t0":31.87,"t1":32.13,"kind":"whipR"},
-  {"from":"heist","to":"grid","t0":50.0,"t1":50.4,"kind":"burst"},
-  {"from":"lasttitle","to":"editor","t0":57.8,"t1":58.3,"kind":"band"},
-  {"from":"editor","to":"stakes","t0":65.7,"t1":66.0,"kind":"irisClose"},
-  {"from":"stakes","to":"burn","t0":71.8,"t1":72.3,"kind":"burnwipe"}
+  {"from":"open","to":"montage","t0":31.87,"t1":32.13,"kind":"whipL"},
+  {"from":"montage","to":"heist","t0":37.87,"t1":38.13,"kind":"whipR"},
+  {"from":"heist","to":"grid","t0":60.0,"t1":60.4,"kind":"burst"},
+  {"from":"lasttitle","to":"editor","t0":70.8,"t1":71.3,"kind":"band"},
+  {"from":"editor","to":"stakes","t0":82.7,"t1":83.0,"kind":"irisClose"},
+  {"from":"stakes","to":"burn","t0":92.5,"t1":93.0,"kind":"burnwipe"}
  ]
 };

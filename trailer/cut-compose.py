@@ -23,10 +23,10 @@ if 'gif-only' not in opt:
         run(base+['-pass','1','-passlogfile',log,'-an','-f','mp4',os.devnull])
         run(base+['-pass','2','-passlogfile',log,'-c:a','aac','-b:a',ab,'-movflags','+faststart',out])
         print(os.path.basename(out),mb(out),'MB');assert mb(out)<=limit,'over size budget'
-    enc(os.path.join(MEDIA,'rare-heist-trailer.mp4'),'null',opt.get('vb','1280k'),'3000k','160k',16)
-    enc(os.path.join(MEDIA,'rare-heist-trailer-720p.mp4'),'scale=1280:720:flags=lanczos',opt.get('vb720','600k'),'1400k','96k',8)
+    enc(os.path.join(MEDIA,'rare-heist-trailer.mp4'),'null',opt.get('vb','1100k'),'3000k','160k',16)
+    enc(os.path.join(MEDIA,'rare-heist-trailer-720p.mp4'),'scale=1280:720:flags=lanczos',opt.get('vb720','460k'),'1400k','96k',8)
 # README hero GIF: the reveal, the curtain + nameplate, the catch, CLEAN, the title
-SEGS=json.loads(opt.get('segs','[[8.15,9.9],[15.0,16.9],[35.6,37.3],[48.9,50.0],[78.0,80.4]]'))
+SEGS=json.loads(opt.get('segs','[[10.15,11.9],[19.0,20.9],[43.6,45.4],[56.9,58.2],[102.0,104.4]]'))
 gfps=int(opt.get('gfps','12'));colors=opt.get('colors','40');width=opt.get('gw','960')
 inp=[];fc=''
 for j,(a,b) in enumerate(SEGS):
