@@ -32,7 +32,8 @@ const BAY=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
 
 // ================= type: the game's 5x7 pixel font =================
 const tw=(s,k)=>String(s).length*6*k-k;
-function glyph(ch){return (G[ch]||G['?']||'').split('/');}
+const DOT='00000/00000/00000/00100/00000/00000/00000';
+function glyph(ch){return (ch==='·'?DOT:G[ch]||G['?']||'').split('/');}
 function txt(g,s,x,y,k,col,align='left',count=Infinity){s=String(s);const w=tw(s,k);if(align==='center')x-=w/2;else if(align==='right')x-=w;x=Math.round(x);y=Math.round(y);g.fillStyle=col;let i=0;
  for(const ch of s){if(i++>=count)break;const gl=glyph(ch);for(let r=0;r<gl.length;r++)for(let j=0;j<gl[r].length;j++)if(gl[r][j]==='1')g.fillRect(x+j*k,y+r*k,k,k);x+=6*k;}return w;}
 // text with a hard ink drop shadow (the game's UI buttons use the same offset block)
@@ -116,7 +117,7 @@ const Z_FOLLOW=1.6;   // the one follow-camera scale for gameplay (the Friend st
 S.cold={init(){},draw(g,t){const lt=t-this.own;g.fillStyle=INK;g.fillRect(0,0,W,H);
   xg.clearRect(0,0,W,H);
   // THIS IS NOT A THIEF. (5 words, needs 2.35 s): fully lit from 3.0 to 6.0 s
-  if(lt<6.0){stxt(xg,'THIS IS NOT',W/2,330,20,PAPER,'center');stxt(xg,'A THIEF.',W/2,330+20*10,20,PAPER,'center');}
+  if(lt<6.0){stxt(xg,'THIS IS NOT',W/2,330,20,PAPER,'center');stxt(xg,'A THIEF',W/2,330+20*10,20,PAPER,'center');}
   let ax,dir,len=lt<6.0?2600:1500,spread=lt<6.0?.28:.3,on=1;
   if(lt<6.0){const u=eo((lt-.6)/2.4);ax=lerp(-2600,-470,u)+(lt>3.0?(lt-3.0)*30:0);dir=1;}else{const u=eo((lt-6.4)/1.4);ax=lerp(W+1500,W*.5+1100,u);dir=-1;}
   const ay=lt<6.0?500:H*.62;if(lt<.6||(lt>.6&&lt<.75&&Math.floor(lt*40)%2)||(lt>6.0&&lt<6.4))on=0;
@@ -139,13 +140,14 @@ S.reveal={init(){this.mask=P.mask(HERO,'down',false,0);},draw(g,t){const lt=t-th
   const tx=920;
   // THIS IS YOURS. lands 1.64 s, held to 8.0 s
   if(lt>.9)dropTxt(g,'THIS IS',tx,250,16,PAPER,lt-.9,{stagger:.05});
-  if(lt>1.5){const kk=slamK(24,lt-1.5),w=tw('YOURS.',kk),y=250+16*9+48;plate(g,tx-kk,y-kk,w+2*kk,9*kk,SIG,INK,8);txt(g,'YOURS.',tx,y,kk,INK);
-   if(lt>2.1&&lt<2.9)sweep(g,()=>{g.fillStyle=PAPER;g.fillRect(tx-kk,y-kk,w+2*kk,9*kk);txt(g,'YOURS.',tx,y,kk,INK);},(lt-2.1)/.8,tx-kk,y-kk,w+2*kk,9*kk,120);}
+  if(lt>1.5){const kk=slamK(24,lt-1.5),w=tw('YOURS',kk),y=250+16*9+48;plate(g,tx-kk,y-kk,w+2*kk,9*kk,SIG,INK,8);txt(g,'YOURS',tx,y,kk,INK);
+   if(lt>2.1&&lt<2.9)sweep(g,()=>{g.fillStyle=PAPER;g.fillRect(tx-kk,y-kk,w+2*kk,9*kk);txt(g,'YOURS',tx,y,kk,INK);},(lt-2.1)/.8,tx-kk,y-kk,w+2*kk,9*kk,120);}
   if(lt>2.4){const y=T-110,x=cx-176,wa=136;plate(g,x,y,wa+48,72,SIG,INK,6);txt(g,'YOU',x+24,y+8,8,INK);plate(g,x+wa+54,y,tw('#'+HERO.tokenId,8)+48,72,PAPER,INK,6);txt(g,'#'+HERO.tokenId,x+wa+78,y+8,8,INK);
    g.fillStyle=INK;for(let i=0;i<4;i++)g.fillRect(cx-16+i*8,y+78+i*8,32-i*16,8);}
   // two small lines, typed slowly: land 3.4 s and 4.6 s, held to 8.0 s (>= 2.0 s each)
-  if(lt>2.4)typeTxt(g,'#'+HERO.tokenId+' '+String(HERO.familyName).toUpperCase()+'. A RARE FRIEND.',tx,650,5,MIST,lt-2.4,30,{cursor:false});
-  if(lt>3.6)typeTxt(g,'ORIGINAL 16X16 ONCHAIN PIXELS.',tx,710,5,MIST,lt-3.6,30,{cursor:false});
+  if(lt>2.4)typeTxt(g,'#'+HERO.tokenId+' '+String(HERO.familyName).toUpperCase(),tx,650,5,MIST,lt-2.4,30,{cursor:false});
+  if(lt>3.0)typeTxt(g,'A RARE FRIEND',tx,710,5,MIST,lt-3.0,30,{cursor:false});
+  if(lt>3.6)typeTxt(g,'ORIGINAL 16X16 ONCHAIN PIXELS',tx,770,5,MIST,lt-3.6,30,{cursor:false});
   flash(g,lt,.14,PAPER,1);if(lt>1.5)flash(g,lt-1.5,.1,SIG,.5);}};
 // ---------- OPEN (14 s): match cut into the building, curtain + nameplate, logo, lights out ----------
 // 0-1 match cut / 1-3.7 curtain and pull-out (the only big camera move) / 4-9.3 logo / 9-14 CUT THE LIGHTS
@@ -167,13 +169,13 @@ S.open={init(){const h=D.heist;this.st=statesOf(h.id,h.route.slice(0,7));this.v=
    if(lt>1){const kk=slamK(k,lt-1,1.6,.12),w=tw('HEIST',kk),by=y0+8*k+32;plate(xg,W/2-w/2-kk,by-kk,w+2*kk,9*kk,SIG,INK,12);txt(xg,'HEIST',W/2,by,kk,INK,'center');
     if(lt>1.5&&lt<2.4)sweep(xg,()=>{xg.fillStyle=PAPER;xg.fillRect(W/2-w/2-kk,by-kk,w+2*kk,9*kk);txt(xg,'HEIST',W/2,by,kk,INK,'center');},(lt-1.5)/.9,W/2-w/2-kk,by-kk,w+2*kk,9*kk,140);}
    if(lt>1.5&&lt<2.4)sweep(xg,()=>txt(xg,'RARE',W/2,y0,k,SIG,'center'),(lt-1.5)/.9,W/2-tw('RARE',k)/2,y0,tw('RARE',k),7*k,140);
-   if(lt>2)typeTxt(xg,'SMALL FRIEND. BIG BREAK-IN.',W/2,y0+17*k+60,10,PAPER,lt-2,36,{align:'center',shadow:true});
+   if(lt>2)typeTxt(xg,'SMALL FRIEND',W/2,y0+17*k+50,10,PAPER,lt-2,36,{align:'center',shadow:true});if(lt>2.4)typeTxt(xg,'BIG BREAK-IN',W/2,y0+17*k+150,10,SIG,lt-2.4,36,{align:'center',shadow:true});
    const [kx,ky]=shakeOf(lt-1,.3,24);if(out>0){const n=12,bh=H/n;for(let i=0;i<n;i++){const d=(i%2?1:-1)*snap(W*1.2*eio(out*1.4-i*.03));g.drawImage(TXT,0,i*bh,W,bh,d,i*bh,W,bh);}}else g.drawImage(TXT,kx,ky);
    if(lt>1)flash(g,lt-1,.1,PAPER,.7);}
   if(t>=9)bars(g,snap(88*eio((t-9)/.4)));
   // CUT THE / LIGHTS. (3 words, 1.65 s): LIGHTS. lands 12.14, held to 13.87
   if(t>=11){const lit=t<12.0||(t>12.0&&t<12.37&&Math.floor((t-12)/.06)%2);cap(g,'CUT THE',120,CAPY1,14,PAPER,t-11);
-   if(t>=12.0)cap(g,'LIGHTS.',120,CAPY2,14,lit?PAPER:SIG,t-12,'slam');}
+   if(t>=12.0)cap(g,'LIGHTS',120,CAPY2,14,lit?PAPER:SIG,t-12,'slam');}
   if(t>=12&&t<12.07){g.fillStyle=INK;g.fillRect(0,0,W,H);}}};
 // ---------- MONTAGE (6 s): four mechanics, 1.5 s each, whip pans between; the Friend stays centred ----------
 S.montage={N:4,PER:1.5,init(){const dist=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
@@ -181,14 +183,14 @@ S.montage={N:4,PER:1.5,init(){const dist=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b
    const a=Math.max(0,at-before),b=Math.min(st.length-1,at+after);return {word,id,st,a,b,at};};
   const drones=(l,s)=>E.threats(l,s).guards.filter((g,i)=>l.guards[i].kind!=='walker'),walkers=(l,s)=>E.threats(l,s).guards.filter((g,i)=>l.guards[i].kind==='walker');
   this.items=[
-   pick('LASERS.','cut-02',(s,p,l)=>E.threats(l,s).lasers.some(q=>dist(q,s)===1),2,2),
-   pick('CAMERAS.','cut-03',(s,p,l)=>E.threats(l,s).vision.some(q=>q.type==='camera'&&dist(q,s)<=1),2,2),
-   pick('DRONES.','cut-01',(s,p,l)=>drones(l,s).some(g=>g.y===s.y&&Math.abs(g.x-s.x)<=2),2,2),
-   pick('FLASHLIGHTS.','cut-07',(s,p,l)=>!E.lightsOn(l,s)&&walkers(l,s).some(g=>g.y===s.y&&dist(g,s)<=2),2,2)];
+   pick('LASERS','cut-02',(s,p,l)=>E.threats(l,s).lasers.some(q=>dist(q,s)===1),2,2),
+   pick('CAMERAS','cut-03',(s,p,l)=>E.threats(l,s).vision.some(q=>q.type==='camera'&&dist(q,s)<=1),2,2),
+   pick('DRONES','cut-01',(s,p,l)=>drones(l,s).some(g=>g.y===s.y&&Math.abs(g.x-s.x)<=2),2,2),
+   pick('FLASHLIGHTS','cut-07',(s,p,l)=>!E.lightsOn(l,s)&&walkers(l,s).some(g=>g.y===s.y&&dist(g,s)<=2),2,2)];
   this.items.forEach(it=>{const v=view(lvl(it.id),it.st.slice(0,it.b+1));const n=it.b-it.a;schedule(v,[[it.a+1,it.b,.1,1.2/Math.max(1,n)]]);v.quiet=it.a;it.v=v;});},
  shot(g,idx,tt){const it=this.items[clamp(idx,0,this.N-1)],v=it.v,r=drawView(v,Math.max(0,tt)),cam=follow(v,tt,r.hx,r.hy,.06);shoot(g,v,cam.x,cam.y,Z_FOLLOW);bars(g,88);
   // one word per card, lands at 0.14 s, held to 1.4 s (>= 0.95 s)
-  const k=18,y=H-88-7*k-56;if(tt>.04){const kk=slamK(k,tt-.04,1.5,.1);plate(g,96,y-24,tw(it.word,kk)+64,7*kk+48,INK,INK,0);txt(g,it.word,128,y,kk,it.word==='FLASHLIGHTS.'?SIG:PAPER);}
+  const k=18,y=H-88-7*k-56;if(tt>.04){const kk=slamK(k,tt-.04,1.5,.1);plate(g,96,y-24,tw(it.word,kk)+64,7*kk+48,INK,INK,0);txt(g,it.word,128,y,kk,it.word==='FLASHLIGHTS'?SIG:PAPER);}
   txt(g,String(idx+1).padStart(2,'0')+' / '+String(this.N).padStart(2,'0'),W-96,40,5,MIST,'right');},
  draw(g,t){const lt=t-this.own;if(lt<0){this.shot(g,0,0);return;}const P_=this.PER,idx=Math.floor(lt/P_),tt=lt-idx*P_,j=Math.round(lt/P_),wt=lt-j*P_;
   if(Math.abs(wt)<.1&&j>0&&j<this.N){const p=(wt+.1)/.2;this.shot(LA.g,j-1,P_+wt);this.shot(LB.g,j,wt);whip(g,LA.cv,LB.cv,p,j%2?-1:1);return;}
@@ -212,20 +214,20 @@ S.heist={init(){const h=D.heist,good=statesOf(h.id,h.route),at=h.caughtAt,l=E.no
   if(ct>=0&&ct<.2){for(let i=0;i<14;i++){const y=snap(hash(i,1,Math.floor(ct*60))*H),h=snap(8+hash(i,2,11)*64),d=snap((hash(i,3,Math.floor(ct*60))-.5)*320);g.drawImage(g.canvas,0,y,W,h,d,y,W,h);if(i%3==0)dfill(g,0,y,W,h,6,SIG,4);}flash(g,ct,.08,SIG,.8);}
   if(frozen){scan(g,ct,.12);
    // CAUGHT. lands 6.22 / ONE LOOK. JOB OVER. (4 words, 2.0 s) lands 7.23, held to 10.0 (2.8 s)
-   if(ct>.1){const kk=slamK(20,ct-.1,1.8,.12);plate(g,W/2-tw('CAUGHT.',kk)/2-32,24,tw('CAUGHT.',kk)+64,7*kk+36,SIG,INK,0);txt(g,'CAUGHT.',W/2,42,kk,INK,'center');}
-   if(ct>.6)typeTxt(g,'ONE LOOK. JOB OVER.',W/2,H-150,10,PAPER,ct-.6,30,{align:'center'});}
+   if(ct>.1){const kk=slamK(20,ct-.1,1.8,.12);plate(g,W/2-tw('CAUGHT',kk)/2-32,24,tw('CAUGHT',kk)+64,7*kk+36,SIG,INK,0);txt(g,'CAUGHT',W/2,42,kk,INK,'center');}
+   if(ct>.6)typeTxt(g,'ONE LOOK',W/2,H-196,10,PAPER,ct-.6,30,{align:'center',cursor:ct<.95});if(ct>.95)typeTxt(g,'JOB OVER',W/2,H-106,10,SIG,ct-.95,30,{align:'center'});}
   if(!frozen&&ut<0){// YOU MOVE. / SECURITY MOVES. land 0.5 / 1.4, held to 3.6 (2.2 s); GOT THE TROPHY. lands 4.14, held to 5.83 (1.7 s)
-   if(t>.2&&t<3.6){cap(g,'YOU MOVE.',120,CAPY1,14,PAPER,t-.25);cap(g,'SECURITY MOVES.',120,CAPY2,14,SIG,t-1.25,'slam');}
-   if(t>4.0)cap(g,'GOT THE TROPHY.',120,CAPY2,14,PAPER,t-4.0,'slam');}
+   if(t>.2&&t<3.6){cap(g,'YOU MOVE',120,CAPY1,14,PAPER,t-.25);cap(g,'SECURITY MOVES',120,CAPY2,14,SIG,t-1.25,'slam');}
+   if(t>4.0)cap(g,'GOT THE TROPHY',120,CAPY2,14,PAPER,t-4.0,'slam');}
   // << UNDO held 10.0-11.6 ; WAIT. / LET HIM PASS. lands 11.65, held to 13.7 (2.05 s)
   if(ut>=0&&ut<1.6){const on=Math.floor(ut/.12)%2===0||ut>.6;if(on){plate(g,96,120,tw('<< UNDO',12)+64,7*12+48,SIG,INK,0);txt(g,'<< UNDO',128,144,12,INK);}}
-  if(ut>=1&&ut<3.7){cap(g,'WAIT.',120,CAPY1,14,PAPER,ut-1);cap(g,'LET HIM PASS.',120,CAPY2,14,SIG,ut-1.5,'slam');}
+  if(ut>=1&&ut<3.7){cap(g,'WAIT',120,CAPY1,14,PAPER,ut-1);cap(g,'LET HIM PASS',120,CAPY2,14,SIG,ut-1.5,'slam');}
   // STEAL THE PLANS. / SEE EVERY PATROL. (6 words, 2.7 s): lands 14.6, held to 17.4
-  if(t>=13.8&&t<17.4){cap(g,'STEAL THE PLANS.',120,CAPY1,14,PAPER,t-13.8);cap(g,'SEE EVERY PATROL.',120,CAPY2,14,SIG,t-14.5,'slam');}
+  if(t>=13.8&&t<17.4){cap(g,'STEAL THE PLANS',120,CAPY1,14,PAPER,t-13.8);cap(g,'SEE EVERY PATROL',120,CAPY2,14,SIG,t-14.5,'slam');}
   // CLEAN. lands 19.1 ; 0 DETECTIONS. TROPHY OUT. (4 words, 2.0 s) lands 20.0, held to 22.0
-  if(et>=1.0){const tt=et-1.0,kk=slamK(34,tt,1.7,.12),w=tw('CLEAN.',kk);const [a,b]=shakeOf(tt,.3,20);const cx=W*.36,cy=H*.5;plate(g,cx-w/2-kk+a,cy-kk+b,w+2*kk,9*kk,SIG,INK,12);txt(g,'CLEAN.',cx+a,cy+b,kk,INK,'center');
+  if(et>=1.0){const tt=et-1.0,kk=slamK(34,tt,1.7,.12),w=tw('CLEAN',kk);const [a,b]=shakeOf(tt,.3,20);const cx=W*.36,cy=H*.5;plate(g,cx-w/2-kk+a,cy-kk+b,w+2*kk,9*kk,SIG,INK,12);txt(g,'CLEAN',cx+a,cy+b,kk,INK,'center');
    sparks(g,tt,cx,cy+60,{n:48,seed:5,speed:1300,grav:1800,life:1.2});flash(g,tt,.12,PAPER,.8);
-   if(tt>.4){const s='0 DETECTIONS. TROPHY OUT.',pw=tw(s,7)+64,py=cy+9*34+4;plate(g,cx-pw/2,py,pw,7*7+40,INK,INK,0);typeTxt(g,s,cx,py+20,7,PAPER,tt-.4,40,{align:'center'});}}}};
+   if(tt>.4){const pw=tw('0 DETECTIONS',7)+64,py=cy+9*34+4;plate(g,cx-pw/2,py,pw,2*7*7+60,INK,INK,0);typeTxt(g,'0 DETECTIONS',cx,py+20,7,PAPER,tt-.4,40,{align:'center',cursor:tt<.75});if(tt>.75)typeTxt(g,'TROPHY OUT',cx,py+20+7*7+20,7,SIG,tt-.75,40,{align:'center'});}}}};
 // ---------- GRID (6 s): 23 heists, every one solvable ----------
 S.grid={init(){const order=['cut-00','drill-pulse','drill-light','drill-weight','drill-walker','cut-01','cut-02','cut-03','cut-05','cut-06','cut-07','cut-04','cut-08','cut-09','cut-10','annex-01','annex-02','cut-11','cut-12','archive-01','archive-02','archive-03','last-cutaway'];
   this.tiles=order.map((id,i)=>{const st=statesOf(id,SOL[id].actions,id==='last-cutaway'?'ghost':'operative');const v=view(lvl(id),st,{sample:i%2?OTHER:HERO,w:302,h:213});v.name=(lvl(id).nameEn||lvl(id).name).toUpperCase();v.land=.08+i*.07;const n=st.length-1,t0=v.land+.35,step=Math.min(.14,(4.6-t0)/n);schedule(v,[[1,n,t0,step]]);return v;});},
@@ -237,14 +239,14 @@ S.grid={init(){const order=['cut-00','drill-pulse','drill-light','drill-weight',
   const x=m+5*(tw_+gap),y=m+3*(th+gap)+(lt>5.5?snap(eio((lt-5.5)/.4)*1300):0);g.fillStyle=INK;g.fillRect(x,y,tw_,th);
   txt(g,String(landed),x+tw_/2,y+30,20,landed>=23?SIG:PAPER,'center');txt(g,'HEISTS',x+tw_/2,y+th-56,5,PAPER,'center');
   // EVERY ONE SOLVABLE. lands 2.95, held to 5.5 (2.55 s); 23 STORED SOLUTIONS. lands 3.4, held to 5.5 (2.1 s)
-  if(lt>2.2&&lt<5.5){const tt=lt-2.2,pw=tw('EVERY ONE SOLVABLE.',14)+120;plate(g,W/2-pw/2,H/2-110,pw,230,INK,SIG,6);typeTxt(g,'EVERY ONE SOLVABLE.',W/2,H/2-74,14,PAPER,tt,26,{align:'center'});
-   if(lt>3.0)typeTxt(g,'23 STORED SOLUTIONS.',W/2,H/2+60,6,SIG,lt-3.0,50,{align:'center',cursor:false});}}};
+  if(lt>2.2&&lt<5.5){const tt=lt-2.2,pw=tw('EVERY ONE SOLVABLE',14)+120;plate(g,W/2-pw/2,H/2-110,pw,230,INK,SIG,6);typeTxt(g,'EVERY ONE SOLVABLE',W/2,H/2-74,14,PAPER,tt,26,{align:'center'});
+   if(lt>3.0)typeTxt(g,'23 STORED SOLUTIONS',W/2,H/2+60,6,SIG,lt-3.0,50,{align:'center',cursor:false});}}};
 // ---------- LAST HEIST title (5 s) ----------
 S.lasttitle={init(){this.L=skyLayers(23);},draw(g,t){const lt=t-this.own;drawSky(g,this.L,lt+4,1.4);dfill(g,0,0,W,H,5,INK,4);const k=30,y0=230;
   dropTxt(g,'LAST',W/2,y0,k,PAPER,lt,{stagger:.125,dur:.25,align:'center',from:-300});
   if(lt>.5){const kk=slamK(k,lt-.5,1.6,.12),w=tw('HEIST',kk),by=y0+8*k+32;plate(g,W/2-w/2-kk,by-kk,w+2*kk,9*kk,SIG,INK,12);txt(g,'HEIST',W/2,by,kk,INK,'center');flash(g,lt-.5,.1,PAPER,.7);}
   // ONE VAULT. EVERY CLEAR MAKES IT HARDER. (7 words, 3.05 s): lands 1.75, held to 4.8
-  if(lt>.8)typeTxt(g,'ONE VAULT. EVERY CLEAR MAKES IT HARDER.',W/2,y0+17*k+70,7,PAPER,lt-.8,45,{align:'center',shadow:true});}};
+  if(lt>.8)typeTxt(g,'ONE VAULT',W/2,y0+17*k+60,8,PAPER,lt-.8,45,{align:'center',shadow:true,cursor:lt<1.1});if(lt>1.1)typeTxt(g,'EVERY CLEAR MAKES IT HARDER',W/2,y0+17*k+140,8,SIG,lt-1.1,45,{align:'center',shadow:true});}};
 // ---------- EDITOR (0-5.5) + EVOLUTION (5.5-11.7): static framing, the solver keeps it fair ----------
 S.editor={init(){const ed=D.editor,seed=A.seed();this.round={level:seed,changes:[],referenceActions:ed.route};
   this.ref=E.replay(seed,ed.route,'ghost').states;const pick=ed.sealed[0],good=ed.good.find(c=>c.y!==pick.y)||ed.good[0];this.sealed=pick;this.good=good;
@@ -265,7 +267,7 @@ S.editor={init(){const ed=D.editor,seed=A.seed();this.round={level:seed,changes:
    v.r.render(v.l,v.st[0],{sample:HERO,time:t*1000,width:W,height:H,editor:true,trace:this.ref,traceCut,ghost,allowed,verdict,mutation});
    shoot(g,v,W/2,H/2,1);if(cur)this.cursor(g,cur.x,cur.y,drag);
    // ADD ONE OBSTACLE. (3 words) held 0.4-5.5
-   bars(g,88);typeTxt(g,'ADD ONE OBSTACLE.',96,24,6,PAPER,lt,40,{cursor:false});
+   bars(g,88);typeTxt(g,'ADD ONE OBSTACLE',96,24,6,PAPER,lt,40,{cursor:false});
    // verdicts: ✗ BLOCKS EVERY ROUTE lands 1.3, held to 3.0 (1.7 s); ✓ STILL BEATABLE lands 3.85, held to 5.5 (1.65 s)
    if(change){const ok=change===this.good,ct=lt-(ok?3.75:1.2),kk=slamK(12,ct,1.5,.1),s=ok?'✓ STILL BEATABLE':'✗ BLOCKS EVERY ROUTE',w=tw(s,kk);const [a]=ok?[0]:shakeOf(ct,.3,16);
     plate(g,W/2-w/2-40+a,H-88-7*kk-70,w+80,7*kk+48,ok?SIG:PAPER,INK,6);txt(g,s,W/2+a,H-88-7*kk-46,kk,INK,'center');flash(g,ct,.1,ok?SIG:PAPER,.6);}
@@ -273,31 +275,31 @@ S.editor={init(){const ed=D.editor,seed=A.seed();this.round={level:seed,changes:
   // evolution: four real versions, 1.5 s each (labels 2 words, 1.3 s), a dither wipe between them
   const et=lt-5.5,i=clamp(Math.floor(et/1.5),0,3),tt=et-i*1.5;const drawEvo=(dst,j)=>{const v=this.evo[j],e=D.evolution[j];drawView(v,lt,{extra:{trace:v.st.slice(0,Math.max(1,v.last+1)),mutation:e.change?{x:e.change.x,y:e.change.y}:null}});shoot(dst,v,W/2,H/2+20,1.08);
     bars(dst,88);const lab=j===0?'V0  THE COMMON HOUSE':'V'+j+'  +'+e.change.kind.toUpperCase();plate(dst,72,H-88-7*10-56,tw(lab,10)+48,7*10+36,INK,INK,0);txt(dst,lab,96,H-88-7*10-38,10,j?SIG:PAPER);
-    for(let q=0;q<12;q++){dst.fillStyle=q<j?SIG:DUSK;dst.fillRect(W-96-12*28+q*28,36,20,20);}txt(dst,'OBSTACLES '+j+' / 12',W-96-12*28-24,36,4,MIST,'right');typeTxt(dst,'EVERY CLEAR MAKES IT HARDER.',96,28,5,PAPER,et,40,{cursor:false});};
+    for(let q=0;q<12;q++){dst.fillStyle=q<j?SIG:DUSK;dst.fillRect(W-96-12*28+q*28,36,20,20);}txt(dst,'OBSTACLES '+j+' / 12',W-96-12*28-24,36,4,MIST,'right');typeTxt(dst,'EVERY CLEAR MAKES IT HARDER',96,28,5,PAPER,et,40,{cursor:false});};
   if(tt<.16&&i>0){drawEvo(LA.g,i-1);drawEvo(LB.g,i);g.drawImage(LA.cv,0,0);const p=tt/.16;maskBlit(g,LB.cv,12,(x,y,nx,ny)=>((BAY[(x&3)+((y&3)<<2)]+.5)/16*.5+(x/nx)*.5)<p);}
   else drawEvo(g,i);if(i>0)flash(g,tt,.1,SIG,.3);}};
 // ---------- STAKES (10 s, DEMO): winner takes 70%, 30% burns ----------
 S.stakes={init(){this.set=new Image();this.set.src='ui/stake-panel-settled.png';this.open=this.set;},
  demo(g){const s='DEMO RF / PLAY MONEY',w=tw(s,5)+48,Y=H-104;g.fillStyle=INK;g.fillRect(W-96-w,Y,w,56);g.fillStyle=MIST;for(let x=0;x<w;x+=16){g.fillRect(W-96-w+x,Y,8,4);g.fillRect(W-96-w+x,Y+52,8,4);}for(let y=Y;y<Y+56;y+=16){g.fillRect(W-96-w,y,4,8);g.fillRect(W-100,y,4,8);}txt(g,s,W-96-w/2,Y+14,5,MIST,'center');},
  draw(g,t){const lt=t-this.own;g.fillStyle=NIGHT;g.fillRect(0,0,W,H);dfill(g,0,H*.55,W,H*.45,3,DUSK,4);
-  if(lt<5.5){dropTxt(g,'STAKE IN.',120,130,28,PAPER,lt,{stagger:.06,from:-260});
+  if(lt<5.5){dropTxt(g,'STAKE IN',120,130,28,PAPER,lt,{stagger:.06,from:-260});
    const bx=120,by=520,bw=W-240,bh=200,wlime=Math.round(bw*.7),u1=expo((lt-1.0)/.35),u2=expo((lt-1.5)/.35);
    if(lt>.85)plate(g,bx,by,snap(bw*expo((lt-.85)/.15)),bh,INK,INK,8);if(u1>0){g.fillStyle=SIG;g.fillRect(bx,by,snap(wlime*u1),bh);}
    if(u2>0){const x0=bx+wlime,w=snap((bw-wlime)*u2);dfill(g,x0,by,w,bh,4,HAZE,4);embers(g,lt,{x0,x1:x0+w,y0:by+bh,n:70,seed:4,life:1.1,rise:300,from:1.5});}
    if(lt>1.0){txt(g,Math.round(70*sat((lt-1)/.35))+'%',bx+48,by+36,14,INK);txt(g,'WINNER TAKES',bx+48,by+36+14*8+8,5,INK);}
    if(lt>1.5){txt(g,Math.round(30*sat((lt-1.5)/.35))+'%',bx+wlime+48,by+36,14,PAPER);txt(g,'BURNS',bx+wlime+48,by+36+14*8+8,5,SIG);}
    // THE LAST CLEAN THIEF TAKES THE POT. (7 words, 3.05 s): lands 2.45 at 40 cps... held to 5.5
-   if(lt>1.4)typeTxt(g,'THE LAST CLEAN THIEF TAKES THE POT.',120,800,7,PAPER,lt-1.4,40,{cursor:false});
+   if(lt>1.4)typeTxt(g,'THE LAST CLEAN THIEF TAKES THE POT',120,800,7,PAPER,lt-1.4,40,{cursor:false});
   }else{// the real settled round from the game server; SETTLED. 105 TO THE WINNER. 45 BURNED. (7 words, 3.05 s) lands 6.3, held to 9.5
-   const u=eo((lt-5.5)/.3),img=this.set,ih=Math.min(img.height,730),iw=img.width,x=snap(W/2-iw/2),y=snap(lerp(H+40,(H-ih)/2+30,u));
+   const u=eo((lt-5.5)/.3),img=this.set,ih=Math.min(img.height,740),iw=img.width,x=snap(W/2-iw/2),y=snap(lerp(H+40,208,u));
    if(img.complete&&iw){g.fillStyle=SIG;g.fillRect(x+16,y+16,iw,Math.min(ih,H-y));g.drawImage(img,0,0,iw,ih,x,y,iw,ih);}
    if(lt>=5.6&&lt<5.8)flash(g,lt-5.6,.12,SIG,.5);
-   typeTxt(g,'SETTLED. 105 TO THE WINNER. 45 BURNED.',W/2,56,7,PAPER,lt-5.6,50,{cursor:false,shadow:true,align:'center'});}
+   typeTxt(g,'105 TO THE WINNER',W/2,40,7,PAPER,lt-5.6,50,{cursor:false,shadow:true,align:'center'});if(lt>6.0)typeTxt(g,'45 BURNED',W/2,112,7,SIG,lt-6.0,50,{cursor:false,shadow:true,align:'center'});}
   this.demo(g);}};
 // ---------- BURN (9 s): real $RAREFRIENDS, 100% to the dead address ----------
 S.burn={init(){this.cards=[0,1,2,3].map(i=>{const im=new Image();im.src='ui/shop-'+i+'.png';return im;});},
  draw(g,t){const lt=t-this.own;g.fillStyle=INK;g.fillRect(0,0,W,H);dfill(g,0,H*.6,W,H*.4,2,DUSK,4);
-  dropTxt(g,'REAL $RAREFRIENDS.',96,80,16,PAPER,lt-.1,{stagger:.035});
+  dropTxt(g,'REAL $RAREFRIENDS',96,80,16,PAPER,lt-.1,{stagger:.035});
   const gap=40,ws=this.cards.map(c=>c.width||560),total=ws.reduce((a,b)=>a+b,0)+gap*3,px=snap(lerp(160,W-160-total,eio((lt-.4)/3.0)));let x=px;const y0=300,burnU=sat((lt-3.0)/1.1);
   this.cards.forEach((im,i)=>{const land=.5+i*.5,u=(lt-land)/.25;if(u>0&&im.complete&&im.width){const y=y0+snap(-400*(1-back(u)));
     if(burnU<=0){g.fillStyle=SIG;g.fillRect(x+12,y+12,im.width,im.height);g.drawImage(im,x,y);}
@@ -305,20 +307,20 @@ S.burn={init(){this.cards=[0,1,2,3].map(i=>{const im=new Image();im.src='ui/shop
      embers(g,lt,{x0:x,x1:x+im.width,y0:y+im.height*(1-burnU*.9),n:40,seed:10+i,life:1.2,rise:420,from:3.0});}}x+=(im.width||560)+gap;});
   embers(g,lt,{x0:0,x1:W,y0:H+20,n:50,seed:77,life:2.4,rise:420,cols:[SIG,HAZE,DUSK],from:-1});
   // 100% BURNED. lands 3.14, held to 9.0 ; address typed 4.2-5.25 ; NO ONE CONTROLS IT. NOBODY IS PAID. (6 words, 2.7 s) lands 5.9, held to 9.0
-  if(lt>3.0){const n=Math.round(100*sat((lt-3.0)/.5)),kk=slamK(18,lt-3.0,1.5,.12);stxt(g,n+'% BURNED.',W/2,H-380,kk,SIG,'center');}
-  if(lt>4.2){plate(g,120,H-214,W-240,176,INK,INK,0);typeTxt(g,'0x000000000000000000000000000000000000dEaD',W/2,H-190,7,PAPER,lt-4.2,40,{align:'center',shadow:true});}
-  if(lt>5.3)typeTxt(g,'NO ONE CONTROLS IT. NOBODY IS PAID.',W/2,H-100,6,MIST,lt-5.3,60,{align:'center',cursor:false});}};
+  if(lt>3.0){const n=Math.round(100*sat((lt-3.0)/.5)),kk=slamK(18,lt-3.0,1.5,.12);stxt(g,n+'% BURNED',W/2,H-400,kk,SIG,'center');}
+  if(lt>4.2){plate(g,120,H-234,W-240,210,INK,INK,0);typeTxt(g,'0x000000000000000000000000000000000000dEaD',W/2,H-210,7,PAPER,lt-4.2,40,{align:'center',shadow:true});}
+  if(lt>5.3)typeTxt(g,'NO ONE CONTROLS IT',W/2,H-130,6,MIST,lt-5.3,60,{align:'center',cursor:false});if(lt>5.7)typeTxt(g,'NOBODY IS PAID',W/2,H-70,6,SIG,lt-5.7,60,{align:'center',cursor:false});}};
 // ---------- TITLE (8 s) ----------
 S.title={init(){this.L=skyLayers(31);},draw(g,t){const lt=t-this.own;drawSky(g,this.L,lt,1.2);const gy=this.L.gy;
   const k=26,y0=96;dropTxt(g,'RARE',W/2,y0,k,PAPER,lt-.05,{stagger:.125,dur:.25,align:'center',from:-300});
   if(lt>.55){const kk=slamK(k,lt-.55,1.6,.12),w=tw('HEIST',kk),by=y0+8*k+32;plate(g,W/2-w/2-kk,by-kk,w+2*kk,9*kk,SIG,INK,12);txt(g,'HEIST',W/2,by,kk,INK,'center');
    if(lt>1.2&&lt<2.1)sweep(g,()=>{g.fillStyle=PAPER;g.fillRect(W/2-w/2-kk,by-kk,w+2*kk,9*kk);txt(g,'HEIST',W/2,by,kk,INK,'center');},(lt-1.2)/.9,W/2-w/2-kk,by-kk,w+2*kk,9*kk,140);flash(g,lt-.55,.1,PAPER,.7);}
   // tagline (6 words, 2.7 s) lands 2.1 ; URL from 2.2 ; FREE IN YOUR BROWSER... (8 words, 3.4 s) lands 3.6, held to 7.3 (fade to 8.0)
-  if(lt>1.1)typeTxt(g,'YOUR RARE FRIEND. ONE BIG BREAK-IN.',W/2,y0+17*k+56,7,PAPER,lt-1.1,34,{align:'center',shadow:true});
-  if(lt>2.2){const s='RAREHEIST-BC89FAA0.SSLIP.IO',kk=slamK(8,lt-2.2,1.5,.1),w=tw(s,kk);plate(g,W/2-w/2-32,y0+17*k+140,w+64,7*kk+40,SIG,INK,6);txt(g,s,W/2,y0+17*k+160,kk,INK,'center');}
-  if(lt>2.8)typeTxt(g,'FREE IN YOUR BROWSER. NO WALLET NEEDED TO TRY.',W/2,y0+17*k+258,5,MIST,lt-2.8,60,{align:'center',cursor:false});
+  if(lt>1.1)typeTxt(g,'YOUR RARE FRIEND',W/2,y0+17*k+40,7,PAPER,lt-1.1,34,{align:'center',shadow:true,cursor:lt<1.6});if(lt>1.6)typeTxt(g,'ONE BIG BREAK-IN',W/2,y0+17*k+104,7,PAPER,lt-1.6,34,{align:'center',shadow:true});
+  if(lt>2.2){const s='RAREHEIST-BC89FAA0.SSLIP.IO',kk=slamK(8,lt-2.2,1.5,.1),w=tw(s,kk);plate(g,W/2-w/2-32,y0+17*k+172,w+64,7*kk+40,SIG,INK,6);txt(g,s,W/2,y0+17*k+192,kk,INK,'center');}
+  if(lt>2.8)typeTxt(g,'FREE IN YOUR BROWSER · NO WALLET NEEDED TO TRY',W/2,y0+17*k+290,5,MIST,lt-2.8,60,{align:'center',cursor:false});
   txt(g,'RARE FRIENDS VIBEATHON 2026',96,48,5,MIST);txt(g,'CHARACTER SPOTLIGHT',W-96,48,5,MIST,'right');
-  P.sprite(g,HERO,snap(lerp(-200,W+200,sat((lt-.2)/9))),gy+8,6,'right',true,Math.floor(lt*9));
+  P.sprite(g,HERO,snap(lerp(-200,W+200,sat((lt-.2)/9))),gy+8,5,'right',true,Math.floor(lt*9));
   if(lt<.3){const u=expo(lt/.25),h=snap(H/2*(1-u));g.fillStyle=INK;g.fillRect(0,0,W,h);g.fillRect(0,H-h,W,h);g.fillStyle=SIG;if(h>0){g.fillRect(0,h-8,W,8);g.fillRect(0,H-h,W,8);}}
   flash(g,lt,.1,PAPER,.8);if(t>CUT.total-.7)dfill(g,0,0,W,H,Math.round(16*sat((t-(CUT.total-.7))/.6)),INK,8);}};
 
