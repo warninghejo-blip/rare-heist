@@ -139,7 +139,7 @@
  function create(canvas){
   const c=canvas.getContext('2d',{alpha:false}),buf=document.createElement('canvas'),b=buf.getContext('2d',{alpha:false});
   let geo={},Q={},effects=[],camX=null,lastFrame=null;
-  const mem={level:null,turn:null,heroAt:null,guards:null,vision:null,lit:null,status:null,statusAt:0,heroTw:null,guardTw:null,ghost:null,flick:null};
+  const mem={level:null,levelId:null,replay:false,turn:null,heroAt:null,guards:null,vision:null,lit:null,status:null,statusAt:0,heroTw:null,guardTw:null,ghost:null,flick:null,intro:null,last:null,caught:undefined};
   const layers={bgKey:'',bg:null,bKey:'',lit:null,dark:null,pad:0};
   function pulse(events,time){for(const e of events||[]){const d={alarm:700,caught:900,relic:900,key:700,intel:700,switch:500,vent:400,emp:700}[e];if(d)effects.push({e,start:time,end:time+d});}if(effects.length>8)effects=effects.slice(-8);}
 
@@ -283,7 +283,9 @@
     const ch=l.map[y][x],xx=X(x),T=Q.top[y],F=T+fh,m=xx+Math.floor(cw/2);
     if(ch==='S'){const dw=Math.max(10,Math.round(cw*.42)),dh=Math.min(fh-3,Math.round(fh*.82));rect(g,m-Math.floor(dw/2)-2,F-dh-2,dw+4,dh+2,INK);rect(g,m-Math.floor(dw/2),F-dh,dw,dh,lit?HAZE:DUSK);rect(g,m-Math.floor(dw/2),F-dh,2,dh,lit?MIST:HAZE);rect(g,m-Math.floor(dw/2)-3,F-1,dw+6,1,MIST);label(g,'IN',m,F-dh-11,PAPER,INK,'center');}
     else if(ch==='E'){const dw=Math.max(12,Math.round(cw*.5)),dh=Math.min(fh-2,Math.round(fh*.84)),dx=m-Math.floor(dw/2),dy=F-dh;
-     if(!lit||!still){const glow=still?4:4+(Math.floor(time/300)%2);dither(g,dx-5,dy-4,dw+10,dh+4,lit?2:glow,SIG);}
+     if(!lit||!still||s.relic){const glow=still?4:4+(Math.floor(time/300)%2);dither(g,dx-5,dy-4,dw+10,dh+4,lit&&!s.relic?2:glow,SIG);}
+     // trophy in hand: the EXIT becomes the objective, a lime arrow bobs over its sign
+     if(s.relic&&s.status==='playing'){const ay=dy-24+(still?0:Math.floor(time/260)%2);for(let i=0;i<4;i++){rect(g,m-4+i-1,ay+i-1,9-2*i+2,3,INK);}for(let i=0;i<4;i++)rect(g,m-4+i,ay+i,9-2*i,1,SIG);}
      rect(g,dx-2,dy-2,dw+4,dh+2,INK);rect(g,dx,dy,dw,dh,SIG);rect(g,dx+2,dy+2,dw-4,dh-2,INK);dither(g,dx+2,dy+2,dw-4,dh-2,3,SIG);
      const px=dx+Math.floor(dw/2)-2,py=dy+Math.floor(dh*.35);rect(g,px+1,py,2,2,SIG);rect(g,px,py+2,4,3,SIG);rect(g,px,py+5,1,2,SIG);rect(g,px+3,py+5,1,2,SIG);
      const sw=25,sy=dy-12;rect(g,m-Math.ceil(sw/2)-1,sy-1,sw+2,11,INK);rect(g,m-Math.ceil(sw/2),sy,sw,9,SIG);text(g,'EXIT',m,sy+1,1,INK,'center');}
@@ -378,42 +380,58 @@
    const w=o.width||960,h=o.height||640;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}c.imageSmoothingEnabled=false;
    const time=o.time??performance.now(),still=!!(o.reduced||o.thumbnail),lit=E.lightsOn(l,s);effects=effects.filter(f=>f.end>time);
    // memory of the previous frame drives tweens, ghosts and transitions (visual only)
-   const sameLevel=mem.level===l;if(!sameLevel){mem.level=l;mem.turn=s.turn;mem.guards=null;mem.guardTw=null;mem.heroTw=null;mem.ghost=null;mem.flick=null;mem.lit=lit;mem.status=s.status;mem.statusAt=time;camX=null;}
+   const sameLevel=mem.level===l;
+   if(!sameLevel){const again=mem.levelId===l.id;mem.level=l;mem.levelId=l.id;mem.turn=s.turn;mem.guards=null;mem.guardTw=null;mem.heroTw=null;mem.ghost=null;mem.flick=null;mem.lit=lit;mem.status=s.status;mem.statusAt=time;mem.last=null;mem.caught=undefined;camX=null;
+    // A replay passes engine states as its trace (a click preview passes bare cells): replays never say "YOU".
+    mem.replay=o.trace?.[0]?.turn!==undefined;
+    // Level start: a curtain on the Friend, a nameplate, a lock-on. The same plan again (RETRY) gets the short version.
+    mem.intro=!o.thumbnail&&!o.editor&&!o.hideHero&&!mem.replay&&s.turn===0&&s.status==='playing'?{start:time,full:!again}:null;}
    const hz=E.threats(l,s);
    if(sameLevel&&mem.turn!==s.turn){const step=Math.abs(s.turn-mem.turn)===1,dur=o.anim&&o.anim.end>o.anim.start?Math.max(120,o.anim.end-o.anim.start):150;
     if(step&&!still&&mem.guards)mem.guardTw={from:mem.guards,start:time,end:time+dur};else mem.guardTw=null;
     if(step&&!still&&!o.anim&&mem.heroAt&&(mem.heroAt.x!==s.x||mem.heroAt.y!==s.y))mem.heroTw={from:mem.heroAt,start:time,end:time+dur};
     if(!still&&mem.vision){const now=new Set(hz.vision.map(p=>E.xy(p.x,p.y)));const gone=mem.vision.filter(p=>!now.has(E.xy(p.x,p.y)));mem.ghost=gone.length?{cells:gone,start:time,end:time+380}:null;}
-    mem.turn=s.turn;}
+    // UNDO: the nameplate and lock-on again. Any other action ends the curtain and the camera peek at once.
+    if(s.turn<mem.turn&&!mem.replay&&!o.editor&&!o.hideHero)mem.intro={start:time,full:false};else if(mem.intro)mem.intro.cut=true;
+    mem.turn=s.turn;mem.turnAt=time;}
+   if(!sameLevel||mem.turnAt==null)mem.turnAt=time;
    if(sameLevel&&mem.lit!==lit){mem.flick=still?null:{to:lit,start:time};mem.lit=lit;}
-   if(mem.status!==s.status){mem.status=s.status;mem.statusAt=time;}
-   mem.guards=hz.guards.map(q=>({x:q.x,y:q.y}));mem.vision=hz.vision.map(p=>({x:p.x,y:p.y,type:p.type,source:p.source}));mem.heroAt={x:s.x,y:s.y};
+   if(mem.status!==s.status){mem.status=s.status;mem.statusAt=time;mem.caught=undefined;}
+   if(s.status==='lost'&&mem.caught===undefined)mem.caught=culprit(l,mem.last&&mem.last.turn<s.turn?mem.last:s,s);
+   mem.guards=hz.guards.map(q=>({x:q.x,y:q.y}));mem.vision=hz.vision.map(p=>({x:p.x,y:p.y,type:p.type,source:p.source}));mem.heroAt={x:s.x,y:s.y};mem.last=s;
+   // Caught: freeze-frame. Every animation clock stops a beat after the catch (the sightline staging still runs on real time).
+   const staged=!o.thumbnail&&!o.editor&&!o.inspection&&!o.incident,freeze=staged&&s.status==='lost'&&!still,at=freeze?Math.min(time,mem.statusAt+170):time;
    // hero position (tweened)
-   const a=o.anim?.from&&!o.reduced&&time<o.anim.end?o.anim:mem.heroTw&&time<mem.heroTw.end?mem.heroTw:null;let tt=1;if(a)tt=ease((time-a.start)/(a.end-a.start));
+   const a=o.anim?.from&&!o.reduced&&at<o.anim.end?o.anim:mem.heroTw&&at<mem.heroTw.end?mem.heroTw:null;let tt=1;if(a)tt=ease((at-a.start)/(a.end-a.start));
    const from=a?a.from:{x:s.x,y:s.y},focusX=from.x+(s.x-from.x)*tt;
    Q=layout(l,w,h,o.thumbnail,focusX);
-   // smooth camera on narrow frames
-   if(Q.pan){const target=Q.x0;if(camX==null||still||lastFrame==null)camX=target;else{const dt=Math.max(0,Math.min(100,time-lastFrame));camX+=(target-camX)*(1-Math.exp(-dt/110));if(Math.abs(target-camX)<.5)camX=target;}Q.x0=Math.round(Math.max(Q.minX,Math.min(Q.maxX,camX)));}
+   const intro=mem.intro;
+   if(intro&&intro.end==null){intro.peekX=intro.full&&Q.pan?peekTarget(l,s):null;intro.end=intro.full?(intro.peekX!=null?2350:1750):1250;}
+   if(intro&&time-intro.start>(still?(intro.full?1600:1100):intro.end))mem.intro=null;
+   // smooth camera on narrow frames; at level start it peeks at the far objective and comes back
+   if(Q.pan){const target=Q.x0;if(camX==null||still||lastFrame==null)camX=target;else{const dt=Math.max(0,Math.min(100,time-lastFrame));camX+=(target-camX)*(1-Math.exp(-dt/110));if(Math.abs(target-camX)<.5)camX=target;}
+    const pk=mem.intro;if(pk&&!pk.cut&&!still&&pk.peekX!=null){const t=time-pk.start,env=t<760?0:t<1180?smooth((t-760)/420):t<1480?1:t<1900?1-smooth((t-1480)/420):0;camX=target+(pk.peekX-target)*env;}
+    Q.x0=Math.round(Math.max(Q.minX,Math.min(Q.maxX,camX)));}
    lastFrame=time;
    if(buf.width!==Q.iw||buf.height!==Q.ih){buf.width=Q.iw;buf.height=Q.ih;}
    const g=b;g.imageSmoothingEnabled=false;ensureLayers(l);labels=[];
    g.drawImage(layers.bg,0,0);
    const ground=Q.y0+Q.H;
-   if(!still)ambientSky(g,l,time,ground);
+   if(!still)ambientSky(g,l,at,ground);
    // lights: flicker between variants during a transition
    let showLit=lit;if(mem.flick){const t=time-mem.flick.start,seq=[70,60,40,110,50,50];let acc=0,phase=0;for(const d of seq){if(t<acc+d)break;acc+=d;phase++;}if(phase>=seq.length)mem.flick=null;else showLit=phase%2?!mem.flick.to:mem.flick.to;}
    const L=layer(l,showLit);g.drawImage(L,Q.x0-layers.pad,0);
-   if(!still)ambientRooms(g,l,s,showLit,time);
+   if(!still)ambientRooms(g,l,s,showLit,at);
    if(!lit)darkness(g,l,s);
-   objects(g,l,s,showLit,time,still);
+   objects(g,l,s,showLit,at,still);
    // vision: cell fields, beams, fading ghosts of cells that just went dark
    const cells=visionCells(hz);
    for(const [key,list] of cells){visionFill(g,list,lit);if(key.startsWith('camera')){const d=l.cameras[list[0].source],ro=d.rotation||[d.dir],dir=ro[((Math.floor(s.turn/(d.speed||2))+(d.phase||0))%ro.length+ro.length)%ro.length],[ox,oy]=lensOf(d,dir);coneFrom(g,ox,oy,list,lit?6:8,1,dir);}}
-   guardBeams(g,l,s,hz,lit,time,1);
-   if(mem.ghost&&time<mem.ghost.end){const f=1-(time-mem.ghost.start)/(mem.ghost.end-mem.ghost.start);visionFill(g,mem.ghost.cells,lit,f);}else mem.ghost=null;
+   guardBeams(g,l,s,hz,lit,at,1);
+   if(mem.ghost&&at<mem.ghost.end){const f=1-(at-mem.ghost.start)/(mem.ghost.end-mem.ghost.start);visionFill(g,mem.ghost.cells,lit,f);}else mem.ghost=null;
    const next=o.forecast?E.threats(l,s,s.turn+1):null;
    if(next){const now=new Set([...hz.vision,...hz.lasers].map(p=>E.xy(p.x,p.y)));for(const p of [...next.vision,...next.lasers])if(!now.has(E.xy(p.x,p.y)))mark(g,p,'',INK);for(const p of next.guards)if(!hz.guards.some(q=>E.same(q,p)))mark(g,p,'NEXT',INK);}
-   lasers(g,l,s,lit,time,still);cameras(g,l,s,lit,time,still);guards(g,l,s,hz,lit,time,still);
+   lasers(g,l,s,lit,at,still);cameras(g,l,s,lit,at,still);guards(g,l,s,hz,lit,at,still);
    const {cw}=Q;
    if(o.trace)for(let i=1;i<o.trace.length;i++){const p=o.trace[i-1],q=o.trace[i];dotted(g,X(p.x)+cw/2,foot(p.y)-5,X(q.x)+cw/2,foot(q.y)-5,INK,3,6);dotted(g,X(p.x)+cw/2,foot(p.y)-5,X(q.x)+cw/2,foot(q.y)-5,SIG,2,6);}
    if(o.editor){for(let x=1;x<Q.cols;x++)dotted(g,X(x),Q.y0,X(x),Q.y0+Q.H,lit?HAZE:MIST,1,4);}
@@ -422,30 +440,120 @@
    if(o.guide)mark(g,o.guide,o.guideLabel||'GO');if(o.hover)mark(g,o.hover);if(o.mutation)mark(g,o.mutation,'NEW');if(o.selected)mark(g,o.selected,'EDIT');
    // golden trail (LIVE BURN cosmetic): lime footprints on the cells just left, never on the Friend
    if(o.trail){const kk=Math.max(1,Math.round(cw/24)),n=o.trail.length;o.trail.forEach((t,i)=>{if(t.x===s.x&&t.y===s.y)return;const fresh=i>=n-5,px=X(t.x)+cw/2,py=foot(t.y)-kk-1;for(const [dx,dy] of [[-kk*2.6,0],[kk*0.6,-kk*1.2]]){rect(g,px+dx-1,py+dy-1,kk*2+2,kk+2,INK);rect(g,px+dx,py+dy,kk*2,kk,fresh?SIG:PAPER);}});}
-   // the Friend
+   // the Friend (on a win the escape staging draws it walking out through the EXIT)
    let fx=X(s.x)+cw/2,fy=foot(s.y),moving=false;
    if(a){fx=X(a.from.x)+cw/2+(fx-X(a.from.x)-cw/2)*tt;fy=foot(a.from.y)+(fy-foot(a.from.y))*tt;moving=a.from.x!==s.x||a.from.y!==s.y;if(moving&&a.from.y===s.y)fy-=Math.round(Math.sin(tt*Math.PI)*2);}
-   const k=Q.k;
-   if(!o.hideHero){if(!lit){dither(g,fx-10*k,fy-16*k,20*k,17*k,2,PAPER);rect(g,fx-7*k,fy+1,14*k,1,SIG);}else if(s.y%2)dither(g,fx-6*k,Math.round(foot(s.y)),12*k,1,8,HAZE);
-    if(a&&moving&&!still&&s.y%2&&a.from.y===s.y){const t=(time-a.start)/(a.end-a.start),dx=s.x>a.from.x?-1:1;for(let i=0;i<3;i++){const q=Math.min(1,t*1.2);rect(g,fx+dx*(5*k+i*2+q*4),fy-1-i-Math.round(q*2),1,1,lit?HAZE:MIST);}}
-    sprite(g,o.sample,fx,fy,k,s.facing||'down',moving,still?0:Math.floor(time/120));
-    if(s.relic){const ry=fy-16*k-10;rect(g,fx-5,ry,11,9,INK);rect(g,fx-4,ry+1,9,7,SIG);rect(g,fx-2,ry+2,5,3,INK);rect(g,fx-1,ry+5,3,1,INK);}}
+   const k=Q.k,escape=staged&&!o.hideHero&&s.status==='won';
+   if(!o.hideHero&&!escape){if(!lit){dither(g,fx-10*k,fy-16*k,20*k,17*k,2,PAPER);rect(g,fx-7*k,fy+1,14*k,1,SIG);}else if(s.y%2)dither(g,fx-6*k,Math.round(foot(s.y)),12*k,1,8,HAZE);
+    if(a&&moving&&!still&&s.y%2&&a.from.y===s.y){const t=(at-a.start)/(a.end-a.start),dx=s.x>a.from.x?-1:1;for(let i=0;i<3;i++){const q=Math.min(1,t*1.2);rect(g,fx+dx*(5*k+i*2+q*4),fy-1-i-Math.round(q*2),1,1,lit?HAZE:MIST);}}
+    // idle for a while: the Friend looks around (its own left / right idle clips), a small sign of life
+    let face=s.facing||'down';const idle=time-mem.turnAt-2800;if(!still&&!moving&&idle>0&&s.status==='playing'){const q=idle%6400;face=q<900?'left':q<3200?'down':q<4100?'right':'down';}
+    sprite(g,o.sample,fx,fy,k,face,moving,still?0:Math.floor(at/120));
+    if(s.relic)relicIcon(g,fx,fy-16*k-10);}
    flushLabels(g);
+   if(escape)escapeStage(g,l,s,o.sample,fx,fy,time,still);
+   else if(staged&&s.status==='lost')caughtStage(g,l,s,fx,fy,time,still);
    const top=fy-16*k-6;
    if(!o.hideHero&&!o.thumbnail)for(const f of effects){const t=(time-f.start)/(f.end-f.start),lift=still?0:Math.round(t*10);
-    if(f.e==='alarm'||f.e==='caught'){if(still||Math.floor(t*6)%2===0){rect(g,fx-7,top-18,14,15,INK);rect(g,fx-6,top-17,12,13,f.e==='caught'?PAPER:SIG);text(g,'!',fx-2,top-14,1,INK);}const on=still||Math.floor(t*8)%2===0;if(on){for(let q=0;q<Q.iw;q+=8){rect(g,q,0,4,2,SIG);rect(g,q,Q.ih-2,4,2,SIG);}if(!still)dither(g,X(1),Q.y0,(Q.cols-2)*cw,Q.H,2,SIG);}}
+    if(f.e==='alarm'||f.e==='caught'){if(still||Math.floor(t*6)%2===0){rect(g,fx-7,top-18,14,15,INK);rect(g,fx-6,top-17,12,13,f.e==='caught'?PAPER:SIG);text(g,'!',fx-2,top-14,1,INK);}const on=still||Math.floor(t*8)%2===0;if(on&&f.e==='alarm'&&s.status!=='lost'){for(let q=0;q<Q.iw;q+=8){rect(g,q,0,4,2,SIG);rect(g,q,Q.ih-2,4,2,SIG);}if(!still)dither(g,X(1),Q.y0,(Q.cols-2)*cw,Q.H,2,SIG);}}
     else{const lbl={relic:'TROPHY',key:'KEY',intel:'INTEL',switch:'SWITCH',vent:'VENT',emp:'EMP'}[f.e];const tw=lbl.length*6+5;rect(g,fx-tw/2,top-8-lift,tw,11,INK);rect(g,fx-tw/2+1,top-7-lift,tw-2,9,f.e==='relic'?SIG:PAPER);text(g,lbl,fx-tw/2+3,top-6-lift,1);
      if(!still&&(f.e==='relic'||f.e==='key'||f.e==='intel'))for(let i=0;i<8;i++){const ang=i*Math.PI/4,r=4+t*14;rect(g,fx+Math.cos(ang)*r,fy-8*k+Math.sin(ang)*r,1,1,i%2?PAPER:SIG);}}}
-   endStates(g,l,s,fx,fy,time,still,o);
-   if(!o.thumbnail&&l.lighting)lightSign(g,l,s,lit,time,still);
+   if(!o.thumbnail&&l.lighting)lightSign(g,l,s,lit,at,still);
    // floor plaques
    if(!o.thumbnail){const px=X(1)-Q.wallT-16;if(px>=1)for(let y=1;y<Q.rows-1;y+=2){const yy=Q.top[y]+3;rect(g,px,yy,14,11,INK);rect(g,px+1,yy+1,12,9,s.y===y?SIG:MIST);text(g,'F'+(Q.n-(y-1)/2),px+2,yy+2,1,INK);}}
+   if(!o.thumbnail&&!o.editor){beacons(g,l,s,time,still);minimap(g,l,s,hz,lit,time,still);}
+   if(!o.hideHero&&s.status==='playing')presence(g,o.sample,fx,fy,k,s.relic,time,still);
    // blit to the canvas at the Friend's pixel size
-   let shake=0;if(!still&&effects.some(f=>f.e==='alarm'||f.e==='caught'))shake=Math.round(Math.sin(time/18)*2)*Q.u;
+   let shake=0;if(!still&&!escape&&effects.some(f=>f.e==='alarm'||(f.e==='caught'&&time-f.start<260)))shake=Math.round(Math.sin(time/18)*2)*Q.u;
    c.fillStyle=NIGHT;c.fillRect(0,0,w,h);c.drawImage(buf,0,0,Q.iw,Q.ih,shake,0,Q.iw*Q.u,Q.ih*Q.u);
    const u=Q.u;geo={w,h,rows:Q.rows,cols:Q.cols,n:Q.n,cw:Q.cw*u,slab:Q.slab*u,fh:Q.fh*u,H:Q.H*u,x0:Q.x0*u,y0:Q.y0*u,top:Q.top.map(v=>v*u),hh:Q.hh.map(v=>v*u),pan:Q.pan,scale:Q.k*u,pixel:u};
    return geo;
   }
+  const smooth=t=>{t=Math.min(1,Math.max(0,t));return t*t*(3-2*t);};
+  function relicIcon(g,x,y){rect(g,x-5,y,11,9,INK);rect(g,x-4,y+1,9,7,SIG);rect(g,x-2,y+2,5,3,INK);rect(g,x-1,y+5,3,1,INK);}
+
+  // ---- Presence: who you are, where you go, how it ended. Visual only; input never waits for any of it. ----
+  // Tight box of the Friend's own pixels (idle frame), so the lock-on hugs the character, not the 16x16 cell.
+  const boxes=new Map();
+  function heroBox(sample,fx,fy,k){const px=mask(sample,'down',false,0);let bb=boxes.get(px);if(!bb){let x0=15,y0=15,x1=0,y1=0;for(const [x,y] of px){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}bb=px.length?[x0,y0,x1,y1]:[2,2,13,15];boxes.set(px,bb);}
+   const L=Math.round(fx-8*k),T=Math.round(fy-15*k);return {l:L+bb[0]*k,t:T+bb[1]*k,r:L+bb[2]*k+k-1,b:T+bb[3]*k+k-1};}
+  // Four corner brackets, paper on an ink outline so they read on lit plaster and in darkness.
+  function brackets(g,box,off,color=PAPER,arm=4){const segs=[];for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const cx=sx<0?box.l-off:box.r+off,cy=sy<0?box.t-off:box.b+off;segs.push([sx<0?cx:cx-arm+1,cy,arm,1],[cx,sy<0?cy:cy-arm+1,1,arm]);}
+   for(const [x,y,w,h] of segs)rect(g,x-1,y-1,w+2,h+2,INK);for(const [x,y,w,h] of segs)rect(g,x,y,w,h,color);}
+  // A ring of two-tone dots; `f` thins it out as it fades.
+  function ring(g,cx,cy,r,f){const n=Math.max(12,Math.round(r*1.6));for(let i=0;i<n;i++){if(hash(i,17,n)>f)continue;const q=i/n*Math.PI*2,x=Math.round(cx+Math.cos(q)*r),y=Math.round(cy+Math.sin(q)*r*.75);rect(g,x-1,y-1,3,3,INK);rect(g,x,y,1,1,i%2?PAPER:SIG);}}
+  // "YOU | #ID": lime for you, paper for the token, a pointer down to the head.
+  function nameplate(g,sample,fx,top){const id=sample?.tokenId!=null?'#'+sample.tokenId:'',wa=17,wb=id?id.length*6-1:0,w=wa+6+(id?wb+7:0),h=11;
+   // kept inside the frame while the Friend is, but never detached from it (the phone camera may peek away)
+   const f=Math.round(fx);let x=Math.round(fx-w/2);x=Math.max(f>=0?2:f-w+4,Math.min(f<=Q.iw?Q.iw-w-2:f-4,x));const y=Math.max(2,Math.round(top-h-5));
+   rect(g,x-1,y-1,w+2,h+2,INK);rect(g,x,y,wa+6,h,SIG);text(g,'YOU',x+3,y+2,1,INK);
+   if(id){const bx=x+wa+6;rect(g,bx,y,1,h,INK);rect(g,bx+1,y,w-wa-7,h,PAPER);text(g,id,bx+4,y+2,1,INK);}
+   const px=Math.round(Math.max(x+3,Math.min(x+w-4,fx))),fill=px<x+wa+6?SIG:PAPER;rect(g,px-3,y+h+1,7,1,INK);rect(g,px-2,y+h+2,5,1,INK);rect(g,px-1,y+h+3,3,1,INK);rect(g,px,y+h+4,1,1,INK);rect(g,px-2,y+h,5,1,fill);rect(g,px-1,y+h+1,3,1,fill);}
+  // Curtain: black outside a circle, whole art pixels only (row spans, no anti-aliasing).
+  function iris(g,cx,cy,r){const {iw,ih}=Q;for(let y=0;y<ih;y++){const dy=y+.5-cy;if(Math.abs(dy)>=r){rect(g,0,y,iw,1,INK);continue;}const half=Math.sqrt(r*r-dy*dy),x0=Math.round(cx-half),x1=Math.round(cx+half);if(x0>0)rect(g,0,y,x0,1,INK);if(x1<iw)rect(g,x1,y,iw-x1,1,INK);dither(g,x0,y,3,1,9,INK);dither(g,x1-3,y,3,1,9,INK);}}
+  function presence(g,sample,fx,fy,k,relic,time,still){const i=mem.intro;if(!i||!sample)return;const t=time-i.start,full=i.full,cx=Math.round(fx),cy=Math.round(fy-8*k);
+   if(full&&!still&&!i.cut&&t<800){const r0=24*k+8,rmax=Math.hypot(Math.max(cx,Q.iw-cx),Math.max(cy,Q.ih-cy))+4;iris(g,cx,cy,t<180?r0:r0+(rmax-r0)*smooth((t-180)/620));}
+   const box=heroBox(sample,fx,fy,k),conv=full?460:300,lockEnd=still?(full?1600:1100):(full?1450:1050);
+   if(t<lockEnd){const off=still?2:Math.round(2+(full?26:16)*k*(1-ease(t/conv))),blink=!still&&t>conv&&t<conv+360&&Math.floor((t-conv)/90)%2;if(!blink)brackets(g,box,off);}
+   if(!still)for(const r0 of full?[440,880]:[240]){const q=(t-r0)/560;if(q>0&&q<1)ring(g,cx,cy,(9+q*22)*k,1-q);}
+   const pStart=full&&!still?140:0,pEnd=still?(full?1600:1100):i.end-60;
+   if(t>=pStart&&t<pEnd){const drop=still?0:Math.round((1-Math.min(1,(t-pStart)/120))*4),blink=!still&&pEnd-t<240&&Math.floor((pEnd-t)/60)%2;if(!blink)nameplate(g,sample,fx,box.t-(relic?13:0)-drop);}}
+  // Phones: where the camera peeks at level start (the farther of trophy / EXIT), or null when it is already on screen.
+  function peekTarget(l,s){const spots=[E.positions(l,'T')[0],E.positions(l,'E')[0]].filter(Boolean),aim=p=>Math.round(Math.max(Q.minX,Math.min(Q.maxX,Q.iw/2-(p.x+.5)*Q.cw)));let best=null,far=Q.cw*1.5;
+   for(const p of spots){const x=aim(p),d=Math.abs(x-Q.x0);if(d>far){far=d;best=x;}}return best;}
+  // Phones: lime edge tags point at the trophy and the EXIT while they are off screen.
+  function beacons(g,l,s,time,still){if(!Q.pan||s.status!=='playing')return;const list=[];const tr=E.positions(l,'T')[0],ex=E.positions(l,'E')[0];if(tr&&!s.relic)list.push([tr,'TROPHY']);if(ex)list.push([ex,'EXIT']);const used=[];
+   for(const [p,name] of list){const x=X(p.x),side=x+Q.cw<=0?-1:x>=Q.iw?1:0;if(!side)continue;const w=name.length*6+11,h=11;let y=Math.round(Q.top[p.y]+Q.hh[p.y]*.4-h/2);while(used.some(v=>v.side===side&&Math.abs(v.y-y)<h+3))y-=h+3;used.push({side,y});
+    const bx=side<0?2:Q.iw-w-2,nudge=still?0:(Math.floor(time/320)%2)*side;rect(g,bx-1,y-1,w+2,h+2,INK);rect(g,bx,y,w,h,SIG);
+    if(side<0){text(g,'<',bx+2+nudge,y+2,1,INK);text(g,name,bx+9,y+2,1,INK);}else{text(g,name,bx+2,y+2,1,INK);text(g,'>',bx+w-7+nudge,y+2,1,INK);}}}
+  // Phones: the empty sky carries a floor-plan strip of the whole building (walls, hatches, IN, trophy, EXIT, you,
+  // live sight) with a bracket over the part on screen. Only when the building is wider than the frame and the sky has room.
+  function minimap(g,l,s,hz,lit,time,still){if(!Q.pan||Q.u<2||s.status!=='playing')return;const rows=Q.rows,cols=Q.cols,x0=3,y0=3,room=Q.y0-3-Math.max(9,Math.round(Q.fh*.38))-12;
+   const cs=[7,6,5,4].find(c=>cols*c+2<=Q.iw*.62&&Q.n*c+Q.n+3+y0+2<=room);if(!cs)return;const fl=cs,mw=cols*cs+2,mh=Q.n*fl+(Q.n+1)+2;const ys=[];let yy=y0+1;for(let y=0;y<rows;y++){ys[y]=yy;yy+=y%2?fl:1;}const blink=still||Math.floor(time/400)%2,cx=x=>x0+1+x*cs,mid=Math.floor(cs/2);
+   rect(g,x0-1,y0-1,mw+2,mh+2,INK);rect(g,x0,y0,mw,mh,NIGHT);
+   for(let y=0;y<rows;y++)for(let x=1;x<cols-1;x++){const ch=l.map[y][x],px=cx(x),py=ys[y];
+    if(!(y%2)){rect(g,px,py,cs,1,ch==='#'?HAZE:NIGHT);if(ch!=='#')rect(g,px+mid-1,py,3,1,MIST);continue;}
+    if(ch==='#'){rect(g,px,py,cs,fl,INK);continue;}rect(g,px,py,cs,fl,lit?DUSK:NIGHT);
+    if(ch==='E'){rect(g,px,py,cs,fl,SIG);rect(g,px+mid-1,py+2,3,fl-2,INK);}else if(ch==='S')rect(g,px+mid-1,py+2,3,fl-2,MIST);else if(ch==='T'&&!s.relic&&blink)rect(g,px+mid-1,py+fl-4,3,3,SIG);}
+   for(const p of hz.vision)if(p.y%2)dither(g,cx(p.x),ys[p.y],cs,fl,6,SIG);for(const p of hz.lasers)if(p.y%2)rect(g,cx(p.x),ys[p.y]+Math.floor(fl/2),cs,1,SIG);
+   for(const q of hz.guards)if(q.y%2)rect(g,cx(q.x)+mid-1,ys[q.y]+fl-4,3,3,MIST);for(const d of l.cameras)rect(g,cx(d.x)+mid-1,ys[d.y],3,2,MIST);
+   const hx=cx(s.x)+mid-1,hy=s.y%2?ys[s.y]+1:ys[s.y]-2;rect(g,hx-1,hy-1,5,Math.min(fl,6)+1,INK);rect(g,hx,hy,3,Math.min(fl,6)-1,blink?PAPER:SIG);
+   const v0=Math.max(0,-Q.x0/Q.cw),v1=Math.min(cols,(Q.iw-Q.x0)/Q.cw),bx=Math.round(cx(0)+v0*cs),bw=Math.max(3,Math.round((v1-v0)*cs));for(const yb of [y0-2,y0+mh+1]){rect(g,bx,yb,4,1,PAPER);rect(g,bx+bw-4,yb,4,1,PAPER);}rect(g,bx,y0-2,1,4,PAPER);rect(g,bx+bw-1,y0-2,1,4,PAPER);rect(g,bx,y0+mh-2,1,4,PAPER);rect(g,bx+bw-1,y0+mh-2,1,4,PAPER);}
+  function culprit(l,before,after){if(!after.failure||after.failure.kind==='lockdown')return null;try{return root.HeistPlayfeel?.sourceAt(l,before,after)||null;}catch{return null;}}
+  // Escape: the house lights drop, a spotlight finds the EXIT, the Friend walks in, the shutter closes, sparks.
+  // House lights out: the building's own blackout variant with its objects, then a touch of ink. In palette, no alpha.
+  function lightsOut(g,l,s,at,level){g.drawImage(layer(l,false),Q.x0-layers.pad,0);objects(g,l,s,false,at,true);if(level)dither(g,0,0,Q.iw,Q.ih,level,INK);}
+  function escapeStage(g,l,s,sample,fx,fy,time,still){const t=still?1e9:time-mem.statusAt,k=Q.k,cw=Q.cw,fh=Q.fh,ex=E.positions(l,'E')[0]||{x:s.x,y:s.y},m=X(ex.x)+Math.floor(cw/2),T=Q.top[ex.y],F=floorY(ex.y);
+   const dark=still||t>=120||(t>=50&&t<90);if(dark){lightsOut(g,l,s,time,3);
+    for(let i=0;i<fh-2;i++){const wd=4+Math.floor(i*.45);dither(g,m-wd,T+2+i,wd*2+1,1,i>fh-9?6:3,PAPER);}
+    const pl=Math.max(X(1),m-Math.round(cw*1.4)),pr=Math.min(X(Q.cols-1),m+Math.round(cw*1.4));dither(g,Math.max(pl,m-cw),F-2,Math.min(pr,m+cw)-Math.max(pl,m-cw),2,5,PAPER);dither(g,pl,F-1,pr-pl,1,3,PAPER);}
+   const dw=16*k+4,dh=Math.min(fh-2,Math.max(18*k+2,Math.round(fh*.84))),dx=m-Math.floor(dw/2),dy=F-dh;
+   // the doorway opens onto daylight, so the Friend's black pixels read as a silhouette walking into it
+   rect(g,dx-2,dy-2,dw+4,dh+2,INK);rect(g,dx,dy,dw,dh,SIG);rect(g,dx+2,dy+2,dw-4,dh-2,PAPER);dither(g,dx+2,dy+2,dw-4,Math.round((dh-2)*.45),4,SIG);dither(g,dx+2,F-4,dw-4,4,6,MIST);
+   const inside=[dx+2,dy+2,dw-4,dh-2],walk=t>=150,shut=still?0:smooth((t-420)/260),sy=Math.round(dy+2+(dh-2)*shut);
+   if(still){sprite(g,sample,m,F-1,k,'down',false,0);if(s.relic)relicIcon(g,m,F-1-16*k-10);}
+   else if(!walk){sprite(g,sample,fx,fy,k,s.facing||'down',true,Math.floor(time/110));if(s.relic)relicIcon(g,fx,fy-16*k-10);}
+   else if(shut<1){g.save();g.beginPath();g.rect(inside[0],sy,inside[2],F-sy);g.clip();const lift=Math.round(Math.min(1,(t-150)/300)*2);sprite(g,sample,m,F-1-lift,k,'up',true,Math.floor(time/110));g.restore();}
+   if(shut>0){rect(g,inside[0],inside[1],inside[2],sy-inside[1],INK);for(let q=inside[1]+1;q<sy;q+=3)rect(g,inside[0],q,inside[2],1,SIG);}
+   const sign=still||t>=680?'ESCAPED':'EXIT',sw=sign.length*6+5,blink=!still&&t>=680&&t<1100&&Math.floor((t-680)/110)%2,sgy=dy-13;
+   if(!blink){rect(g,m-Math.ceil(sw/2)-1,sgy-1,sw+2,11,INK);rect(g,m-Math.ceil(sw/2),sgy,sw,9,SIG);text(g,sign,m,sgy+1,1,INK,'center');}
+   if(!still&&t>=640&&t<2200){const q=(t-640)/1000;for(let i=0;i<34;i++){const ang=-Math.PI*(.04+.92*hash(i,5,3)),sp=(22+hash(i,6,3)*52)*k,x=Math.round(m+Math.cos(ang)*sp*q),y=Math.round(dy+dh*.3+Math.sin(ang)*sp*q+q*q*55*k),big=i%4===0;if(y>=F)continue;
+     if(big&&q<.7){rect(g,x-2,y,5,1,INK);rect(g,x,y-2,1,5,INK);rect(g,x-1,y,3,1,PAPER);rect(g,x,y-1,1,3,PAPER);}else{rect(g,x-1,y-1,4,4,INK);rect(g,x,y,2,2,i%3?SIG:PAPER);}}}}
+  // Caught: freeze-frame. Everything dims except the corridor between the Friend and whatever saw it; the sightline draws itself.
+  const scratch=document.createElement('canvas');
+  function caughtStage(g,l,s,fx,fy,time,still){const t=still?1e9:time-mem.statusAt,k=Q.k,cw=Q.cw,src=mem.caught,hero={x:s.x,y:s.y},cell=p=>[X(p.x),Q.top[p.y],cw,Q.hh[p.y]];
+   let [kx,ky,kw,kh]=cell(hero);kx-=cw*.5;kw+=cw;ky-=Math.round(8*k);kh+=Math.round(8*k);
+   if(src?.origin){const [ox,oy,ow,oh]=cell(src.origin),x0=Math.min(kx,ox-4),y0=Math.min(ky,oy-4),x1=Math.max(kx+kw,ox+ow+4),y1=Math.max(ky+kh,oy+oh+4);kx=x0;ky=y0;kw=x1-x0;kh=y1-y0;}
+   kx=Math.max(0,Math.round(kx));ky=Math.max(0,Math.round(ky));kw=Math.min(Q.iw-kx,Math.round(kw));kh=Math.min(Q.ih-ky,Math.round(kh));
+   if(scratch.width!==Q.iw||scratch.height!==Q.ih){scratch.width=Q.iw;scratch.height=Q.ih;}const sc=scratch.getContext('2d');sc.drawImage(buf,0,0);
+   if(!still&&t<70)dither(g,0,0,Q.iw,Q.ih,3,SIG);
+   else if(still||t>=110||t<90){lightsOut(g,l,s,time,still||t>=200?4:2);if(kw>0&&kh>0)g.drawImage(scratch,kx,ky,kw,kh,kx,ky,kw,kh);
+    for(const [x,y,w2,h2] of [[kx-1,ky-1,kw+2,1],[kx-1,ky+kh,kw+2,1],[kx-1,ky,1,kh],[kx+kw,ky,1,kh]])rect(g,x,y,w2,h2,SIG);}
+   if(src?.origin){const ax=X(src.origin.x)+cw/2,ay=Q.top[src.origin.y]+Q.hh[src.origin.y]*.35,bx=fx,by=fy-8*k,q=still?1:smooth((t-110)/300);
+    if(q>0){const ex2=ax+(bx-ax)*q,ey2=ay+(by-ay)*q;dotted(g,ax,ay,ex2,ey2,INK,4,6);dotted(g,ax+1,ay+1,ex2+1,ey2+1,SIG,2,6);}
+    if(still||t>=110){const ob={l:X(src.origin.x)+3,t:Q.top[src.origin.y]+3,r:X(src.origin.x)+cw-4,b:Q.top[src.origin.y]+Q.hh[src.origin.y]-4};brackets(g,ob,still?0:Math.round(6*(1-ease((t-110)/250))),SIG,3);tag(g,String(src.id||'SEEN'),ob.l+(ob.r-ob.l)/2,Math.max(2,ob.t-14),SIG);}}
+   if(still||t>=300)tag(g,s.failure?.kind==='lockdown'?'LOCKED IN':'CAUGHT',fx,Math.min(Q.ih-13,fy+3),PAPER);}
+  function tag(g,str,cx,y,color){const w=str.length*6+5,x=Math.round(Math.max(2,Math.min(Q.iw-w-2,cx-w/2)));rect(g,x-1,y-1,w+2,13,INK);rect(g,x,y,w,11,color);text(g,str,x+3,y+2,1,INK);}
   function searchlight(g,bx,ground,ang,iw){const len=ground*1.3,sp=.12;for(let y=ground-1;y>0;y-=1){const d=(ground-y)/Math.cos(ang),cx=bx+Math.tan(ang)*(ground-y),hw=Math.max(1,d*sp);if(cx+hw<0||cx-hw>iw||d>len)continue;dither(g,cx-hw,y,hw*2,1,d<len*.35?2:1,MIST);}}
   function ambientSky(g,l,time,ground){const s=seedOf(l.id||'x'),{iw}=Q;
    if(!Q.thumbnail&&Q.u>1){searchlight(g,Math.floor(iw*.1),ground,Math.sin(time/2300)*.55-.1,iw);searchlight(g,Math.floor(iw*.93),ground,Math.sin(time/2900+2)*.5+.15,iw);}
@@ -464,11 +572,6 @@
    const main=lit?'LIGHTS ON':'BLACKOUT',sub=n?(lit?'OFF IN ':'ON IN ')+n:lit?'':'SWITCH L',txt=sub?main+' / '+sub:main,w=txt.length*6+7,cx=Q.pan?Math.round(Q.iw/2):Math.round((X(1)+X(Q.cols-1))/2),y=Q.y0-3-14;
    if(!lit)dither(g,cx-Math.floor(w/2)-4,y-4,w+8,20,still?3:3+(Math.floor(time/500)%2),SIG);rect(g,cx-Math.floor(w/2),y+12,1,2,INK);rect(g,cx+Math.floor(w/2)-1,y+12,1,2,INK);rect(g,cx-Math.floor(w/2),y,w,12,INK);rect(g,cx-Math.floor(w/2)+1,y+1,w-2,10,lit?DUSK:INK);
    const warn=n===1&&!still&&Math.floor(time/250)%2;text(g,txt,cx-Math.floor(w/2)+4,y+3,1,lit?(warn?SIG:PAPER):(warn?PAPER:SIG));}
-  function endStates(g,l,s,fx,fy,time,still,o){if(o.thumbnail)return;const t=time-mem.statusAt;
-   if(s.status==='lost'){const k=Q.k,r=Math.round(Q.fh*1.1);if(!still&&t<700&&Math.floor(t/90)%2===0)dither(g,0,0,Q.iw,Q.ih,3,SIG);
-    dither(g,0,0,Q.iw,Math.max(0,fy-r-8*k),2,INK);dither(g,0,fy+8,Q.iw,Q.ih,2,INK);
-    for(let i=0;i<Q.fh;i++){const wd=4+Math.floor(i*.5);dither(g,fx-wd,fy-Q.fh+i,wd*2,1,3,PAPER);}}
-   if(s.status==='won'&&!still&&t<1400){for(let i=0;i<24;i++){const ang=i/24*Math.PI*2+hash(i,5,1),sp=18+hash(i,6,1)*40,q=t/1000,x=fx+Math.cos(ang)*sp*q,y=fy-10+Math.sin(ang)*sp*q+q*q*30;rect(g,x,y,1+(i%2),1+(i%2),i%3?SIG:PAPER);}}}
   function hit(cx,cy){const r=canvas.getBoundingClientRect(),sx=(cx-r.left)*canvas.width/r.width,sy=(cy-r.top)*canvas.height/r.height;return {x:Math.floor((sx-geo.x0)/geo.cw),y:geo.top?.findIndex((y,i)=>sy>=y&&sy<y+geo.hh[i])??-1};}
   return {render,hit,pulse,metrics:()=>geo};
  }

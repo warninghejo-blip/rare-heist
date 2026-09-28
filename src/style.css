@@ -94,7 +94,7 @@ body[data-screen="play"] footer{display:none}
 
 /* ---------- Home ---------- */
 .home{padding-top:22px}
-.hero{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:28px;align-items:center;padding-bottom:20px;margin-bottom:18px;border-bottom:3px solid var(--rule)}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:28px;align-items:center;padding-bottom:20px;margin-bottom:18px;border-bottom:3px solid var(--rule)}
 .hero h1{font-size:52px;line-height:1.1}
 .strikeline{background:#000;color:var(--signal);padding:0 8px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .hero .lede{margin-top:16px;font-size:15px;max-width:58ch}
@@ -102,6 +102,8 @@ body[data-screen="play"] footer{display:none}
 .big{font-size:18px;min-height:54px;padding:10px 34px;box-shadow:5px 5px #000;border-width:3px}
 .big:active:not(:disabled){transform:translate(4px,4px)}
 .hero-note{font-size:12px;margin-top:12px;color:var(--muted)}
+.soundask{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-top:8px;font-size:12px;color:var(--muted)}
+.soundask .linkbtn{font-size:12px;color:var(--wall)}
 .hero-friend{border:3px solid #000;box-shadow:6px 6px #000;background:var(--night);display:flex;flex-direction:column}
 .hero-portrait{display:block;width:100%;aspect-ratio:1;image-rendering:pixelated;border-bottom:3px solid #000;cursor:pointer}
 .hero-friend figcaption{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:2px 8px;padding:9px 12px;background:#000}
@@ -186,6 +188,9 @@ body[data-screen="play"] footer{display:none}
 .hud-friend b{display:block;color:#fff;font-size:12px}
 .briefbar .tools{display:flex;gap:6px;flex:none}
 #inspect.active{background:var(--signal)}
+/* Toggles: lime means ON (aria-pressed=true). Hovering an OFF toggle outlines it instead of filling it lime. */
+.briefbar .tools button[aria-pressed="true"]{background:var(--signal)}
+.briefbar .tools button[aria-pressed="false"]:hover:not(:disabled){background:var(--wall);box-shadow:inset 0 0 0 3px var(--signal)}
 .play-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
 body[data-editing="true"] .play-layout{grid-template-columns:minmax(0,1fr) 292px}
 .board-column{min-width:0;display:flex;flex-direction:column}
@@ -298,6 +303,7 @@ body[data-editing="true"] .boardwrap canvas{cursor:crosshair}
 .replaylist{display:grid;gap:10px}
 .replayrow{display:flex;align-items:center;gap:12px;padding:10px 14px;border:2px solid #000;background:var(--dusk)}
 .replayrow>div{flex:1;min-width:0}
+.replayrow>.fchip{align-self:center}
 .replayrow h3{font-size:14px}
 .replayrow p{font-size:12px;margin-top:2px;color:var(--muted)}
 .replayrow .tag{margin-right:6px}
@@ -342,7 +348,12 @@ button.burn:disabled{opacity:.45}
 .hall h3{color:var(--signal);margin:0 0 4px;font-size:18px}
 .hall .note{margin:0 0 10px;color:var(--mist)}
 .hall ol{margin:0;padding-left:28px;display:grid;gap:6px}
-.hall li{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;border-bottom:1px dashed var(--haze);padding-bottom:4px;font-size:13px}
+.hall li{display:grid;grid-template-columns:34px 1fr auto auto;gap:12px;align-items:center;border-bottom:1px dashed var(--haze);padding-bottom:6px;font-size:13px}
+.hall ol.empty-hall{padding-left:0;list-style:none}
+.hall li.hall-wait{display:block}
+.hall li.hall-empty{display:flex;flex-direction:column;align-items:flex-start;gap:8px;border:2px dashed var(--signal);padding:14px 16px}
+.hall-empty strong{color:var(--signal);font-size:16px}
+.hall-empty span{color:var(--mist);font-size:12px;line-height:1.55;max-width:60ch}
 .hall li b{color:var(--signal)}.hall li small{opacity:.75}
 .burnfacts{padding-left:20px;display:grid;gap:6px;font-size:12px;line-height:1.55}
 .burnfacts li{overflow-wrap:anywhere}
@@ -368,10 +379,6 @@ dialog::backdrop{background:repeating-linear-gradient(45deg,#0b0a20e6 0,#0b0a20e
 .stamp.lost{background:#000;color:var(--signal);border-color:var(--signal)}
 .verdict{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:6px}
 .verdict p{font-size:14px;line-height:1.5;flex:1;min-width:200px}
-.res-friend{display:flex;align-items:center;gap:10px;margin-top:12px;border:2px solid #000;background:#000;padding:0 12px 0 0;width:max-content;max-width:100%}
-.res-friend canvas{width:64px;height:64px;image-rendering:pixelated;background:#fff;flex:none}
-.res-friend span{font-size:12px;line-height:1.4;color:var(--wall)}
-.res-friend b{display:block;color:#fff;font-size:14px}
 .resultstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
 .resultstats div{border:2px solid var(--haze);padding:8px 10px;font-size:11px;letter-spacing:.5px;color:var(--muted);background:var(--night)}
 .resultstats strong{display:block;font-size:22px;letter-spacing:0;margin-top:2px;color:#fff}
@@ -407,6 +414,54 @@ dialog::backdrop{background:repeating-linear-gradient(45deg,#0b0a20e6 0,#0b0a20e
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);max-width:min(90vw,650px);padding:11px 16px;background:var(--signal);color:#000;border:3px solid #000;box-shadow:5px 5px #000;font-size:12px;z-index:30;line-height:1.5}
 body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 .mut-flash{outline:4px solid var(--signal);outline-offset:-6px}
+
+/* ---------- The Friend on stage ---------- */
+/* Stage canvases are sized by ui.js so each Friend pixel covers whole CSS pixels; never smooth them. */
+.res-stage,.reveal-stage,.hero-portrait{image-rendering:pixelated;image-rendering:crisp-edges}
+.res-friend{display:block;position:relative;margin-top:14px;border:3px solid #000;background:#000;padding:0;width:auto;box-shadow:5px 5px 0 var(--haze)}
+.res-friend.out{box-shadow:5px 5px 0 var(--signal)}
+.res-friend .res-stage{display:block;width:100%;height:216px;background:var(--night)}
+.res-friend span{display:block;padding:8px 12px;font-size:12px;line-height:1.45;color:var(--wall);border-top:2px solid var(--dusk)}
+.res-friend b{display:inline;color:#fff;font-size:15px;margin-right:8px}
+.firstclear{position:absolute;top:10px;left:10px;background:var(--signal);color:#000;border:3px solid #000;box-shadow:3px 3px #000;padding:3px 10px;font-style:normal;font-size:14px;letter-spacing:.5px;animation:stamp-in .5s steps(5) both}
+@keyframes stamp-in{0%{transform:scale(1.8) rotate(-6deg);opacity:0}60%{transform:scale(.94) rotate(-2deg);opacity:1}100%{transform:rotate(-2deg)}}
+.reveal{position:fixed;z-index:28;left:50%;top:calc(var(--bar) + 26px);transform:translateX(-50%);width:min(620px,calc(100vw - 24px));display:grid;grid-template-columns:272px minmax(0,1fr);background:#000;color:var(--wall);border:3px solid #000;box-shadow:8px 8px 0 var(--signal);animation:reveal-in .45s steps(6) both}
+.reveal.still{animation:none}
+@keyframes reveal-in{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translate(-50%,0)}}
+.reveal-stage{display:block;width:272px;height:272px;background:var(--night);border-right:3px solid #000}
+.reveal-card{padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.reveal-kicker{color:var(--signal);font-size:12px;letter-spacing:1px}
+.reveal h2{font-size:46px;line-height:1;color:#fff;letter-spacing:-1px;overflow-wrap:anywhere}
+.reveal-family{font-size:18px;color:var(--mist)}
+.reveal-facts{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0 2px;font-size:12px}
+.reveal-facts div{display:contents}
+.reveal-facts dt{color:var(--muted)}.reveal-facts dd{margin:0;color:#fff}
+.reveal-note{font-size:11px;line-height:1.5;color:var(--muted);margin-top:auto}
+.reveal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.reveal-actions button{font-size:12px;min-height:44px}
+.reveal-close{background:#000;color:#fff;border-color:var(--wall);box-shadow:none}
+.nowplaying{display:flex;align-items:center;gap:12px;border:3px solid #000;background:#000;margin:10px 0 4px;padding:0 14px 0 0;width:max-content;max-width:100%;box-shadow:4px 4px 0 var(--signal)}
+.nowplaying canvas{width:56px;height:56px;image-rendering:pixelated;background:#fff;flex:none}
+.nowplaying span{display:grid;line-height:1.3;font-size:12px}
+.nowplaying small{font-size:10px;letter-spacing:1px;color:var(--signal)}
+.nowplaying b{color:#fff;font-size:14px}.nowplaying i{font-style:normal;color:var(--muted);font-size:11px}
+.friendchoices button{position:relative}
+.nowtag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#000;color:var(--signal);font-style:normal;font-size:10px;padding:1px 7px;white-space:nowrap;border:2px solid var(--signal)}
+/* Mini Friend chips: #ID plus the Friend's own frame, wherever a player is named. */
+.fchip{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;white-space:nowrap}
+.fchip canvas{width:32px;height:32px;image-rendering:pixelated;background:#fff;box-shadow:0 0 0 2px #000;flex:none}
+.fchip b{color:inherit}
+.pname{color:#fff}
+.leader h3{display:flex;align-items:center;gap:10px;min-width:0;overflow-wrap:anywhere}
+.events li,.pastrounds li{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}
+.events .fchip{margin-right:6px}
+.ev-v{flex:none;background:#000;color:var(--mist);font-size:11px;padding:1px 6px}
+.pastrounds .linkbtn{font-size:12px}
+.houserun{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-top:14px;border:2px dashed var(--signal);padding:12px 14px;background:var(--night)}
+.houserun strong{display:block;color:#fff;margin:6px 0 2px;font-size:14px}
+.houserun p{font-size:12px;color:var(--muted);line-height:1.5;max-width:52ch}
+.houserun button{flex:none}
+.statusline.notice{margin:0 0 14px}
 
 /* ---------- Medium screens (960 x 640 is the SDK viewport) ---------- */
 @media(max-width:1120px){
@@ -453,6 +508,9 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .actions{padding-top:5px}
  .actions button{min-height:34px;padding:4px 9px}
  .actions .move{width:40px}
+ .res-friend .res-stage{height:150px}
+ .reveal{top:calc(var(--bar) + 10px);grid-template-columns:232px minmax(0,1fr)}
+ .reveal-stage{width:232px;height:232px}
 }
 @media(max-height:540px) and (min-width:621px){
  .briefbar{min-height:30px}
@@ -485,7 +543,7 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .hero h1{font-size:32px}
  .hero .lede{font-size:13px}
  .hero-friend{flex-direction:row;align-items:stretch}
- .hero-portrait{width:96px;border-bottom:0;border-right:3px solid #000;flex:none}
+ .hero-portrait{width:132px;border-bottom:0;border-right:3px solid #000;flex:none}
  .hero-friend figcaption{flex:1;align-content:center}
  .hero-actions button{flex:1}
  .big{padding:10px 20px}
@@ -511,15 +569,27 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .targetstrip{font-size:10px;gap:3px}.target{padding:2px 4px}
  .meter .bar{width:110px}
  .playpage{padding:6px 6px 8px;gap:6px}
- .briefbar{gap:6px;flex-wrap:nowrap}
- .briefbar button{font-size:11px;padding:4px 8px;min-height:38px}
+ .briefbar{gap:6px;flex-wrap:nowrap;min-height:44px}
+ .briefbar button{font-size:11px;padding:4px 8px;min-height:44px;min-width:44px}
  .backbtn span{display:none}
+ .briefbar .backbtn{width:44px;padding:0}
+ /* Phone tools: three 44 px icon buttons (the text stays as the accessible name): forecast = dashed box, scan = lens, pause = bars. */
+ .briefbar .tools{gap:4px}
+ .briefbar .tools button{width:44px;padding:0;font-size:0;letter-spacing:0;display:inline-flex;align-items:center;justify-content:center;position:relative}
+ .briefbar .tools button::before{content:"";display:block;box-sizing:border-box}
+ .briefbar #forecast::before{width:18px;height:18px;border:3px dashed currentColor}
+ .briefbar #inspect::before{width:15px;height:15px;border:3px solid currentColor;margin:-5px 0 0 -5px}
+ .briefbar #inspect::after{content:"";position:absolute;left:24px;top:24px;width:7px;height:7px;background:currentColor}
+ .briefbar #pause::before{width:14px;height:17px;border-left:5px solid currentColor;border-right:5px solid currentColor}
+ .app .coach button,.app .inspecthead button,.app .districts button,.app .roundlist button,.app .replaybar button,.app .resultmore button,.app .close{min-height:44px}
+ .app .close{width:44px}
+ .topbar nav{height:44px}
  .jobtitle{gap:6px}
  .jobtitle .tag{display:none}
  .jobtitle strong{font-size:14px}
  .hud-friend span{display:none}
- .hud-friend{padding:0;height:38px}
- .briefbar #forecast{display:none}
+ .hud-friend{padding:0;height:36px}
+ .hud-friend canvas{width:32px;height:32px}
  .gamehud{display:grid;grid-template-columns:1fr auto;font-size:11px;padding:5px 8px;gap:3px 10px}
  .hud-where{grid-column:1;grid-row:1}.hud-state{grid-column:2;grid-row:1;justify-content:flex-end}.hud-bag{grid-column:1/-1;grid-row:2;font-size:10px}
  .hudgroup{gap:3px 10px}
@@ -535,6 +605,7 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .actions .key{display:none}
  .shared-layout{display:block}
  .shared-layout aside{margin-top:16px}
+ .houserun{flex-direction:column;align-items:stretch}
  .steps{grid-template-columns:1fr}
  .steps div{border:0;border-bottom:2px solid var(--haze)}
  .steps div:last-child{border:0}
@@ -546,13 +617,19 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .livestats .statblock{padding:8px}.livestats strong{font-size:15px}.livestats small{font-size:10px}
  .modeswitch{width:100%}
  .modeswitch button{flex:1;padding:8px 8px;font-size:12px}
- .hall li{grid-template-columns:1fr auto}.hall li small{display:none}
+ .hall li{grid-template-columns:34px 1fr auto}.hall li small{display:none}
  footer{font-size:10px;padding:10px 12px;flex-wrap:wrap}
  .dialoginner{padding:16px}
  .dialoginner h2{font-size:18px}
  .stamp{font-size:24px}
  .resultstats strong{font-size:18px}
- .res-friend canvas{width:48px;height:48px}
+ .res-friend .res-stage{height:180px}
+ .reveal{grid-template-columns:1fr;top:calc(var(--bar) + 12px);max-height:calc(100dvh - var(--bar) - 24px);overflow:auto}
+ .reveal-stage{width:100%;height:196px;border-right:0;border-bottom:3px solid #000}
+ .reveal-card{padding:12px 14px}
+ .reveal h2{font-size:34px}
+ .reveal-family{font-size:15px}
+ .nowplaying{width:100%}
  .helpgrid{grid-template-columns:1fr}
  .friendchoices{gap:8px}
  .friendchoices button{min-width:110px;flex-basis:110px}

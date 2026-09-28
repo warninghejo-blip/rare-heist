@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#151233">
+<title>Rare Heist: Friend Edition</title>
+<meta name="description" content="Rare Heist, Friend Edition for FriendSDK v0.1.2: needs a wallet on Robinhood Chain holding a Rare Friends Generations Friend (gen 1 or higher). No wallet? Play the full game as a guest.">
+<!-- GENERATED from sdk/src/friend-landing.html by sdk/src/friend-landing.mjs. The SDK build itself lives in ./app/. -->
+<style>
+:root{--ink:#000;--paper:#fff;--signal:#cf0;--night:#151233;--deep:#1d1940;--dusk:#2c2766;--haze:#5e56a8;--mist:#b9b3e0;--wall:#e9e5f7;--mono:'Heist Grid',ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--wall);font-family:var(--mono);font-size:15px;line-height:1.6}
+body{background-image:radial-gradient(var(--haze) .8px,transparent .9px);background-size:9px 9px}
+a{color:inherit}
+.wrap{max-width:1080px;margin:14px auto;border:3px solid #000;background:var(--deep);box-shadow:8px 8px #000}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#000;color:#fff;padding:12px 18px;flex-wrap:wrap}
+.brand{font-size:20px;letter-spacing:0;white-space:nowrap}.brand b{color:var(--signal);font-weight:400}.brand small{font-size:12px;color:var(--mist);margin-left:8px}
+header a{font-size:12px;color:var(--mist);text-underline-offset:3px}
+main{padding:28px 30px 30px}
+h1{margin:0;font-size:46px;line-height:1.1;letter-spacing:-1px;color:#fff;font-weight:400}
+h1 span{display:inline-block;background:#000;color:var(--signal);padding:0 8px;margin-top:6px}
+.lede{max-width:64ch;margin:18px 0 0;font-size:15px}
+.street{margin:26px 0 0;border:3px solid #000;background:var(--night)}
+#walker{display:block;width:100%;height:176px;image-rendering:pixelated;border-bottom:3px solid #000}
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.door{display:flex;flex-direction:column;gap:10px;padding:20px 22px 22px;text-decoration:none;color:var(--wall);background:var(--dusk);position:relative;min-height:100%}
+.door+.door{border-left:3px solid #000}
+.door .plate{align-self:flex-start;font-size:12px;border:2px solid var(--wall);padding:1px 8px;color:#fff}
+.door strong{font-weight:400;font-size:22px;line-height:1.25;color:#000;background:var(--signal);border:3px solid #000;box-shadow:5px 5px #000;padding:12px 16px;display:block;text-align:center}
+.door.open strong{background:var(--wall)}
+.door .reader{font-size:13px;color:var(--signal);display:flex;align-items:center;gap:8px}
+.door .reader::before{content:"";width:14px;height:14px;background:var(--signal);box-shadow:0 0 0 2px #000,0 0 0 4px var(--signal);flex:none}
+.door.open .reader{color:#fff}.door.open .reader::before{background:var(--night);box-shadow:0 0 0 2px #000,0 0 0 4px var(--wall)}
+.door p{margin:0;font-size:13px;line-height:1.6;color:var(--mist)}
+.door:hover strong,.door:focus-visible strong{background:#000;color:var(--signal);border-color:var(--signal);box-shadow:5px 5px var(--signal)}
+.door:active strong{transform:translate(3px,3px);box-shadow:2px 2px #000}
+.door:focus-visible{outline:3px solid var(--signal);outline-offset:-6px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.facts section{border:2px solid var(--haze);background:var(--night);padding:14px 16px}
+.facts h2{margin:0 0 8px;font-size:15px;font-weight:400;color:var(--signal)}
+.facts ul{margin:0;padding-left:18px;font-size:13px;line-height:1.65}
+.note{font-size:12px;color:var(--mist);margin:22px 0 0;max-width:90ch}
+footer{background:#000;color:var(--mist);font-size:11px;padding:10px 18px;display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+@media(max-width:760px){
+ .wrap{margin:0;border-width:0;box-shadow:none}
+ main{padding:20px 14px 24px}
+ h1{font-size:32px}
+ .doors,.facts{grid-template-columns:1fr}
+ .door+.door{border-left:0;border-top:3px solid #000}
+ .door strong{font-size:18px}
+ #walker{height:140px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<header><span class="brand">RARE <b>HEIST</b><small>FRIEND EDITION</small></span><a href="https://github.com/warninghejo-blip/rare-heist">Source code</a></header>
+<main>
+<h1>Your Friend is the thief.<br><span>Pick a door.</span></h1>
+<p class="lede">Rare Heist is a turn-based stealth heist in a one-bit cutaway building, starring a Rare Friends Generations NFT drawn from its original on-chain pixels. This edition runs inside FriendSDK v0.1.2, so it opens only for a wallet that holds a Friend.</p>
+<div class="street">
+<canvas id="walker" aria-hidden="true"></canvas>
+<div class="doors">
+<a class="door locked" href="./app/"><span class="plate">DOOR 1</span><strong>OPEN FRIEND EDITION</strong><span class="reader">NEEDS A GENERATIONS FRIEND, GEN 1 OR HIGHER</span><p>FriendSDK v0.1.2 edition: needs a browser wallet on Robinhood Chain (4663) holding a Generations Friend. The SDK checks ownership before the game loads, then your Friend walks every lesson and job.</p></a>
+<a class="door open" href="https://rareheist-bc89faa0.sslip.io/"><span class="plate">DOOR 2</span><strong>PLAY THE FULL GAME AS A GUEST</strong><span class="reader">NO WALLET NEEDED</span><p>Every lesson and job plus the shared Last Heist vault, the Workshop and the Studio. Play a guest Friend, preview any Friend by its token ID, or connect a wallet to play your own.</p></a>
+</div>
+</div>
+<div class="facts">
+<section><h2>Behind door 1</h2><ul><li>__LESSONS__ lessons and __JOBS__ solo jobs, the same engine and levels as the full game.</li><li>Wallet, Friend choice and the ownership check belong to the FriendSDK runtime.</li><li>No purchases, rewards or token actions. Progress lasts for the session.</li></ul></section>
+<section><h2>Behind door 2</h2><ul><li>Guest play, no sign-up: start with a one-minute lesson.</li><li>Last Heist: one shared vault on a server that replays every route.</li><li>DEMO RF (play money) by default. Real RF only in the opt-in LIVE BURN.</li></ul></section>
+</div>
+<p class="note">The walking Friend above is guest sample #3412 (Skeleton): its original 16x16 one-bit frames from the FriendSDK v0.1.2 sample sprites, drawn at whole-pixel scale and never recoloured. An independent Rare Friends Vibeathon entry, not an official Rare Friends release.</p>
+</main>
+<footer><span>Rare Friends art. Free guest play. DEMO RF by default.</span><span>FriendSDK v0.1.2 / Robinhood Chain 4663</span></footer>
+</div>
+<script>/*PIXEL_FONT*/</script>
+<script>
+// Guest sample #3412: idle-down, walk-down, walk-left, walk-right (8 frames each), copied verbatim from src/art.js.
+(function(){'use strict';
+ const FRAMES=/*FRAMES*/[];
+ const c=document.getElementById('walker'),g=c.getContext('2d'),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const NIGHT='#151233',DUSK='#2c2766',HAZE='#5e56a8',SIG='#ccff00',cache=new Map();
+ function bits(hex){if(!cache.has(hex)){const n=BigInt(hex),out=[];for(let i=0;i<256;i++)if((n>>BigInt(i))&1n)out.push([i&15,i>>4]);cache.set(hex,out);}return cache.get(hex);}
+ function sprite(hex,x,foot,k){const px=bits(hex),L=Math.round(x-8*k),T=Math.round(foot-15*k);g.fillStyle='#fff';for(const [a,b] of px)g.fillRect(L+(a-1)*k,T+(b-1)*k,3*k,3*k);g.fillStyle='#000';for(const [a,b] of px)g.fillRect(L+a*k,T+b*k,k,k);}
+ let x=0,dir=1,rest=0,t=0,last=0;
+ function draw(now){const r=c.getBoundingClientRect(),w=Math.max(64,Math.round(r.width/2)),h=Math.max(40,Math.round(r.height/2));if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+  const k=Math.max(2,Math.floor(h*.62/16)),floor=h-Math.max(6,Math.round(h*.14));
+  g.fillStyle=NIGHT;g.fillRect(0,0,w,h);g.fillStyle=HAZE;for(let yy=0;yy<floor;yy+=6)for(let xx=(yy/6)%2?3:0;xx<w;xx+=6)g.fillRect(xx,yy,1,1);
+  g.fillStyle='#000';g.fillRect(0,floor,w,h-floor);g.fillStyle=DUSK;for(let xx=4;xx<w;xx+=16)g.fillRect(xx,floor+Math.round((h-floor)/2),8,2);
+  const min=12*k,max=w-12*k;if(!x)x=Math.round(w*.3);
+  if(!still&&now-last>120){last=now;t++;if(rest>0)rest--;else{x+=dir*Math.max(1,Math.round(k/2));if(x>max||x<min){dir=-dir;rest=14;x=Math.max(min,Math.min(max,x));}}}
+  const clip=still||rest>0?0:dir>0?24:16,frame=FRAMES[clip+(still?0:t%8)];
+  const beam=Math.round(10*k);for(let yy=0;yy<floor;yy+=2){const half=Math.round(beam*.35+yy*.28);g.fillStyle=DUSK;g.fillRect(x-half,yy,half*2,2);if(!(yy%4)){g.fillStyle=SIG;for(let xx=x-half+((yy/2)%4?2:0);xx<x+half;xx+=4)g.fillRect(xx,yy,1,1);}}
+  sprite(frame,x,floor,k);if(!still)requestAnimationFrame(draw);}
+ requestAnimationFrame(draw);if(still)addEventListener('resize',()=>requestAnimationFrame(draw));
+})();
+</script>
+</body></html>

@@ -12,7 +12,7 @@
  const rect=P.rect,dither=P.dither,hash=P.hash,text=P.text;
  const seed=id=>{let h=7;for(const ch of id)h=(h*31+ch.charCodeAt(0))>>>0;return h;};
 
- function create(canvas){const c=canvas.getContext('2d',{alpha:false});let geo={},cam=null,lastT=null,key='',L={};
+ function create(canvas){const c=canvas.getContext('2d',{alpha:false});let geo={},cam=null,lastT=null,key='',L={},pace=null;
   function size(){const cssW=canvas.clientWidth||960,dpr=Math.max(1,root.devicePixelRatio||1),mobile=cssW<620,zoom=Math.max(1,Math.min(Math.round((mobile?1.5:2)*dpr),Math.floor(cssW*dpr/(mobile?240:420))||1));
    return {iw:Math.max(160,Math.round(cssW*dpr/zoom)),ih:Math.round((mobile?250:300)*dpr/zoom),zoom,mobile};}
   const layer=(w,h)=>{const cv=document.createElement('canvas');cv.width=Math.max(1,Math.ceil(w));cv.height=h;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;return [cv,g];};
@@ -95,7 +95,14 @@
    const d=districts.find(x=>x.id===state.district)||districts[0],{iw,ih,mobile}=size();
    if(canvas.width!==iw||canvas.height!==ih){canvas.width=iw;canvas.height=ih;}c.imageSmoothingEnabled=false;
    const gy=ih-(mobile?18:22),k=key!==d.id+iw+'x'+ih;if(k){key=d.id+iw+'x'+ih;L=build(d,iw,ih,gy);cam=null;}
-   const hx=state.x*F,target=Math.max(0,Math.min(L.W-iw,hx-iw*.46));
+   // Pace: the hub walk is scaled up here, x2.2 on a held key and x2.6 on click-to-walk (street.x is navigation, never
+   // game state). One frame's step at most, clamped so a walk never overshoots its target or the end of the street.
+   if(pace&&pace.d===d.id&&state.walking){const dx=state.x-pace.x;if(dx&&Math.abs(dx)<=24){let nx=state.x+dx*(state.target!=null?1.6:1.2);if(state.target!=null)nx=dx>0?Math.min(nx,state.target):Math.max(nx,state.target);state.x=Math.max(60,Math.min(d.width-60,nx));}}
+   pace={d:d.id,x:state.x};
+   // Camera: look ahead while walking; standing at a door frames that whole building; idle between doors holds still.
+   const hx=state.x*F,near=d.doors.find(q=>Math.abs(state.x-q[3])<44);let aim=hx-iw*.46;
+   if(state.walking)aim=hx-iw*(state.facing==='left'?.64:.36);else if(near)aim=near[3]*F-iw/2;else if(cam!=null)aim=Math.max(hx-iw*.8,Math.min(hx-iw*.2,cam));
+   const target=Math.max(0,Math.min(L.W-iw,aim));
    if(cam==null||reduced||lastT==null)cam=target;else{const dt=Math.max(0,Math.min(100,time-lastT));cam+=(target-cam)*(1-Math.exp(-dt/140));if(Math.abs(target-cam)<.4)cam=target;}lastT=time;
    const camera=Math.round(cam);geo={camera,floor:gy,width:iw,height:ih,doors:d.doors,scale:F};
    c.drawImage(L.sky,0,0);c.drawImage(L.far,-Math.round(camera*.18),0);c.drawImage(L.mid,-Math.round(camera*.42),0);
@@ -103,7 +110,6 @@
    c.drawImage(L.front,-camera,0);
    if(!reduced)life(d,iw,ih,gy,time,camera);
    // doors: active glow + prompt
-   const near=d.doors.find(q=>Math.abs(state.x-q[3])<44);
    for(const q of d.doors){const x=Math.round(q[3]*F)-camera;if(x<-80||x>iw+80)continue;if(q===near){const bob=reduced?0:Math.round(Math.sin(time/220)*1.5);dither(c,x-14,gy-34,29,34,reduced?4:4+(Math.floor(time/300)%2),SIG);rect(c,x-12,gy-1,25,1,SIG);
      const lbl='E / ENTER',w=lbl.length*6+7,by=gy-46+bob;rect(c,x-Math.floor(w/2)-1,by-1,w+2,13,INK);rect(c,x-Math.floor(w/2),by,w,11,SIG);text(c,lbl,x-Math.floor(w/2)+4,by+2,1,INK);rect(c,x-1,by+12,3,2,INK);rect(c,x,by+14,1,1,INK);}}
    // walk target
@@ -117,7 +123,10 @@
    const nm=d.name.toUpperCase(),w=nm.length*6+9;rect(c,4,4,w+2,13,INK);rect(c,5,5,w,11,SIG);text(c,nm,10,7,1,INK);rect(c,5+Math.floor(w/2),17,1,3,INK);
    if(!mobile)text(c,'LOCAL / NO TIMER',iw-6,7,1,MIST,'right');
    const hint=mobile?'< > WALK  E ENTER':'< > WALK    E ENTER    CLICK A DOOR TO WALK THERE',hw=hint.length*6+9;rect(c,Math.floor((iw-hw)/2),ih-11,hw,11,NIGHT);text(c,hint,Math.floor(iw/2),ih-9,1,MIST,'center');
-   const blink=reduced||Math.floor(time/500)%2;if(camera>0&&blink)text(c,'<',4,gy-40,1,SIG);if(camera<L.W-iw&&blink)text(c,'>',iw-9,gy-40,1,SIG);
+   // edges: the next door beyond the frame is named on a lime tag ("REPLAY OFFICE >"); a click there walks to it
+   const blink=reduced||Math.floor(time/500)%2,sx=q=>Math.round(q[3]*F)-camera,right=d.doors.find(q=>sx(q)>iw-8),left=[...d.doors].reverse().find(q=>sx(q)<8);
+   for(const [q,side] of [[left,-1],[right,1]]){if(side<0?camera<=0:camera>=L.W-iw)continue;if(!q){if(blink)text(c,side<0?'<':'>',side<0?4:iw-9,gy-40,1,SIG);continue;}
+    const lbl=side<0?'< '+q[1]:q[1]+' >',tw=lbl.length*6+5,tx=side<0?3:iw-tw-3,ty=22,nudge=reduced?0:(Math.floor(time/400)%2)*side;rect(c,tx-1,ty-1,tw+2,13,INK);rect(c,tx,ty,tw,11,SIG);text(c,lbl,tx+3+(side<0?Math.min(0,nudge):Math.max(0,nudge)),ty+2,1,INK);}
    return geo;}
   // Near layer at 1.3x: short props on the kerb side of the road. Never taller than the gap under the Friend.
   function foreground(d,iw,ih,gy,camera){const s=seed(d.id),base=ih-12,W=L.W*1.3;for(let i=0,x=20;x<W;i++,x+=60+Math.floor(hash(i,31,s)*70)){const sx=Math.round(x-camera*1.3);if(sx<-20||sx>iw+20)continue;const r=hash(i,32,s);

@@ -91,6 +91,9 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
 /* Dialogs and toasts stay above the toolbar band. */
 #rhSdk dialog { max-width: min(700px, calc(100vw - 16px)); max-height: calc(100dvh - var(--rh-band) - 12px); margin: 6px auto auto; overflow: auto; box-shadow: 5px 5px #000; }
 #rhSdk .dialoginner { padding: 14px 16px; }
+/* Result stage: the Friend at the open exit or under the searchlight, sized for the 960 x 640 frame. */
+#rhSdk .res-friend { margin-top: 8px; }
+#rhSdk .res-friend .res-stage { height: 150px; }
 #rhSdk .dialoginner > p { margin: 8px 0; font-size: 12px; }
 #rhSdk .dialoginner h2 { font-size: 20px; }
 #rhSdk .stamp { font-size: 22px; padding: 4px 12px; margin: 8px 0; }
@@ -174,5 +177,10 @@ body[data-screen="play"] #rhSdk .rh-brand { display: none; }
   #rhSdk .dialoginner .toolbar button { min-height: 32px; padding: 3px 6px; font-size: 9px; }
   #rhSdk .debrief, #rhSdk .targetstrip { font-size: 9px; }
   #rhSdk .close { min-height: 28px; padding: 2px 8px; }
+  #rhSdk .res-friend { margin-top: 4px; box-shadow: 3px 3px 0 var(--haze); }
+  #rhSdk .res-friend .res-stage { height: 84px; }
+  #rhSdk .res-friend span { font-size: 9px; padding: 3px 6px; }
+  #rhSdk .res-friend b { font-size: 10px; }
+  #rhSdk .firstclear { top: 4px; left: 4px; font-size: 9px; padding: 1px 5px; border-width: 2px; box-shadow: 2px 2px #000; }
   #rhSdk #toast { top: calc(var(--rh-bar) + 14px); padding: 4px 8px; font-size: 9px; line-height: 1.35; border-width: 2px; box-shadow: 3px 3px #000; }
 }

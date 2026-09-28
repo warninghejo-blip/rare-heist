@@ -18,4 +18,5 @@ const level=entered.j.round.level,route=solve(level,{maxNodes:400000});ok('solve
 await new Promise(r=>setTimeout(r,route.actions.length*90+300));
 const done=await B('POST','/api/rounds/'+round.id+'/finish',{ticket:entered.j.ticket,actions:route.actions});ok('B finish accepted: '+done.status+' '+(done.j.error||done.j.result||''),done.status===200);
 const r2=await A('GET','/api/rounds/'+round.id);ok('round has a leader after the clear',!!(r2.j.round||r2.j).leader);
+const rv=r2.j.round||r2.j;ok('leader reads as its Friend: '+rv.names?.[rv.leader]+' / hero '+rv.heroes?.[rv.leader],rv.names?.[rv.leader]==='Friend #5555'&&rv.heroes?.[rv.leader]==='5555');
 console.log(pass+'/'+(pass+fail)+' passed');srv.close?.();process.exit(fail?1:0);

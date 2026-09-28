@@ -63,7 +63,9 @@ function createFriendEdition(root, options, markup) {
   const g = canvas.getContext('2d');
   g.imageSmoothingEnabled = false;
   P.rect(g, 0, 0, size, size, P.PAPER);
-  P.sprite(g, options.hero, 9 * k, 16 * k, k, 'down', false, ui?.save.reduced ? 0 : portraitFrame, true);
+  // Idle, then a few steps each way: the Friend's own walking frames, never redrawn.
+  const beat = ui?.save.reduced ? 0 : portraitFrame % 48, pose = beat < 16 ? ['down', false] : beat < 24 ? ['left', true] : beat < 32 ? ['right', true] : beat < 40 ? ['down', true] : ['down', false];
+  P.sprite(g, options.hero, 9 * k, 16 * k, k, pose[0], pose[1], ui?.save.reduced ? 0 : portraitFrame, true);
  }
  function animatePortrait() {
   clearInterval(portraitTimer);
@@ -109,7 +111,7 @@ function createFriendEdition(root, options, markup) {
  function about() {
   ui.modal('SOURCES + LIMITS', '<p>Rare Heist: Friend Edition for FriendSDK v0.1.2. The SDK runtime connects the wallet, lists your hardwired Friends and verifies ownership on Robinhood Chain before this game loads.</p>'
    + '<p>Your Friend #' + escapeText(options.hero.tokenId) + ' walks every job in its original 16x16 one-bit frames, read from the Rare Friends artwork registry through the public Robinhood Chain RPC and drawn at whole-pixel scale without recolouring.</p>'
-   + '<p>This edition contains the four lessons and the fourteen solo jobs. It has no purchases, rewards, prizes or token actions: the SDK chance-game economy is required by the runtime but unused, and its ledger stays simulated. The browser sandbox has no storage, so progress resets when the frame reloads.</p>'
+   + '<p>This edition contains the ' + ui.lessons.length + ' lessons and the ' + ui.jobs.length + ' solo jobs. It has no purchases, rewards, prizes or token actions: the SDK chance-game economy is required by the runtime but unused, and its ledger stays simulated. The browser sandbox has no storage, so progress resets when the frame reloads.</p>'
    + '<p>The shared Last Heist, workshop, creator studio and LIVE BURN live only in the standalone Rare Heist build.</p>');
  }
 

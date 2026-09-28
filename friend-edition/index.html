@@ -1,2 +1,121 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rare Heist: Friend Edition</title><link rel="stylesheet" href="./runtime.css"><link rel="stylesheet" href="./layout.css"></head><body><main id="root"></main><script src="./runtime.js"></script></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#151233">
+<title>Rare Heist: Friend Edition</title>
+<meta name="description" content="Rare Heist, Friend Edition for FriendSDK v0.1.2: needs a wallet on Robinhood Chain holding a Rare Friends Generations Friend (gen 1 or higher). No wallet? Play the full game as a guest.">
+<!-- GENERATED from sdk/src/friend-landing.html by sdk/src/friend-landing.mjs. The SDK build itself lives in ./app/. -->
+<style>
+:root{--ink:#000;--paper:#fff;--signal:#cf0;--night:#151233;--deep:#1d1940;--dusk:#2c2766;--haze:#5e56a8;--mist:#b9b3e0;--wall:#e9e5f7;--mono:'Heist Grid',ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--wall);font-family:var(--mono);font-size:15px;line-height:1.6}
+body{background-image:radial-gradient(var(--haze) .8px,transparent .9px);background-size:9px 9px}
+a{color:inherit}
+.wrap{max-width:1080px;margin:14px auto;border:3px solid #000;background:var(--deep);box-shadow:8px 8px #000}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#000;color:#fff;padding:12px 18px;flex-wrap:wrap}
+.brand{font-size:20px;letter-spacing:0;white-space:nowrap}.brand b{color:var(--signal);font-weight:400}.brand small{font-size:12px;color:var(--mist);margin-left:8px}
+header a{font-size:12px;color:var(--mist);text-underline-offset:3px}
+main{padding:28px 30px 30px}
+h1{margin:0;font-size:46px;line-height:1.1;letter-spacing:-1px;color:#fff;font-weight:400}
+h1 span{display:inline-block;background:#000;color:var(--signal);padding:0 8px;margin-top:6px}
+.lede{max-width:64ch;margin:18px 0 0;font-size:15px}
+.street{margin:26px 0 0;border:3px solid #000;background:var(--night)}
+#walker{display:block;width:100%;height:176px;image-rendering:pixelated;border-bottom:3px solid #000}
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.door{display:flex;flex-direction:column;gap:10px;padding:20px 22px 22px;text-decoration:none;color:var(--wall);background:var(--dusk);position:relative;min-height:100%}
+.door+.door{border-left:3px solid #000}
+.door .plate{align-self:flex-start;font-size:12px;border:2px solid var(--wall);padding:1px 8px;color:#fff}
+.door strong{font-weight:400;font-size:22px;line-height:1.25;color:#000;background:var(--signal);border:3px solid #000;box-shadow:5px 5px #000;padding:12px 16px;display:block;text-align:center}
+.door.open strong{background:var(--wall)}
+.door .reader{font-size:13px;color:var(--signal);display:flex;align-items:center;gap:8px}
+.door .reader::before{content:"";width:14px;height:14px;background:var(--signal);box-shadow:0 0 0 2px #000,0 0 0 4px var(--signal);flex:none}
+.door.open .reader{color:#fff}.door.open .reader::before{background:var(--night);box-shadow:0 0 0 2px #000,0 0 0 4px var(--wall)}
+.door p{margin:0;font-size:13px;line-height:1.6;color:var(--mist)}
+.door:hover strong,.door:focus-visible strong{background:#000;color:var(--signal);border-color:var(--signal);box-shadow:5px 5px var(--signal)}
+.door:active strong{transform:translate(3px,3px);box-shadow:2px 2px #000}
+.door:focus-visible{outline:3px solid var(--signal);outline-offset:-6px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.facts section{border:2px solid var(--haze);background:var(--night);padding:14px 16px}
+.facts h2{margin:0 0 8px;font-size:15px;font-weight:400;color:var(--signal)}
+.facts ul{margin:0;padding-left:18px;font-size:13px;line-height:1.65}
+.note{font-size:12px;color:var(--mist);margin:22px 0 0;max-width:90ch}
+footer{background:#000;color:var(--mist);font-size:11px;padding:10px 18px;display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+@media(max-width:760px){
+ .wrap{margin:0;border-width:0;box-shadow:none}
+ main{padding:20px 14px 24px}
+ h1{font-size:32px}
+ .doors,.facts{grid-template-columns:1fr}
+ .door+.door{border-left:0;border-top:3px solid #000}
+ .door strong{font-size:18px}
+ #walker{height:140px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<header><span class="brand">RARE <b>HEIST</b><small>FRIEND EDITION</small></span><a href="https://github.com/warninghejo-blip/rare-heist">Source code</a></header>
+<main>
+<h1>Your Friend is the thief.<br><span>Pick a door.</span></h1>
+<p class="lede">Rare Heist is a turn-based stealth heist in a one-bit cutaway building, starring a Rare Friends Generations NFT drawn from its original on-chain pixels. This edition runs inside FriendSDK v0.1.2, so it opens only for a wallet that holds a Friend.</p>
+<div class="street">
+<canvas id="walker" aria-hidden="true"></canvas>
+<div class="doors">
+<a class="door locked" href="./app/"><span class="plate">DOOR 1</span><strong>OPEN FRIEND EDITION</strong><span class="reader">NEEDS A GENERATIONS FRIEND, GEN 1 OR HIGHER</span><p>FriendSDK v0.1.2 edition: needs a browser wallet on Robinhood Chain (4663) holding a Generations Friend. The SDK checks ownership before the game loads, then your Friend walks every lesson and job.</p></a>
+<a class="door open" href="https://rareheist-bc89faa0.sslip.io/"><span class="plate">DOOR 2</span><strong>PLAY THE FULL GAME AS A GUEST</strong><span class="reader">NO WALLET NEEDED</span><p>Every lesson and job plus the shared Last Heist vault, the Workshop and the Studio. Play a guest Friend, preview any Friend by its token ID, or connect a wallet to play your own.</p></a>
+</div>
+</div>
+<div class="facts">
+<section><h2>Behind door 1</h2><ul><li>5 lessons and 14 solo jobs, the same engine and levels as the full game.</li><li>Wallet, Friend choice and the ownership check belong to the FriendSDK runtime.</li><li>No purchases, rewards or token actions. Progress lasts for the session.</li></ul></section>
+<section><h2>Behind door 2</h2><ul><li>Guest play, no sign-up: start with a one-minute lesson.</li><li>Last Heist: one shared vault on a server that replays every route.</li><li>DEMO RF (play money) by default. Real RF only in the opt-in LIVE BURN.</li></ul></section>
+</div>
+<p class="note">The walking Friend above is guest sample #3412 (Skeleton): its original 16x16 one-bit frames from the FriendSDK v0.1.2 sample sprites, drawn at whole-pixel scale and never recoloured. An independent Rare Friends Vibeathon entry, not an official Rare Friends release.</p>
+</main>
+<footer><span>Rare Friends art. Free guest play. DEMO RF by default.</span><span>FriendSDK v0.1.2 / Robinhood Chain 4663</span></footer>
+</div>
+<script>/* Original Heist Grid 5x7 glyphs. Font built in memory; no external fonts or font files. */
+(function(root){'use strict';
+const raw={
+ A:'01110/10001/10001/11111/10001/10001/10001',B:'11110/10001/10001/11110/10001/10001/11110',C:'01111/10000/10000/10000/10000/10000/01111',D:'11110/10001/10001/10001/10001/10001/11110',E:'11111/10000/10000/11110/10000/10000/11111',F:'11111/10000/10000/11110/10000/10000/10000',G:'01111/10000/10000/10111/10001/10001/01110',H:'10001/10001/10001/11111/10001/10001/10001',I:'11111/00100/00100/00100/00100/00100/11111',J:'00111/00010/00010/00010/10010/10010/01100',K:'10001/10010/10100/11000/10100/10010/10001',L:'10000/10000/10000/10000/10000/10000/11111',M:'10001/11011/10101/10101/10001/10001/10001',N:'10001/11001/10101/10011/10001/10001/10001',O:'01110/10001/10001/10001/10001/10001/01110',P:'11110/10001/10001/11110/10000/10000/10000',Q:'01110/10001/10001/10001/10101/10010/01101',R:'11110/10001/10001/11110/10100/10010/10001',S:'01111/10000/10000/01110/00001/00001/11110',T:'11111/00100/00100/00100/00100/00100/00100',U:'10001/10001/10001/10001/10001/10001/01110',V:'10001/10001/10001/10001/10001/01010/00100',W:'10001/10001/10001/10101/10101/10101/01010',X:'10001/10001/01010/00100/01010/10001/10001',Y:'10001/10001/01010/00100/00100/00100/00100',Z:'11111/00001/00010/00100/01000/10000/11111',
+ a:'00000/00000/01110/00001/01111/10001/01111',b:'10000/10000/11110/10001/10001/10001/11110',c:'00000/00000/01111/10000/10000/10000/01111',d:'00001/00001/01111/10001/10001/10001/01111',e:'00000/00000/01110/10001/11111/10000/01111',f:'00110/01001/01000/11100/01000/01000/01000',g:'00000/00000/01111/10001/10001/01111/00001/01110',h:'10000/10000/11110/10001/10001/10001/10001',i:'00100/00000/01100/00100/00100/00100/01110',j:'00010/00000/00110/00010/00010/00010/10010/01100',k:'10000/10000/10010/10100/11000/10100/10010',l:'01100/00100/00100/00100/00100/00100/01110',m:'00000/00000/11010/10101/10101/10101/10101',n:'00000/00000/11110/10001/10001/10001/10001',o:'00000/00000/01110/10001/10001/10001/01110',p:'00000/00000/11110/10001/10001/11110/10000/10000',q:'00000/00000/01111/10001/10001/01111/00001/00001',r:'00000/00000/10111/11000/10000/10000/10000',s:'00000/00000/01111/10000/01110/00001/11110',t:'01000/01000/11100/01000/01000/01001/00110',u:'00000/00000/10001/10001/10001/10011/01101',v:'00000/00000/10001/10001/10001/01010/00100',w:'00000/00000/10001/10001/10101/10101/01010',x:'00000/00000/10001/01010/00100/01010/10001',y:'00000/00000/10001/10001/10001/01111/00001/01110',z:'00000/00000/11111/00010/00100/01000/11111',
+ '0':'01110/10001/10011/10101/11001/10001/01110','1':'00100/01100/00100/00100/00100/00100/01110','2':'01110/10001/00001/00010/00100/01000/11111','3':'11110/00001/00001/01110/00001/00001/11110','4':'00010/00110/01010/10010/11111/00010/00010','5':'11111/10000/10000/11110/00001/00001/11110','6':'01110/10000/10000/11110/10001/10001/01110','7':'11111/00001/00010/00100/01000/01000/01000','8':'01110/10001/10001/01110/10001/10001/01110','9':'01110/10001/10001/01111/00001/00001/01110',
+ '!':'00100/00100/00100/00100/00100/00000/00100','?':'01110/10001/00001/00010/00100/00000/00100','.':'00000/00000/00000/00000/00000/00000/00100',',':'00000/00000/00000/00000/00000/00100/00100/01000',':':'00000/00100/00000/00000/00100/00000/00000',';':'00000/00100/00000/00000/00100/00100/01000','-':'00000/00000/00000/11111/00000/00000/00000','+':'00000/00100/00100/11111/00100/00100/00000','/':'00001/00001/00010/00100/01000/10000/10000','\\':'10000/10000/01000/00100/00010/00001/00001','(':'00010/00100/01000/01000/01000/00100/00010',')':'01000/00100/00010/00010/00010/00100/01000','[':'01110/01000/01000/01000/01000/01000/01110',']':'01110/00010/00010/00010/00010/00010/01110','<':'00001/00010/00100/01000/00100/00010/00001','>':'10000/01000/00100/00010/00100/01000/10000','=':'00000/00000/11111/00000/11111/00000/00000','#':'01010/01010/11111/01010/11111/01010/01010','%':'11001/11001/00010/00100/01000/10011/10011','&':'01100/10010/10100/01000/10101/10010/01101','@':'01110/10001/10111/10101/10111/10000/01110','*':'00000/10101/01110/11111/01110/10101/00000','_':'00000/00000/00000/00000/00000/00000/11111','|':'00100/00100/00100/00100/00100/00100/00100',"'":'00100/00100/00000/00000/00000/00000/00000','"':'01010/01010/00000/00000/00000/00000/00000','$':'00100/01111/10100/01110/00101/11110/00100', ' ':'00000/00000/00000/00000/00000/00000/00000'
+};
+const chars=Object.keys(raw).sort((a,b)=>a.charCodeAt(0)-b.charCodeAt(0));
+const u16=(a,v)=>a.push((v>>>8)&255,v&255),u32=(a,v)=>a.push((v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255);
+const pad=a=>{while(a.length%4)a.push(0);return a;};
+const glyph=s=>{const pts=[],ends=[];s.split('/').forEach((row,y)=>[...row].forEach((v,x)=>{if(v==='1'){let X=x*100,Y=700-y*100;pts.push([X,Y],[X+100,Y],[X+100,Y-100],[X,Y-100]);ends.push(pts.length-1);}}));if(!pts.length)return [];
+ let a=[];[ends.length,0,-200,500,700].forEach(v=>u16(a,v));ends.forEach(v=>u16(a,v));u16(a,0);pts.forEach(()=>a.push(1));let px=0,py=0;pts.forEach(p=>{u16(a,p[0]-px);px=p[0]});pts.forEach(p=>{u16(a,p[1]-py);py=p[1]});return pad(a);};
+const checksum=a=>{let n=0;for(let i=0;i<a.length;i+=4)n=(n+(((a[i]||0)*16777216)+((a[i+1]||0)<<16)+((a[i+2]||0)<<8)+(a[i+3]||0)))>>>0;return n;};
+function make(){const tables={},glyf=[],loca=[],all=['?'].concat(chars);for(const ch of all){u32(loca,glyf.length);glyf.push(...glyph(raw[ch]));}u32(loca,glyf.length);tables.glyf=glyf;tables.loca=loca;
+ let a=[];u32(a,0x10000);u32(a,0x10000);u32(a,0);u32(a,0x5f0f3cf5);u16(a,11);u16(a,1000);for(let i=0;i<16;i++)a.push(0);[0,-200,600,800,0,8,2,1,0].forEach(v=>u16(a,v));tables.head=a;
+ a=[];u32(a,0x10000);[800,-200,100,600,0,0,600,1,0,0,0,0,0,0,0,all.length].forEach(v=>u16(a,v));tables.hhea=a;
+ a=[];u32(a,0x10000);[all.length,140,35,0,0,2,0,0,0,0,0,0,0,0].forEach(v=>u16(a,v));tables.maxp=a;
+ a=[];all.forEach(()=>{u16(a,600);u16(a,0)});tables.hmtx=a;
+ let codes=chars.map(ch=>ch.charCodeAt(0)),n=codes.length+1,b=[];u16(b,4);u16(b,16+n*8);u16(b,0);u16(b,n*2);const pow=2**Math.floor(Math.log2(n));u16(b,pow*2);u16(b,Math.log2(pow));u16(b,n*2-pow*2);[...codes,65535].forEach(c=>u16(b,c));u16(b,0);[...codes,65535].forEach(c=>u16(b,c));codes.forEach((c,i)=>u16(b,(i+1-c)&65535));u16(b,1);for(let i=0;i<n;i++)u16(b,0);a=[];[0,1,3,1].forEach(v=>u16(a,v));u32(a,12);tables.cmap=a.concat(b);
+ a=[];const names=[[1,'Heist Grid'],[2,'Regular'],[4,'Heist Grid Regular'],[6,'HeistGrid-Regular']],str=[];[0,names.length,6+names.length*12].forEach(v=>u16(a,v));for(const [id,value]of names){[3,1,0x409,id,value.length*2,str.length].forEach(v=>u16(a,v));for(const c of value)u16(str,c.charCodeAt(0));}tables.name=a.concat(str);
+ a=[];u32(a,0x30000);u32(a,0);u16(a,-100);u16(a,50);for(let i=0;i<5;i++)u32(a,i===0?1:0);tables.post=a;
+ a=[];[0,600,400,5,0,650,600,0,75,650,600,0,350,50,250,0].forEach(v=>u16(a,v));for(let i=0;i<10;i++)a.push(0);for(let i=0;i<4;i++)u32(a,i===0?1:0);a.push(82,72,49,53);[64,32,126,800,-200,100,800,200].forEach(v=>u16(a,v));tables['OS/2']=a;
+ const tags=Object.keys(tables).sort(),out=[];u32(out,0x10000);let k=tags.length,p=2**Math.floor(Math.log2(k));[k,p*16,Math.log2(p),k*16-p*16].forEach(v=>u16(out,v));let off=12+k*16,head=0;for(const tag of tags){const t=tables[tag];out.push(...[...tag].map(c=>c.charCodeAt(0)));u32(out,checksum(t));u32(out,off);u32(out,t.length);if(tag==='head')head=off;off+=Math.ceil(t.length/4)*4;}
+ for(const tag of tags)out.push(...pad(tables[tag]));const arr=new Uint8Array(out),view=new DataView(arr.buffer);view.setUint32(head+8,(0xb1b0afba-checksum(out))>>>0);return arr.buffer;
+}
+root.HeistPixel={glyphs:raw,ready:Promise.resolve(false)};if(typeof FontFace==='function'){try{const face=new FontFace('Heist Grid',make(),{weight:'400'});root.HeistPixel.ready=face.load().then(f=>{document.fonts.add(f);document.documentElement.classList.add('pixel-ready');return true}).catch(()=>false);}catch{}}
+})(window);</script>
+<script>
+// Guest sample #3412: idle-down, walk-down, walk-left, walk-right (8 frames each), copied verbatim from src/art.js.
+(function(){'use strict';
+ const FRAMES=["0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x600066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x600066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x660066007e00ff007e0018001801ff81bd81bd80ff007e0066000000000","0x60066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x60066007e00ff00ff007e0018001801ff81bd81bd80ff007e006600000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e003c0018001800ff00fd00fd007f003c0030000000000","0x6c006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x6c006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e003c0018001800ff00fd00fd007f003c0030000000000","0xc006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0xc006c007e007e007e003c0018001800ff00fd00fd007f003c003000000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e003c0018001800ff00bf00bf00fe003c000c000000000","0x360036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x360036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x180018007e007e003c0018001800ff00bf00bf00fe003c000c000000000","0x300036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000","0x300036007e007e007e003c0018001800ff00bf00bf00fe003c000c00000"];
+ const c=document.getElementById('walker'),g=c.getContext('2d'),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const NIGHT='#151233',DUSK='#2c2766',HAZE='#5e56a8',SIG='#ccff00',cache=new Map();
+ function bits(hex){if(!cache.has(hex)){const n=BigInt(hex),out=[];for(let i=0;i<256;i++)if((n>>BigInt(i))&1n)out.push([i&15,i>>4]);cache.set(hex,out);}return cache.get(hex);}
+ function sprite(hex,x,foot,k){const px=bits(hex),L=Math.round(x-8*k),T=Math.round(foot-15*k);g.fillStyle='#fff';for(const [a,b] of px)g.fillRect(L+(a-1)*k,T+(b-1)*k,3*k,3*k);g.fillStyle='#000';for(const [a,b] of px)g.fillRect(L+a*k,T+b*k,k,k);}
+ let x=0,dir=1,rest=0,t=0,last=0;
+ function draw(now){const r=c.getBoundingClientRect(),w=Math.max(64,Math.round(r.width/2)),h=Math.max(40,Math.round(r.height/2));if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+  const k=Math.max(2,Math.floor(h*.62/16)),floor=h-Math.max(6,Math.round(h*.14));
+  g.fillStyle=NIGHT;g.fillRect(0,0,w,h);g.fillStyle=HAZE;for(let yy=0;yy<floor;yy+=6)for(let xx=(yy/6)%2?3:0;xx<w;xx+=6)g.fillRect(xx,yy,1,1);
+  g.fillStyle='#000';g.fillRect(0,floor,w,h-floor);g.fillStyle=DUSK;for(let xx=4;xx<w;xx+=16)g.fillRect(xx,floor+Math.round((h-floor)/2),8,2);
+  const min=12*k,max=w-12*k;if(!x)x=Math.round(w*.3);
+  if(!still&&now-last>120){last=now;t++;if(rest>0)rest--;else{x+=dir*Math.max(1,Math.round(k/2));if(x>max||x<min){dir=-dir;rest=14;x=Math.max(min,Math.min(max,x));}}}
+  const clip=still||rest>0?0:dir>0?24:16,frame=FRAMES[clip+(still?0:t%8)];
+  const beam=Math.round(10*k);for(let yy=0;yy<floor;yy+=2){const half=Math.round(beam*.35+yy*.28);g.fillStyle=DUSK;g.fillRect(x-half,yy,half*2,2);if(!(yy%4)){g.fillStyle=SIG;for(let xx=x-half+((yy/2)%4?2:0);xx<x+half;xx+=4)g.fillRect(xx,yy,1,1);}}
+  sprite(frame,x,floor,k);if(!still)requestAnimationFrame(draw);}
+ requestAnimationFrame(draw);if(still)addEventListener('resize',()=>requestAnimationFrame(draw));
+})();
+</script>
+</body></html>

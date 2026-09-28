@@ -6,7 +6,7 @@ ownership on Robinhood Chain (4663) before the game loads. The game then reads t
 original 16×16 one-bit walking frames from the Rare Friends artwork registry through the public
 Robinhood Chain RPC and draws them at whole-pixel scale, never recoloured.
 
-This edition contains **Learn** (4 lessons) and the **Solo campaign** (14 jobs, all unlocked).
+This edition contains **Learn** (5 lessons) and the **Solo campaign** (14 jobs, all unlocked).
 The shared Last Heist, workshop, creator studio and LIVE BURN exist only in the standalone
 Rare Heist build.
 

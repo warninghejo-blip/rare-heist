@@ -53,6 +53,7 @@ The thief is **your** Rare Friend: its original 16×16 frames, read from Robinho
   - **PREVIEW** any Friend by token ID.
   - Paste a holder's address to see their Friends (read-only).
   - Play as a guest with the official FriendSDK samples #3412 Skeleton and #7730 Hoverer.
+- **The Friend is the star.** Picking a Friend opens a reveal with its own walking frames, #ID, family and generation. The home portrait walks through its idle and walk frames (still with MOTION OFF). Results stage it at the open exit or under a searchlight. Last Heist, the Hall of Ash and My Runs show every player as its Friend: #ID and sprite, and a Last Heist player who never set a name appears as "Friend #ID".
 - **Replays show each player's own Friend.**
 
 ## Economy: real RF, burned
@@ -99,6 +100,8 @@ node --version          # 22.16+
 node build.mjs          # builds index.html from src/
 npm start               # shared Last Heist server on http://127.0.0.1:4173
 ```
+
+`node sdk/src/friend-landing.mjs` regenerates `friend-edition/index.html`, the landing page in front of the static FriendSDK build in `friend-edition/app/`.
 
 Open `index.html` directly to play solo without a server. The GitHub Pages mirror is static, so shared Last Heist rounds live on the main link, which runs `server/app.mjs` behind nginx (`HOST=127.0.0.1`, `PUBLIC_ORIGIN=https://…`, `DATA_DIR` for the SQLite file). `render.yaml` is included for a one-click Render deploy.
 

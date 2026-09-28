@@ -34,8 +34,12 @@ export class ArenaStore{
   this.db.prepare('INSERT INTO sessions VALUES(?,?,?,?,?)').run(hash(newToken),player,name,csrf,expires);return {token:newToken,session:{player,name,csrf,expires}};
  }
  rename(player,name){if(typeof name!=='string')error('NAME','Invalid display name');name=name.normalize('NFKC').replace(/[<>\x00-\x1f\x7f]/g,'').trim().slice(0,24);if(name.length<2)error('NAME','Name needs at least two characters');this.db.prepare('UPDATE sessions SET name=? WHERE player=?').run(name,player);return {name};}
- names(r){const ids=new Set([r.leader,...r.events.map(e=>e.player),...r.changes.map(e=>e.player)].filter(Boolean)),out={};for(const id of ids)out[id]=this.db.prepare('SELECT name FROM sessions WHERE player=?').get(id)?.name||'Archived Friend';return out;}
- view(r,me){return {...A.publicRound(r,this.clock(),me),names:this.names(r),source:'server',rewardUnit:'DEMO RF',identity:'guest-session',quorum:2,funding:this.funding.status(r.id)};}
+ players(r){return new Set([r.leader,...r.events.map(e=>e.player),...r.changes.map(e=>e.player)].filter(Boolean));}
+ // The Friend each player last entered this round with (attempts.hero). Display only; not an ownership claim.
+ heroes(r){const q=this.db.prepare('SELECT hero FROM attempts WHERE round_id=? AND player=? ORDER BY started DESC LIMIT 1'),out={};for(const id of this.players(r)){const h=q.get(r.id,id)?.hero;if(typeof h==='string'&&/^[1-9][0-9]{0,77}$/.test(h))out[id]=h;}return out;}
+ // Untouched default session names ('Friend-5D87') read as the Friend that played: 'Friend #3412'.
+ names(r,heroes=this.heroes(r)){const out={};for(const id of this.players(r)){const n=this.db.prepare('SELECT name FROM sessions WHERE player=?').get(id)?.name||'Archived Friend';out[id]=/^Friend-[0-9A-F]{4}$/.test(n)&&heroes[id]?'Friend #'+heroes[id]:n;}return out;}
+ view(r,me){const heroes=this.heroes(r);return {...A.publicRound(r,this.clock(),me),names:this.names(r,heroes),heroes,source:'server',rewardUnit:'DEMO RF',identity:'guest-session',quorum:2,funding:this.funding.status(r.id)};}
  list(me){return this.tx(()=>this.db.prepare('SELECT id FROM rounds ORDER BY rowid DESC LIMIT 30').all().map(row=>this.view(this.current(row.id),me)));}
  round(id,me){return this.tx(()=>this.view(this.current(id),me));}
  create(player,profile){return this.tx(()=>{
