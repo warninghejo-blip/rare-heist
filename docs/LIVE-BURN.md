@@ -30,11 +30,14 @@ LIVE BURN is tested against a mock wallet (`tests/wallet-browser.mjs`). Use this
 
 ## Pending transactions
 
-If a burn is not confirmed within 180 seconds, Rare Heist keeps its transaction hash, sender and item in memory and local storage. The page shows the full hash and **CHECK AGAIN**. Reloading the page checks the receipt for that same hash before another burn can be sent. Do not confirm another burn while one is pending.
+Before opening the wallet request, Rare Heist saves an `awaiting-wallet` pending state and blocks burns in every open window. Once the wallet returns a transaction hash, it stores that hash, sender and item. If a burn is not confirmed within 180 seconds, the page shows the full hash and **CHECK AGAIN**. Reloading with a hash checks that same receipt before another burn can be sent. Do not confirm another burn while one is pending.
+
+If the page reloads while the wallet has not returned a hash, Rare Heist clears the stale lock and warns that it cannot know whether the wallet sent the transaction. Check the wallet and transaction history, then use **RESTORE FROM CHAIN** to find a mined tagged burn. Wait for the wallet request to finish before starting a burn in another window.
 
 - A successful receipt that proves the RF transfer unlocks the item.
 - A failed receipt clears the pending state and reports that no RF was burned.
 - If you replaced or cancelled the transaction in your wallet, use **I replaced/cancelled it in my wallet — forget this tx** and confirm. The warning explains that RF will still burn if the original transaction later succeeds.
+- RESTORE keeps paid cosmetic purchases even when the wallet has more than 200 Tribute receipts. The Hall and local cache keep at most 200 Tribute entries.
 
 ## What to verify
 

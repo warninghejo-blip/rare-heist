@@ -64,10 +64,10 @@
   const owner=player?I.address(player):null,topics=[I.TRANSFER,owner?'0x'+hex(BigInt(owner)):null,'0x'+hex(BigInt(DEAD))];
   const logs=await I.getLogs(p,{address:I.RF_TOKEN,fromBlock:'0x0',toBlock:at,topics});
   const byTx=new Map();for(const g of logs||[]){if(!g||g.removed||typeof g.transactionHash!=='string'||!Array.isArray(g.topics)||g.topics.length!==3||String(g.topics[0]).toLowerCase()!==I.TRANSFER||('0x'+String(g.topics[2]).slice(-40)).toLowerCase()!==DEAD)continue;const k=g.transactionHash.toLowerCase(),from=('0x'+String(g.topics[1]).slice(-40)).toLowerCase();if(owner&&from!==owner)continue;const o=byTx.get(k)||{tx:k,block:g.blockNumber,from,amount:0n};o.amount+=BigInt(g.data&&g.data!=='0x'?g.data:0);byTx.set(k,o);}
-  const cap=Math.max(1,Math.min(5000,Math.floor(Number(limit))||200)),list=[...byTx.values()].sort((a,b)=>BigInt(a.block)>BigInt(b.block)?-1:BigInt(a.block)<BigInt(b.block)?1:0),candidates=owner?list:list.slice(0,cap),out=[];let truncated=!owner&&list.length>cap;
-  // Player restore limits only after applying topic1=player and validating tags.
+  const cap=Math.max(1,Math.min(5000,Math.floor(Number(limit))||200)),list=[...byTx.values()].sort((a,b)=>BigInt(a.block)>BigInt(b.block)?-1:BigInt(a.block)<BigInt(b.block)?1:0),candidates=owner?list:list.slice(0,cap),out=[],purchases=new Set();let truncated=!owner&&list.length>cap,playerTributes=0;
+  // Player restore keeps every paid cosmetic unlock, while bounding only Tribute receipts.
   // The global Hall intentionally scans a marked latest-N window of transfers.
-  for(const o of candidates){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;if(out.length===cap){truncated=true;break;}out.push({...o,item:d.tag.item,friendId:d.tag.friendId});}
+  for(const o of candidates){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;const row={...o,item:d.tag.item,friendId:d.tag.friendId};if(owner){const it=byId(row.item);if(it?.any){if(playerTributes<cap){out.push(row);playerTributes++;}else truncated=true;continue;}if(it&&BigInt(row.amount)>=price(it,18)&&!purchases.has(it.id)){purchases.add(it.id);out.push(row);}continue;}if(out.length===cap){truncated=true;break;}out.push(row);}
   return {block:at,burns:out,scanned:byTx.size,truncated};
  }
  // Unlocked items: a tagged burn of at least the item's price.

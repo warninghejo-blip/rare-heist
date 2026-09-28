@@ -1,5 +1,4 @@
-// Astra's pending/account-change/Tribute browser probes, adapted to this worktree.
-// Run after `node build.mjs`: node tests/burn-pending-browser.mjs
+// D3′: a paid cosmetic remains unlocked after 200 newer tagged Tribute burns. Run after `node build.mjs`.
 import {chromium} from 'playwright';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
@@ -93,79 +92,25 @@ async function begin(p,item='lilac'){
 async function sentCount(p){return p.evaluate(()=>globalThis.__txs?.length||0);}
 async function readSave(p){return p.evaluate(()=>{for(let i=0;i<localStorage.length;i++){const value=localStorage.getItem(localStorage.key(i));try{const data=JSON.parse(value);if(data?.live)return data;}catch{}}return null;});}
 try{
- // B1: closing CANCEL and reopening the dialog cannot submit another transaction.
- {
-  const {p,ctx}=await setup();await begin(p);await p.locator('#burnCancel').click();
-  await p.locator('[data-burn="lilac"]').click();await p.waitForTimeout(150);
-  const count=await sentCount(p),modalOpen=await p.locator('#modal').evaluate(e=>e.open),message=await p.locator('#toast').innerText();
-  check('pending → CANCEL → reopen is blocked before a second confirmation',count===1&&!modalOpen&&/Pending transaction/.test(message),'eth_sendTransaction count='+count+'; modalOpen='+modalOpen+'; toast='+message);
-  await ctx.close();
- }
- // B1: after 180 s the UI keeps the hash, offers CHECK AGAIN, and never retries by sending.
- {
-  const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{const old=Date.now;Date.now=()=>old()+181000;});
-  await p.waitForFunction(()=>/pending transaction|not confirmed/i.test(document.getElementById('burnStatus')?.textContent||''),null,{timeout:5000});
-  const hash=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending?.tx||'');
-  check('timeout preserves the pending hash in localStorage',/^0x[0-9a-f]{64}$/.test(hash),hash||'no hash');
-  check('timeout UI shows the full hash', !!hash&&(await p.locator('#burnStatus').innerText()).includes(hash),await p.locator('#burnStatus').innerText());
-  check('timeout UI offers CHECK AGAIN',await p.locator('#burnCheck').isVisible());
-  await p.locator('#burnGo').click();await p.waitForTimeout(200);
-  check('timeout retry does not send a second transaction',(await sentCount(p))===1,'eth_sendTransaction count='+await sentCount(p));
-  await p.locator('#burnCancel').click();await p.evaluate(()=>localStorage.setItem('__burnProbeReceiptHashes','[]'));await p.reload();await p.locator('nav button[data-route="studio"]').click();await p.waitForTimeout(300);if(await p.locator('[data-mode="live"]').count())await p.locator('[data-mode="live"]').click();await p.waitForTimeout(300);
-  const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending?.tx||'');
-  const receiptHashes=await p.evaluate(()=>JSON.parse(localStorage.getItem('__burnProbeReceiptHashes')||'[]'));
-  check('pending hash survives reload',restored===hash,restored||'no hash');
-  check('reload checks the stored transaction receipt by hash',receiptHashes.includes(hash),'receipt checks='+receiptHashes.length);
-  check('reload shows a CHECK AGAIN control',await p.locator('#liveCheck').isVisible());
-  if(await p.locator('#forgetPending').count()){
-   await p.locator('#forgetPending').click();const text=await p.locator('#dialogContent').innerText();
-   check('forget requires a warning and explicit confirmation',text.includes('still goes through')&&await p.locator('#forgetGo').isDisabled());
-   await p.locator('#forgetAgree').check();await p.locator('#forgetGo').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null,null,{timeout:3000});
-   check('confirmed forget clears pending state',!(await p.locator('#liveCheck').count()));
-  }else check('forget requires a warning and explicit confirmation',false,'no pending transaction UI after reload');
-  await ctx.close();
- }
- // D2: account change during receipt wait still records the original sender.
- {
-  const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{window.__emit('accountsChanged');localStorage.setItem('__burnProbeHoldReceipt','false');});
-  await p.waitForFunction(()=>{try{return JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns.length>0;}catch{return false;}},null,{timeout:6000});
-  const saved=await readSave(p),from=saved?.live?.burns?.[0]?.from;
-  check('accountsChanged preserves the transaction sender',from===ACCOUNT.toLowerCase(),JSON.stringify(saved?.live?.burns?.[0]||null));
-  await ctx.close();
- }
- // Revert/failed receipt releases the lock with a message and no unlock record.
- {
-  const {p,ctx}=await setup();await begin(p);await p.evaluate(()=>{localStorage.setItem('__burnProbeHoldReceipt','false');localStorage.setItem('__burnProbeFailReceipt','true');});
-  await p.locator('#burnCheck').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.pending===null,null,{timeout:3000});
-  const saved=await readSave(p),text=await p.locator('#toast').innerText();
-  check('failed receipt clears pending and reports no burn',saved?.live?.pending===null&&text.includes('failed on chain'),text);
-  check('failed receipt creates no unlock record',(saved?.live?.burns?.length||0)===0,'burns='+JSON.stringify(saved?.live?.burns||[]));
-  await ctx.close();
- }
  // D3: the UI restore uses topic1=player before limiting, not the global Hall slice.
  {
   const {p,ctx}=await setup();
   const tx=await p.evaluate(()=>{
    const w=v=>BigInt(v).toString(16).padStart(64,'0'),P='0x1111111111111111111111111111111111111111',Q='0x2222222222222222222222222222222222222222',DEAD='0x000000000000000000000000000000000000dead',TOKEN='0x0779369854d3ecdea927206718ffd7730c67b71f',E=10n**18n;
    const rows=[{hash:'0x'+w(1),from:P,to:TOKEN,dest:DEAD,amount:String(10n*E),block:'0x1',input:HeistBurn.calldata(10n*E,'lilac','7730')}];
-   for(let i=0;i<200;i++){const amount=E;rows.push({hash:'0x'+w(i+2),from:Q,to:TOKEN,dest:DEAD,amount:String(amount),block:'0x'+BigInt(i+2).toString(16),input:'0xa9059cbb'+w(DEAD)+w(amount)});}
+   for(let i=0;i<200;i++){const amount=E;rows.push({hash:'0x'+w(i+2),from:P,to:TOKEN,dest:DEAD,amount:String(amount),block:'0x'+BigInt(i+2).toString(16),input:HeistBurn.calldata(amount,'ash','7730')});}
    localStorage.setItem('__burnProbeTxs',JSON.stringify(rows));return rows[0].hash;
   });
   await p.reload();await p.locator('nav button[data-route="studio"]').click();await p.waitForTimeout(300);if(await p.locator('[data-mode="live"]').count())await p.locator('[data-mode="live"]').click();
   await p.locator('#wallet').click();await p.locator('#walletConnect').click();await p.waitForTimeout(600);if(await p.locator('#closeDialog').count())await p.locator('#closeDialog').click();
   await p.locator('nav button[data-route="studio"]').click();await p.waitForTimeout(300);await p.locator('#lvRestore').click();
-  await p.waitForFunction(hash=>{try{return JSON.parse(localStorage.getItem('rh-cutaway-v1')).live.burns.some(x=>x.tx===hash);}catch{return false;}},tx,{timeout:5000}).catch(()=>{});
+  await p.waitForFunction(()=>/^Read at block /.test(document.getElementById('lvStatus')?.textContent||''),null,{timeout:10000});
   const saved=await readSave(p),count=saved?.live?.burns?.filter(x=>x.tx===tx).length||0;
-  check('RESTORE finds one old player purchase among 200 newer unrelated transfers',count===1,'restored count='+count);
-  await ctx.close();
- }
- // D4: UI blocks Tribute < 1 RF before opening the confirmation dialog.
- {
-  const {p,ctx}=await setup();await p.fill('#ashAmount','0.000001');await p.locator('[data-burn="ash"]').click();await p.waitForTimeout(150);
-  let count=await sentCount(p);if(await p.locator('#modal').evaluate(e=>e.open)){await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForTimeout(250);count=await sentCount(p);}
-  check('Tribute below 1 RF is refused before the wallet dialog',!(await p.locator('#modal').evaluate(e=>e.open))&&count===0,'modalOpen='+await p.locator('#modal').evaluate(e=>e.open)+' sends='+count);
+  const buyButtonCount=await p.locator('[data-burn="lilac"]').count();
+  check('D3′ restore retains the lilac purchase after 200 newer Tributes',count===1,'restored purchase count='+count+'; cache rows='+(saved?.live?.burns?.length||0));
+  check('D3′ restored lilac is unlocked and cannot be bought again',buyButtonCount===0,'lilac burn button count='+buyButtonCount);
   await ctx.close();
  }
 }finally{await b.close();}
-if(failures.length)throw new Error(failures.length+' burn regression probe(s) failed:\n'+failures.join('\n'));
-console.log('All pending and Tribute browser probes passed.');
+if(failures.length)throw new Error(failures.length+' restore-after-Tribute regression probe(s) failed:\n'+failures.join('\n'));
+console.log('All restore-after-Tribute probes passed.');
