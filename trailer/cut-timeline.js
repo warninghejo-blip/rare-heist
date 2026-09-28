@@ -1,0 +1,24 @@
+window.CUT={
+ "bpm":120,"fps":30,"total":87.5,
+ "shots":[
+  {"name":"cold","own":0,"a":0,"b":8},
+  {"name":"reveal","own":8,"a":8,"b":14},
+  {"name":"open","own":14,"a":14,"b":26.2},
+  {"name":"montage","own":26,"a":25.8,"b":32.2},
+  {"name":"heist","own":32,"a":31.8,"b":50.4},
+  {"name":"grid","own":50,"a":50,"b":56},
+  {"name":"lasttitle","own":56,"a":56,"b":58.3},
+  {"name":"editor","own":58,"a":57.8,"b":66},
+  {"name":"stakes","own":66,"a":65.7,"b":72.3},
+  {"name":"burn","own":72,"a":71.8,"b":78},
+  {"name":"title","own":78,"a":78,"b":87.5}
+ ],
+ "transitions":[
+  {"from":"open","to":"montage","t0":25.87,"t1":26.13,"kind":"whipL"},
+  {"from":"montage","to":"heist","t0":31.87,"t1":32.13,"kind":"whipR"},
+  {"from":"heist","to":"grid","t0":50.0,"t1":50.4,"kind":"burst"},
+  {"from":"lasttitle","to":"editor","t0":57.8,"t1":58.3,"kind":"band"},
+  {"from":"editor","to":"stakes","t0":65.7,"t1":66.0,"kind":"irisClose"},
+  {"from":"stakes","to":"burn","t0":71.8,"t1":72.3,"kind":"burnwipe"}
+ ]
+};
