@@ -308,7 +308,7 @@ S.burn={init(){this.cards=[0,1,2,3].map(i=>{const im=new Image();im.src='ui/shop
   embers(g,lt,{x0:0,x1:W,y0:H+20,n:50,seed:77,life:2.4,rise:420,cols:[SIG,HAZE,DUSK],from:-1});
   // 100% BURNED. lands 3.14, held to 9.0 ; address typed 4.2-5.25 ; NO ONE CONTROLS IT. NOBODY IS PAID. (6 words, 2.7 s) lands 5.9, held to 9.0
   if(lt>3.0){const n=Math.round(100*sat((lt-3.0)/.5)),kk=slamK(18,lt-3.0,1.5,.12);stxt(g,n+'% BURNED',W/2,H-400,kk,SIG,'center');}
-  if(lt>4.2){plate(g,120,H-234,W-240,210,INK,INK,0);typeTxt(g,'0x000000000000000000000000000000000000dEaD',W/2,H-210,7,PAPER,lt-4.2,40,{align:'center',shadow:true});}
+  if(lt>4.2){const ad='0x000000000000000000000000000000000000dEaD',pw=tw(ad,6)+2*56;plate(g,snap(W/2-pw/2),H-234,snap(pw),210,INK,INK,0);typeTxt(g,ad,W/2,H-206,6,PAPER,lt-4.2,40,{align:'center',shadow:true});}
   if(lt>5.3)typeTxt(g,'NO ONE CONTROLS IT',W/2,H-130,6,MIST,lt-5.3,60,{align:'center',cursor:false});if(lt>5.7)typeTxt(g,'NOBODY IS PAID',W/2,H-70,6,SIG,lt-5.7,60,{align:'center',cursor:false});}};
 // ---------- TITLE (8 s) ----------
 S.title={init(){this.L=skyLayers(31);},draw(g,t){const lt=t-this.own;drawSky(g,this.L,lt,1.2);const gy=this.L.gy;
