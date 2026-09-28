@@ -88,7 +88,7 @@ try{
  }
  {
   const {p,ctx}=await setup();await p.evaluate(()=>window.__holdBeforeSend=true);await beginWaiting(p);const firstCalls=await p.evaluate(()=>window.__sendCalls);
-  const orphan=await ctx.newPage();await orphan.goto('file:///'+html);await orphan.waitForTimeout(300);await p.close();
+  const orphan=await ctx.newPage();await orphan.goto('file:///'+html);await orphan.waitForTimeout(300);await p.close();await orphan.locator('#burnUnknownRelease').waitFor({state:'visible'});
   const panel=orphan.locator('#burnUnknownPanel'),panelVisible=await panel.count()>0&&await panel.isVisible();
   check('orphaned owner lock is available in another tab',panelVisible&&await orphan.locator('#burnUnknownRestore').isVisible()&&await orphan.locator('#burnUnknownRelease').isVisible(),panelVisible?await panel.innerText():'unknown-outcome panel missing');
   if(panelVisible){

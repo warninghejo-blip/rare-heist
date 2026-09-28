@@ -70,7 +70,7 @@ try{
   const state=await second.evaluate(()=>({sent:window.__txs?.length||0,toast:document.getElementById('toast').textContent,pending:JSON.parse(localStorage.getItem('rh-live-pending-v1'))}));
   const firstSends=await p.evaluate(()=>window.__txs?.length||0);
   check('B1′ a second window cannot send while the first wallet request is unresolved',firstSends+state.sent===1,'combined eth_sendTransaction count='+(firstSends+state.sent));
-  check('B1′ the second window reads the shared hashless pending state as unknown',state.pending?.status==='awaiting-wallet'&&/We don't know if your wallet sent the burn/.test(state.toast)&&await second.locator('#burnUnknownPanel').isVisible(),state.toast+' '+JSON.stringify(state.pending));
+  check('B1′ the second window waits while the first owns the Web Lock',state.pending?.status==='awaiting-wallet'&&/Waiting for your wallet in another tab/.test(state.toast)&&await second.locator('#burnUnknownPanel').isVisible()&&await second.locator('#burnUnknownRelease').count()===0,state.toast+' '+JSON.stringify(state.pending));
   await p.evaluate(()=>{window.__pending=false;window.__holdHash=false;window.__hashResolvers?.forEach(f=>f());});await p.waitForTimeout(350);await ctx.close();
  }
  {

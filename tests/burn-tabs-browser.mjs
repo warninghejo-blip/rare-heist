@@ -77,7 +77,7 @@ try{
   await until(()=>chain.sent.length>start);await pause(350);
   const a=await p.locator('#burnStatus').textContent(),z=await q.locator('#burnStatus').textContent(),calls=await Promise.all([p.evaluate(()=>window.__sendCalls),q.evaluate(()=>window.__sendCalls)]);
   ok(item+' simultaneous tabs send once',chain.sent.length===start+1,'sends='+String(chain.sent.length-start));
-  ok(item+' losing tab is refused before wallet',/Another tab is sending a burn/.test(a+' '+z)&&calls.filter(n=>n===0).length===1,'statuses='+a+' | '+z+' calls='+calls.join(','));
+  ok(item+' losing tab is refused before wallet',/Another tab is sending a burn|Waiting for your wallet in another tab/.test(a+' '+z)&&calls.filter(n=>n===0).length===1,'statuses='+a+' | '+z+' calls='+calls.join(','));
   chain.waitHash=false;chain.resolvers?.forEach(r=>r());chain.resolvers=[];await ctx.close();
  }
  {
