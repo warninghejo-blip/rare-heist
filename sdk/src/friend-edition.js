@@ -1,4 +1,4 @@
-/* Rare Heist: Friend Edition glue for FriendSDK v0.1.2. Inlined into heist.generated.js by
+/* Rare Heist: Friend Edition glue for FriendSDK v0.1.4. Inlined into heist.generated.js by
    ../../build-sdk.mjs and executed inside the SDK's sandboxed game frame.
    The SDK runtime owns wallet connection, Friend selection and the fresh ownership check; this
    code receives only the verified Friend's token ID, its public artwork and the pause state.
@@ -109,7 +109,7 @@ function createFriendEdition(root, options, markup) {
  }
 
  function about() {
-  ui.modal('SOURCES + LIMITS', '<p>Rare Heist: Friend Edition for FriendSDK v0.1.2. The SDK runtime connects the wallet, lists your hardwired Friends and verifies ownership on Robinhood Chain before this game loads.</p>'
+  ui.modal('SOURCES + LIMITS', '<p>Rare Heist: Friend Edition for FriendSDK v0.1.4. The SDK runtime connects the wallet, lists your hardwired Friends and verifies ownership on Robinhood Chain before this game loads.</p>'
    + '<p>Your Friend #' + escapeText(options.hero.tokenId) + ' walks every job in its original 16x16 one-bit frames, read from the Rare Friends artwork registry through the public Robinhood Chain RPC and drawn at whole-pixel scale without recolouring.</p>'
    + '<p>This edition contains the ' + ui.lessons.length + ' lessons and the ' + ui.jobs.length + ' solo jobs. It has no purchases, rewards, prizes or token actions: the SDK chance-game economy is required by the runtime but unused, and its ledger stays simulated. The browser sandbox has no storage, so progress resets when the frame reloads.</p>'
    + '<p>The shared Last Heist, workshop, creator studio and LIVE BURN live only in the standalone Rare Heist build.</p>');
