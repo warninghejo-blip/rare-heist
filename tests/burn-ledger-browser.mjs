@@ -35,7 +35,7 @@ const O1='0x5555555555555555555555555555555555555555',O2='0x66666666666666666666
 const chain={head:0x200,hold:false,sent:[],balances:{[ACCOUNT]:500n*E,[DEAD]:1000n*E},times:new Map(),txs:[]};
 function addTx(from,item,rf,friend,block,time){const amount=BigInt(Math.round(rf*1e6))*10n**12n,hash='0x'+w(0xa000+chain.txs.length);chain.txs.push({hash,from,amount,block:'0x'+block.toString(16),input:B.calldata(amount,item,friend,1)});chain.times.set(block,time);return hash;}
 // Earlier tagged burns by other players: one shop item and four with retired codes (bounty 0a, tribute 09). 115 RF in all.
-addTx(O1,'trail',25,'3412',0x100,T0/1000-3600);
+addTx(O1,'trail',500,'3412',0x100,T0/1000-3600);
 addTx(O2,'bounty',12,'7730',0x101,T0/1000-1);
 addTx(O2,'bounty',5,null,0x102,T0/1000);
 addTx(O1,'bounty',70,'3412',0x103,T0/1000+10);
@@ -86,10 +86,10 @@ try{
  // Studio LIVE: four items, then the ledger.
  await nav('studio');await p.locator('[data-mode="live"]').click();await p.waitForFunction(()=>(document.querySelectorAll('#ledgerList li').length||0)>=5,null,{timeout:8000}).catch(()=>{});await p.waitForTimeout(300);
  ok('shop: exactly The Black Archive, Golden Trail, Hatchwork and Signal Paper ('+(await shopIds())+')',(await shopIds())==='archive-pack,citrus,lilac,trail'&&(await p.locator('#ashAmount,#bountyAmount').count())===0);
- ok('shop order leads with The Black Archive for 50 RF',/THE BLACK ARCHIVE/.test(await txt('.cards.shop .itemcard'))&&/50 RF/.test(await txt('.cards.shop .itemcard')));
- ok('ledger total: RF burned through Rare Heist 115.00 RF ('+(await txt('.ledger-head'))+')',(await txt('#ledgerTotal'))==='115.00 RF'&&(await txt('#lvAll'))==='115.00 RF');
+ ok('shop order leads with The Black Archive for 2,500 RF',/THE BLACK ARCHIVE/.test(await txt('.cards.shop .itemcard'))&&/2,500 RF/.test(await txt('.cards.shop .itemcard')));
+ ok('ledger total: RF burned through Rare Heist 590.00 RF ('+(await txt('.ledger-head'))+')',(await txt('#ledgerTotal'))==='590.00 RF'&&(await txt('#lvAll'))==='590.00 RF');
  const rows=await p.locator('#ledgerList li').allInnerTexts();
- ok('ledger lists all five burns, newest block first: '+rows.map(r=>r.replace(/\s+/g,' ')).join(' | '),rows.length===5&&/^TRIBUTE 3\.00 RF/.test(rows[0].replace(/\s+/g,' '))&&/GOLDEN TRAIL 25\.00 RF FRIEND #3412/.test(rows[4].replace(/\s+/g,' ')));
+ ok('ledger lists all five burns, newest block first: '+rows.map(r=>r.replace(/\s+/g,' ')).join(' | '),rows.length===5&&/^TRIBUTE 3\.00 RF/.test(rows[0].replace(/\s+/g,' '))&&/GOLDEN TRAIL 500\.00 RF FRIEND #3412/.test(rows[4].replace(/\s+/g,' ')));
  ok('old burns with retired codes keep their names: VAULT BOUNTY and TRIBUTE',rows.filter(r=>/VAULT BOUNTY/.test(r)).length===3&&rows.filter(r=>/TRIBUTE/.test(r)).length===1);
  const hrefs=await p.locator('#ledgerList a.txlink').evaluateAll(a=>a.map(x=>x.href));
  ok('every ledger row links its tx on robinhoodchain.blockscout.com',hrefs.length===5&&hrefs.every(h=>/^https:\/\/robinhoodchain\.blockscout\.com\/tx\/0x[0-9a-f]{64}$/.test(h)),hrefs[0]);
@@ -99,22 +99,22 @@ try{
  // Last Heist: the stake round is the first tab and the default; no bounty.
  await nav('last');await p.waitForFunction(()=>!!document.querySelector('.roundlist button'),null,{timeout:8000}).catch(()=>{});await p.waitForTimeout(400);
  const first=p.locator('.roundlist button').first();
- ok('Last Heist: the first tab is the stake round and it is open by default ('+(await first.innerText())+')',/STAKE ROUND/.test(await first.innerText())&&(await first.getAttribute('class')||'').includes('active')&&(await p.locator('#stakePanel').count())===1);
+ ok('Last Heist: the first tab is the stake round and it is open by default ('+(await first.innerText())+')',/STREET STAKE 100 RF/.test(await first.innerText())&&(await first.getAttribute('class')||'').includes('active')&&(await p.locator('#stakePanel').count())===1);
  ok('Last Heist: no bounty panel, no BURN A BOUNTY, no ranks',await noRanks());
  await p.screenshot({path:path.join(shots,'last-heist-stake-first-1440.png'),fullPage:true});
  // One burn at a time, with a shop item.
  await nav('studio');await p.locator('[data-mode="live"]').click();await p.waitForTimeout(400);
  chain.hold=true;await p.locator('[data-burn="lilac"]').click();await p.waitForTimeout(200);
- ok('shop burn reaches the two-step confirmation',(await txt('#dialogTitle'))==='BURN REAL RF?'&&/HATCHWORK/.test(await txt('#dialogContent'))&&/for 10 RF/.test(await txt('#dialogContent')));
+ ok('shop burn reaches the two-step confirmation',(await txt('#dialogTitle'))==='BURN REAL RF?'&&/HATCHWORK/.test(await txt('#dialogContent'))&&/for 250 RF/.test(await txt('#dialogContent')));
  await p.locator('#burnAgree').check();await p.locator('#burnGo').click();await p.waitForFunction(()=>/Pending transaction/.test(document.getElementById('burnStatus')?.textContent||''),null,{timeout:6000}).catch(()=>{});
  const d=(chain.sent[0]?.data||'').toLowerCase();
- ok('one plain RF transfer to 0x…dEaD for 10 RF, tagged HATCHWORK (02) for Friend #3412',chain.sent.length===1&&chain.sent[0].to.toLowerCase()===TOKEN&&d.slice(0,74)==='0xa9059cbb'+w(DEAD)&&BigInt('0x'+d.slice(74,138))===10n*E&&d.slice(138,150)==='524853540102'&&BigInt('0x'+d.slice(154))===3412n&&d.length===202,d);
+ ok('one plain RF transfer to 0x…dEaD for 250 RF, tagged HATCHWORK (02) for Friend #3412',chain.sent.length===1&&chain.sent[0].to.toLowerCase()===TOKEN&&d.slice(0,74)==='0xa9059cbb'+w(DEAD)&&BigInt('0x'+d.slice(74,138))===250n*E&&d.slice(138,150)==='524853540102'&&BigInt('0x'+d.slice(154))===3412n&&d.length===202,d);
  await p.locator('#burnCancel').click();await p.waitForTimeout(150);await p.locator('[data-burn="citrus"]').click();await p.waitForTimeout(200);
  ok('pending burn: another item is refused without a sheet ('+(await txt('#toast'))+')',!(await modalOpen())&&/Pending transaction/.test(await txt('#toast'))&&chain.sent.length===1);
  await p.locator('[data-mode="live"]').click();await p.locator('#liveCheck').waitFor();ok('LIVE BURN shows the pending banner with CHECK AGAIN',(await p.locator('#liveCheck').count())===1&&/TRANSACTION PENDING/.test(await txt('#studioPage')));chain.hold=false;await p.locator('#liveCheck').click();await p.waitForFunction(()=>{try{return JSON.parse(localStorage.getItem('rh-live-pending-v1'))===null;}catch{return false;}},null,{timeout:6000}).catch(()=>{});
  ok('confirmed from its receipt: '+(await txt('#toast')),/HATCHWORK unlocked/.test(await txt('#toast')));
- await p.waitForFunction(()=>/125\.00 RF/.test(document.getElementById('ledgerTotal')?.textContent||''),null,{timeout:6000}).catch(()=>{});
- ok('ledger adds the new burn on top: total 125.00 RF ('+(await txt('#ledgerList li'))+')',(await txt('#ledgerTotal'))==='125.00 RF'&&/^HATCHWORK 10\.00 RF FRIEND #3412/.test(await txt('#ledgerList li')));
+ await p.waitForFunction(()=>/840\.00 RF/.test(document.getElementById('ledgerTotal')?.textContent||''),null,{timeout:6000}).catch(()=>{});
+ ok('ledger adds the new burn on top: total 840.00 RF ('+(await txt('#ledgerList li'))+')',(await txt('#ledgerTotal'))==='840.00 RF'&&/^HATCHWORK 250\.00 RF FRIEND #3412/.test(await txt('#ledgerList li')));
  ok('your receipts list the burn with its explorer link',/HATCHWORK/.test(await txt('.myburns'))&&(await p.locator('.myburns a.txlink').count())===1);
  // A legacy unknown-outcome lock from a retired Vault Bounty still loads and blocks every burn.
  await p.evaluate(()=>{const pending={status:'unknown-outcome',ownerId:'other-tab',walletRequested:true,from:'0x1111111111111111111111111111111111111111',item:'bounty',amount:'2',amountUnits:'2000000000000000000',friendId:'3412',sentAt:Date.now(),sentBlock:'0x100',nonce:77,decimals:18};localStorage.setItem('rh-live-pending-v1',JSON.stringify(pending));});
@@ -127,13 +127,13 @@ try{
  await p.evaluate(()=>localStorage.removeItem('rh-live-pending-v1'));await p.reload();await p.waitForTimeout(900);await p.evaluate(()=>document.getElementById('friendReveal')?.remove());
  await nav('studio');await p.locator('[data-mode="economy"]').click();await p.waitForFunction(()=>/RF/.test(document.getElementById('ecSupply')?.textContent||'')&&/Ledger check/.test(document.getElementById('ecStakes')?.textContent||''),null,{timeout:8000}).catch(()=>{});await p.waitForTimeout(600);
  const order=await p.evaluate(()=>[...document.querySelectorAll('#studioPage section')].map(s=>s.className.split(' ')[0]).join(','));
- ok('RF ECONOMY leads with stake rounds, then the roadmap, then the flow ('+order+')',/^stakehero,roadmap,econmap/.test(order));
+ ok('RF ECONOMY leads with the pots (Daily Heist and stake rounds), then the flow, the calculator and the roadmap ('+order+')',/^stakehero,econmap,calc,roadmap/.test(order)&&/DAILY HEIST/.test(await txt('.stakehero .pots'))&&/STAKE ROUNDS/.test(await txt('.stakehero .pots')));
  ok('stake headline: live pot, entrants, DEMO badge, burned so far ('+(await txt('.stakehero-grid'))+')',(await txt('#ecPot'))==='0'&&/0/.test(await txt('#ecEntrants'))&&(await txt('#ecStakeBurned'))==='0 DEMO RF'&&/DEMO, PLAY MONEY/.test(await txt('.stakehero-head')));
  ok('roadmap: six steps, step 1 marked as now, spec link, not deployed',(await p.locator('.roadsteps li').count())===6&&/YOU ARE HERE/.test(await txt('.roadsteps li.now'))&&/docs\/STAKES\.md$/.test(await p.locator('.roadmap a').getAttribute('href'))&&/Not deployed/.test(await txt('.roadmap')));
- ok('flow: a live SHOP pipe and a dashed STAKE ROUNDS pipe; no Tribute, bounty or workshop pipe',(await p.locator('.pipe.live',{hasText:'SHOP'}).count())===1&&(await p.locator('.pipe.sim',{hasText:'STAKE ROUNDS'}).count())===1&&(await p.locator('.pipe').count())===2&&!/TRIBUTE|BOUNTY|WORKSHOP/.test(await txt('.econflow')));
- ok('economy counters: supply 1,000,000,000.00 RF, dEaD 1,010.00 RF, burned in the shop 125.00 RF ('+[await txt('#ecSupply'),await txt('#ecDead'),await txt('#ecAll')].join(' / ')+')',(await txt('#ecSupply'))==='1,000,000,000.00 RF'&&(await txt('#ecDead'))==='1,010.00 RF'&&(await txt('#ecAll'))==='125.00 RF');
- ok('calculator defaults: 27,000 RF a month = 21,600 from stakes + 5,400 from the shop; 0.0027% of RF outside dEaD, 27x dEaD ('+[await txt('#calcMonth'),await txt('#calcStakes'),await txt('#calcItems'),await txt('#calcShare'),await txt('#calcDead')].join(' / ')+')',(await txt('#calcMonth'))==='27,000 RF'&&(await txt('#calcStakes'))==='21,600 RF'&&(await txt('#calcItems'))==='5,400 RF'&&(await txt('#calcShare'))==='0.0027%'&&(await txt('#calcDead'))==='27×');
- await p.fill('#calc-players','1000');ok('calculator is editable: 1,000 players a day → 39,600 RF a month',(await txt('#calcMonth'))==='39,600 RF');
+ ok('flow: a live SHOP pipe with current prices and dashed DAILY HEIST and STAKE ROUNDS pipes; no Tribute, bounty or workshop pipe',(await p.locator('.pipe.live',{hasText:'SHOP'}).count())===1&&/The Black Archive 2,500/.test(await txt('.pipe.live'))&&(await p.locator('.pipe.sim',{hasText:'DAILY HEIST'}).count())===1&&(await p.locator('.pipe.sim',{hasText:'STAKE ROUNDS'}).count())===1&&(await p.locator('.pipe').count())===3&&!/TRIBUTE|BOUNTY|WORKSHOP/.test(await txt('.econflow')));
+ ok('economy counters: supply 1,000,000,000.00 RF, dEaD 1,250.00 RF, burned in the shop 840.00 RF ('+[await txt('#ecSupply'),await txt('#ecDead'),await txt('#ecAll')].join(' / ')+')',(await txt('#ecSupply'))==='1,000,000,000.00 RF'&&(await txt('#ecDead'))==='1,250.00 RF'&&(await txt('#ecAll'))==='840.00 RF');
+ ok('calculator defaults: 59,400 RF a month = 22,500 Daily + 14,400 stakes + 22,500 shop; 0.0059% of RF outside dEaD, 48x dEaD ('+[await txt('#calcMonth'),await txt('#calcDaily'),await txt('#calcStakes'),await txt('#calcItems'),await txt('#calcShare'),await txt('#calcDead')].join(' / ')+')',(await txt('#calcMonth'))==='59,400 RF'&&(await txt('#calcDaily'))==='22,500 RF'&&(await txt('#calcStakes'))==='14,400 RF'&&(await txt('#calcItems'))==='22,500 RF'&&(await txt('#calcShare'))==='0.0059%'&&(await txt('#calcDead'))==='48×');
+ await p.fill('#calc-players','1000');ok('calculator is editable: 1,000 shop players a day → 111,900 RF a month',(await txt('#calcMonth'))==='111,900 RF');
  ok('no bounty or tribute term in the calculator, labelled as a projection',!/bounty|tribute/i.test(await txt('.calc'))&&/PROJECTION, NOT A RESULT/.test(await txt('.calchead')));
  await p.fill('#calc-players','300');await p.screenshot({path:path.join(shots,'rf-economy-1440.png'),fullPage:true});
  // Phone.

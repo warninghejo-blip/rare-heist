@@ -4,9 +4,9 @@
    Parallax: sky (fixed), far skyline (0.18), near skyline (0.42), street (1.0). */
 (function(root){'use strict';const P=root.HeistPixels;
  const districts=[
- {id:'foundry',name:'Foundry Row',width:1900,doors:[['academy','ACADEMY','Learn movement, ladders and extraction',180],['solo','VAULT OFFICE','Twelve tactical buildings. Pick your next job.',440],['last','LAST HEIST','One shared vault. One last successful raider.',700],['workshop','WORKSHOP','Build a floor plan and prove your escape',960],['replays','REPLAY OFFICE','Review your routes. Find the missed beat.',1220],['studio','DEMO STUDIO','Creator packs. Simulated RF only.',1480],['canal','CANAL WALK','Cross to the pump station',1750]]},
- {id:'canal',name:'Canal Walk',width:1380,doors:[['foundry','FOUNDRY ROW','Return to the main street',160],['annex-01','PUMP HOUSE','Light switch. Relay. One clean escape.',470],['replays','REPLAY OFFICE','Replay your field work',800],['roof','ROOF ACCESS','Climb to the observatory district',1150]]},
- {id:'roof',name:'Rooftop Line',width:1380,doors:[['canal','CANAL WALK','Go back down to the waterfront',160],['annex-02','OBSERVATORY','Two credentials and a cycling blackout',470],['daily','DAILY DISPATCH','Same UTC-day challenge. No EMP. One detection ends it.',800],['workshop','WORKSHOP','Design your next cutaway vault',1150]]}
+ {id:'foundry',name:'Foundry Row',width:2160,doors:[['academy','ACADEMY','Five one-minute lessons',180],['solo','VAULT OFFICE','14 solo jobs, all open',440],['daily','DAILY HEIST','One vault a day. Fewest turns wins',700],['last','LAST HEIST','One shared vault. Hold it to win',960],['workshop','WORKSHOP','Build a building, prove it',1220],['replays','REPLAY OFFICE','Watch your runs back',1480],['studio','STUDIO','Shop and RF economy',1740],['canal','CANAL WALK','To the pump house',2010]]},
+ {id:'canal',name:'Canal Walk',width:1380,doors:[['foundry','FOUNDRY ROW','Back to the main street',160],['annex-01','PUMP HOUSE','Light switch, relay, one way out',470],['replays','REPLAY OFFICE','Watch your runs back',800],['roof','ROOF ACCESS','Up to the observatory',1150]]},
+ {id:'roof',name:'Rooftop Line',width:1380,doors:[['canal','CANAL WALK','Down to the waterfront',160],['annex-02','OBSERVATORY','Two cards and a rolling blackout',470],['daily','DAILY HEIST','One vault a day. Fewest turns wins',800],['workshop','WORKSHOP','Build a building, prove it',1150]]}
  ];
  const {INK,PAPER,SIG}=P,{night:NIGHT,dusk:DUSK,haze:HAZE,mist:MIST,wall:WALL}=P.PAL,F=0.5;
  const rect=P.rect,dither=P.dither,hash=P.hash,text=P.text;

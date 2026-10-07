@@ -18,3 +18,11 @@ for(const l of levels)test('stored solution for '+l.id+' wins cleanly with the c
 test('the Last Heist opening vault route passes the server rules (HOUSE RUN)',()=>{
  assert.doesNotThrow(()=>A.validateLog(A.seed(),SOL['last-cutaway'].actions));
 });
+// Daily Heist: every plan in src/daily-levels.js has a stored route in src/daily-solutions.js that wins cleanly.
+test('every Daily Heist plan has a stored clean winning route',()=>{
+ const daily=require('../src/daily-levels.js'),DSOL=require('../src/daily-solutions.js');
+ assert.deepEqual(Object.keys(DSOL).sort(),daily.map(l=>l.id).sort(),'run node scripts/gen-solutions.mjs');
+ for(const l of daily){const s=DSOL[l.id],q=E.replay(C.normalize(l),s.actions,'ghost');
+  assert.equal(q.ok,true,l.id+' route no longer wins');assert.equal(q.state.empUsed,0,l.id);assert.equal(q.state.alarms,0,l.id);
+  assert.equal(s.turns,s.actions.length,l.id);assert.ok(s.turns>=l.best&&s.turns<=l.par,l.id+' route between best and PAR');}
+});

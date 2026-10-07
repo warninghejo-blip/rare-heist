@@ -8,12 +8,15 @@
  'use strict';
  const DEAD='0x000000000000000000000000000000000000dead';
  const TRANSFER_SELECTOR='a9059cbb',MAGIC='52485354',VERSION='01'; // 'RHST' v1
+ // Public RPC eth_blockNumber, 2026-10-07T01:59:51.942Z. Earlier paid unlocks keep their price.
+ const PRICE_CUTOFF=82106237;
+ const prices=(old,rf)=>Object.freeze([Object.freeze({fromBlock:0,rf:old}),Object.freeze({fromBlock:PRICE_CUTOFF,rf})]);
  // Prices in whole RF. code = the byte stored in the calldata tag.
  const ITEMS=Object.freeze([
-  Object.freeze({id:'trail',code:1,rf:25,kind:'trail',name:'GOLDEN TRAIL',text:'Your Friend leaves lime footprints on every floor. Pixels of the Friend itself never change.'}),
-  Object.freeze({id:'lilac',code:2,rf:10,kind:'theme',name:'HATCHWORK',text:'Dense black-and-white paper texture around the interface.'}),
-  Object.freeze({id:'citrus',code:3,rf:10,kind:'theme',name:'SIGNAL PAPER',text:'Sparse lime stipple around the interface.'}),
-  Object.freeze({id:'archive-pack',code:4,rf:50,kind:'pack',name:'THE BLACK ARCHIVE',text:'Three extra heists. Harder, not stronger: no gear, no stat or score boost.'})
+  Object.freeze({id:'trail',code:1,rf:500,prices:prices(25,500),kind:'trail',name:'GOLDEN TRAIL',text:'Your Friend leaves lime footprints on every floor. Pixels of the Friend itself never change.'}),
+  Object.freeze({id:'lilac',code:2,rf:250,prices:prices(10,250),kind:'theme',name:'HATCHWORK',text:'Dense black-and-white paper texture around the interface.'}),
+  Object.freeze({id:'citrus',code:3,rf:250,prices:prices(10,250),kind:'theme',name:'SIGNAL PAPER',text:'Sparse lime stipple around the interface.'}),
+  Object.freeze({id:'archive-pack',code:4,rf:2500,prices:prices(50,2500),kind:'pack',name:'THE BLACK ARCHIVE',text:'Three extra heists. Harder, not stronger: no gear, no stat or score boost.'})
  ]);
  // Retired any-amount items. No longer sold, but their tag codes still decode, so any past burn with code 9 or 10
  // still shows in history, RESTORE and a pending lock exactly as before. Codes are never reused.
@@ -32,6 +35,12 @@
  function calldata(amount,item,friendId,nonce=0){if(typeof amount!=='bigint'||amount<=0n)throw Error('Invalid amount');return '0x'+TRANSFER_SELECTOR+hex(DEAD)+hex(amount)+tag(item,friendId,nonce);}
  function parseInput(input){if(typeof input!=='string')return null;const d=input.toLowerCase().replace(/^0x/,'');if(d.length<8+128||d.slice(0,8)!==TRANSFER_SELECTOR)return null;if('0x'+d.slice(8+24,8+64)!==DEAD)return null;return {amount:BigInt('0x'+d.slice(72,136)),tag:d.length>=200?readTag(d.slice(136,200)):null};}
  function price(item,dec){const it=typeof item==='string'?byId(item):item;return BigInt(it.rf)*10n**BigInt(dec);}
+ // A burn counts at the price in force at its block; with no usable block, only the current price counts.
+ // New transfers always use price(), which is the current advertised price.
+ function priceAt(item,dec,block){const it=typeof item==='string'?byId(item):item;if(!it.prices)return price(it,dec);
+  let at=null;try{at=BigInt(block);}catch{}if(at===null||at<0n)return price(it,dec);let rf=it.prices[0].rf;for(const p of it.prices)if(at>=BigInt(p.fromBlock))rf=p.rf;
+  return BigInt(rf)*10n**BigInt(dec);
+ }
  // A receipt proves the burn only if the RF contract logged Transfer(player → dEaD, ≥ amount).
  function checkReceipt(r,{from,min=0n}){
   if(!r||typeof r!=='object')throw Error('No receipt yet');
@@ -78,14 +87,14 @@
   const cap=Math.max(1,Math.min(5000,Math.floor(Number(limit))||200)),list=[...byTx.values()].sort((a,b)=>BigInt(a.block)>BigInt(b.block)?-1:BigInt(a.block)<BigInt(b.block)?1:0),candidates=owner?list:list.slice(0,cap),out=[],purchases=new Set();let truncated=!owner&&list.length>cap,playerTributes=0;
   // Player restore keeps every paid cosmetic unlock, while bounding only retired any-amount (Tribute, Bounty) receipts.
   // The global ledger intentionally scans a marked latest-N window of transfers.
-  for(const o of candidates){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;const row={...o,item:d.tag.item,friendId:d.tag.friendId};if(owner){const it=byId(row.item);if(it?.any){if(playerTributes<cap){out.push(row);playerTributes++;}else truncated=true;continue;}if(it&&BigInt(row.amount)>=price(it,18)&&!purchases.has(it.id)){purchases.add(it.id);out.push(row);}continue;}if(out.length===cap){truncated=true;break;}out.push(row);}
+  for(const o of candidates){const t=await req('eth_getTransactionByHash',[o.tx]).catch(()=>null);const d=t&&String(t.to).toLowerCase()===I.RF_TOKEN.toLowerCase()?parseInput(t.input):null;if(!d?.tag||String(t.from).toLowerCase()!==o.from)continue;const row={...o,item:d.tag.item,friendId:d.tag.friendId};if(owner){const it=byId(row.item);if(it?.any){if(playerTributes<cap){out.push(row);playerTributes++;}else truncated=true;continue;}if(it&&BigInt(row.amount)>=priceAt(it,18,row.block)&&!purchases.has(it.id)){purchases.add(it.id);out.push(row);}continue;}if(out.length===cap){truncated=true;break;}out.push(row);}
   return {block:at,burns:out,scanned:byTx.size,truncated};
  }
- // Unlocked items: a tagged burn of at least the item's price.
- function unlocked(burns,dec=18){const set=new Set();for(const b of burns||[]){const it=byId(b.item);if(it&&!it.any&&BigInt(b.amount)>=price(it,dec))set.add(it.id);}return [...set];}
+ // Unlocked items: a tagged burn meeting the price at its block, including legacy purchases.
+ function unlocked(burns,dec=18){const set=new Set();for(const b of burns||[]){const it=byId(b.item);if(it&&!it.any&&BigInt(b.amount)>=priceAt(it,dec,b.block||b.blockNumber||b.receipt?.blockNumber))set.add(it.id);}return [...set];}
  // BURN LEDGER: every tagged Rare Heist burn once (by tx), newest block first, and their total. Display only.
  function ledger(burns){const seen=new Set(),rows=[];let total=0n;for(const b of burns||[]){const k=String(b?.tx||'').toLowerCase();if(!b||!k||seen.has(k))continue;seen.add(k);rows.push(b);total+=BigInt(b.amount);}
   const at=b=>{try{return BigInt(b.block);}catch{return -1n;}};rows.sort((a,b)=>at(b)>at(a)?1:at(b)<at(a)?-1:0);return {total,rows};}
  async function deadBalance(p){const call=caller((m,a,t)=>I.request(p,m,a,t)),dec=await decimals(call);return {decimals:dec,amount:I.words(await call(I.RF_TOKEN,I.SELECTORS.balance,[BigInt(DEAD)]),1)[0]};}
- return Object.freeze({DEAD,ITEMS,RETIRED,byId,forSale,units,newNonce,tag,readTag,calldata,parseInput,price,checkReceipt,burn,history,unlocked,ledger,deadBalance});
+ return Object.freeze({DEAD,PRICE_CUTOFF,ITEMS,RETIRED,byId,forSale,units,newNonce,tag,readTag,calldata,parseInput,price,priceAt,checkReceipt,burn,history,unlocked,ledger,deadBalance});
 });

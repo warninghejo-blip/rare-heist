@@ -1,0 +1,22 @@
+{
+  "name": "rare-heist-platform",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.mjs",
+    "build": "node generate.mjs && node run.mjs build",
+    "dev": "node generate.mjs && node run.mjs dev",
+    "check:games": "node generate.mjs && friendsdk check .",
+    "check:browser": "node browser-check.mjs"
+  },
+  "dependencies": {
+    "@rarefriends/friendsdk": "github:spokesz/friendsdk#885772d160f6ff1ff83350ee9603ac5c236f3580",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "esbuild": "0.28.2",
+    "viem": "2.56.3"
+  },
+  "devDependencies": { "playwright": "1.63.0" },
+  "engines": { "node": ">=22" }
+}

@@ -227,7 +227,7 @@ function analyse(raw) {
     out.devices = {};
     for (const p of deviceProbes(raw)) { const r = bfs(p.make(raw)); out.devices[p.name] = r.ok ? out.opt - r.turns : '?'; }
   }
-  out.headline = (HEADLINE[raw.id] || []).flatMap(n => n === 'each-crate' ? Object.keys(out.probes).filter(k => k.startsWith('crate@')).map(k => ({ n: k, v: out.probes[k] })) : [{ n, v: out.probes[n] || 'missing' }]);
+  out.headline = (HEADLINE[raw.id] || raw.headline || []).flatMap(n => n === 'each-crate' ? Object.keys(out.probes).filter(k => k.startsWith('crate@')).map(k => ({ n: k, v: out.probes[k] })) : [{ n, v: out.probes[n] || 'missing' }]);
   out.headlineOk = out.headline.every(h => GOOD.test(h.v));
   out.ms = Date.now() - t0;
   return out;

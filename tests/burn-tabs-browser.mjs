@@ -23,7 +23,7 @@ const END=sprint.finishedAt;if(END%1000)throw Error('round end is not a whole se
 const w=v=>BigInt(v).toString(16).padStart(64,'0'),E=10n**18n,ACCOUNT='0x1111111111111111111111111111111111111111';
 const TOKEN='0x0779369854d3ecdea927206718ffd7730c67b71f',DEAD='0x000000000000000000000000000000000000dead',TRANSFER='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',G='0x14c49e6118f46525de9ab41a51cbaa3c6ebf181d',R='0x246e3e9730a7eade94c79be0fd78d210f89aeb8d';
 const O1='0x5555555555555555555555555555555555555555',O2='0x6666666666666666666666666666666666666666',O3='0x7777777777777777777777777777777777777777';
-const chain={head:0x200,hold:false,sent:[],balances:{[ACCOUNT]:500n*E,[DEAD]:1000n*E},times:new Map(),txs:[]};
+const chain={head:0x200,hold:false,sent:[],balances:{[ACCOUNT]:10000n*E,[DEAD]:1000n*E},times:new Map(),txs:[]};
 function addTx(from,item,rf,friend,block,time){const amount=BigInt(Math.round(rf*1e6))*10n**12n,hash='0x'+w(0xa000+chain.txs.length);chain.txs.push({hash,from,amount,block:'0x'+block.toString(16),input:B.calldata(amount,item,friend,1)});chain.times.set(block,time);return hash;}
 // Earlier tagged burns by other players, including the retired Vault Bounty code (10): they must still decode.
 addTx(O1,'trail',25,'3412',0x100,T0/1000-3600);

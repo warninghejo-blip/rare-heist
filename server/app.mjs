@@ -26,7 +26,7 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
  function hostOK(req){const host=req.headers.host||'';if(publicOrigin)return host===new URL(publicOrigin).host;
   return /^(localhost|127\.0\.0\.1|\[::1\])(?::\d{1,5})?$/.test(host);
  }
- function json(res,status,value,extra={}){res.writeHead(status,{...security,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...extra});res.end(JSON.stringify(value));}
+ function json(res,status,value,extra={}){res.writeHead(status,{...security,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...extra});if(typeof value?.message==='string')value={...value,message:value.message.replace(/\.$/,'')};res.end(JSON.stringify(value));}
  function checkOrigin(req){const origin=req.headers.origin;const expected=publicOrigin||`http://${req.headers.host}`;if(!origin||origin!==expected){const e=Error('Same-origin requests required');e.code='ORIGIN';throw e;}if(req.headers['sec-fetch-site']==='cross-site'){const e=Error('Cross-site requests rejected');e.code='ORIGIN';throw e;}}
  async function body(req){if(!(req.headers['content-type']||'').startsWith('application/json')){const e=Error('JSON content type required');e.code='CONTENT_TYPE';throw e;}let n=0,chunks=[];for await(const c of req){n+=c.length;if(n>65536){const e=Error('Request too large');e.code='BODY_SIZE';throw e;}chunks.push(c);}try{const b=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!b||typeof b!=='object'||Array.isArray(b))throw Error();return b;}catch{const e=Error('Invalid JSON');e.code='JSON';throw e;}}
  function token(req){return req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('rh_session='))?.slice(11);}
@@ -35,6 +35,7 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
   try{
    if(!hostOK(req))return json(res,421,{error:'HOST',message:'Use the configured site origin.'});
    const u=new URL(req.url,'http://localhost'),p=u.pathname;
+   store.daily.prepare();
    if(p==='/healthz'){return json(res,200,{ok:true,version:'1.9.0',storage:'sqlite',funds:'none',stakes:'demo',build:buildId});}
    if(!p.startsWith('/api/')){
     if(!['GET','HEAD'].includes(req.method))return json(res,405,{error:'METHOD'});
@@ -54,6 +55,13 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
    }
    const s=authenticate(req),b=req.method==='POST'?await body(req):null;
    if(limited(req.method+':session:'+s.player,req.method==='POST'?180:900))return json(res,429,{error:'RATE_LIMIT',message:'Please wait before retrying.'},{'Retry-After':'60'});
+   if(p==='/api/daily'&&req.method==='GET')return json(res,200,store.daily.state(s.player));
+   if(p==='/api/daily/enter'&&req.method==='POST')return json(res,200,store.daily.enter(s.player,b.heroId));
+   if(p==='/api/daily/attempt'&&req.method==='POST')return json(res,200,store.daily.extra(s.player));
+   if(p==='/api/daily/submit'&&req.method==='POST')return json(res,200,store.daily.submit(s.player,b.actions));
+   if(p==='/api/daily/history'&&req.method==='GET')return json(res,200,store.daily.history(u.searchParams.get('limit')??7));
+   const dailyReplay=p.match(/^\/api\/daily\/replay\/(\d{4}-\d{2}-\d{2})\/([1-9][0-9]*)$/);
+   if(dailyReplay&&req.method==='GET')return json(res,200,store.daily.replay(dailyReplay[1],Number(dailyReplay[2])));
    if(p==='/api/economy'&&req.method==='GET')return json(res,200,store.economy());
    const resume=p.match(/^\/api\/attempts\/([a-f0-9]{32})$/);
    if(resume&&req.method==='GET')return json(res,200,store.attempt(resume[1],s.player));

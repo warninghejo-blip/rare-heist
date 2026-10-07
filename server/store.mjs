@@ -3,6 +3,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {DemoFunding} from './funding.mjs';
 import {DemoStakes} from './stakes.mjs';
+import {DailyHeist} from './daily.mjs';
 const require=createRequire(import.meta.url),A=require('../src/last-heist.js'),{STAKES}=require('../src/economy.js');
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const uid=()=>randomBytes(16).toString('hex');
@@ -19,11 +20,12 @@ export class ArenaStore{
    CREATE INDEX IF NOT EXISTS attempts_round ON attempts(round_id);`);
   const cols=this.db.prepare('PRAGMA table_info(attempts)').all().map(x=>x.name);if(!cols.includes('actions'))this.db.exec('ALTER TABLE attempts ADD COLUMN actions TEXT');if(!cols.includes('hero'))this.db.exec("ALTER TABLE attempts ADD COLUMN hero TEXT DEFAULT '3412'");
   this.funding=new DemoFunding(this.db);this.stakes=new DemoStakes(this.db,{clock:this.clock});
+  this.daily=new DailyHeist(this);this.stakes.daily=this.daily;this.daily.prepare();
   if(seed&&!this.db.prepare('SELECT id FROM rounds LIMIT 1').get())this.tx(()=>{
    for(const profile of ['sprint','standard']){const r=A.createRound('opening-'+profile,this.clock(),profile,{waiting:true});this.funding.reserve(r);this.put(r);}
   });
   // DEMO stake round (added in 1.10). Also seeded once on an existing database: the upgrade path of docs/STAKES.md.
-  if(seed)this.tx(()=>{if(!this.db.prepare("SELECT id FROM rounds WHERE id='opening-stakes'").get())this.put(A.createRound('opening-stakes',this.clock(),'standard',{waiting:true,stake:STAKES.amount}));});
+  if(seed)this.tx(()=>{if(!this.db.prepare("SELECT id FROM rounds WHERE id='opening-stakes'").get()){const r=A.createRound('opening-stakes',this.clock(),'standard',{waiting:true,stake:STAKES.amount});r.stakeRules={winnerPct:80,burnPct:10,rewardsPct:10};this.put(r);}});
  }
  tx(fn){this.db.exec('BEGIN IMMEDIATE');try{const v=fn();this.db.exec('COMMIT');return v;}catch(e){this.db.exec('ROLLBACK');throw e;}}
  put(r){this.db.prepare('INSERT INTO rounds(id,state) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state').run(r.id,JSON.stringify(r));return r;}
@@ -49,12 +51,12 @@ export class ArenaStore{
  round(id,me){return this.tx(()=>this.view(this.current(id),me));}
  create(player,profile,stake=false){return this.tx(()=>{
   if(typeof profile!=='string'||!Object.hasOwn(A.PROFILES,profile))error('PROFILE','Unknown profile');
-  if(typeof stake!=='boolean')error('STAKE','stake must be true or false');if(stake&&profile!=='standard')error('STAKE_PROFILE','Stake rounds use the STANDARD length');
+  if(typeof stake!=='boolean'&&!STAKES.tiers.includes(stake))error('STAKE','Choose a stake of 100 or 1000 DEMO RF');if(stake&&profile!=='standard')error('STAKE_PROFILE','Stake rounds use the STANDARD length');
   const recent=this.db.prepare('SELECT id FROM rounds ORDER BY rowid DESC').all().map(r=>this.current(r.id));
   if(recent.length>=2000)error('ROUND_CAPACITY','This DEMO installation has reached its archive capacity. Existing awards are preserved');
   if(recent.some(r=>r.creator===player&&r.createdAt>this.clock()-60000))error('CREATE_COOLDOWN','Wait one minute before creating another round');
   if(recent.filter(r=>A.advance(r,this.clock()).phase!=='finished').length>=8)error('ROUND_LIMIT','Finish an existing round first');
-  const r=A.createRound(uid().slice(0,12),this.clock(),profile,{waiting:true,stake:stake?STAKES.amount:0});r.creator=player;this.funding.reserve(r);this.put(r);return this.view(r,player);
+  const r=A.createRound(uid().slice(0,12),this.clock(),profile,{waiting:true,stake:stake===true?STAKES.amount:stake||0});if(r.stake)r.stakeRules={winnerPct:80,burnPct:10,rewardsPct:10};r.creator=player;this.funding.reserve(r);this.put(r);return this.view(r,player);
  });}
  enter(id,player,heroId='3412'){return this.tx(()=>{
   const r=A.activate(this.current(id),this.clock()),now=r.lastClock;
@@ -105,7 +107,7 @@ export class ArenaStore{
  // DEMO stake: one per session per round, taken from the session's DEMO wallet before entering.
  stake(id,player,heroId){return this.tx(()=>{const r=this.current(id);this.stakes.stake(r,player,heroId);return {round:this.view(r,player),wallet:this.stakes.peek(player)};});}
  // Wallet, totals, invariant and settled history. Settles any finished round still holding stakes first.
- stakeInfo(player){return this.tx(()=>{for(const id of this.stakes.pendingRounds())this.current(id);const totals=this.stakes.totals(),name=(p,h)=>this.displayName(p,h);
+ stakeInfo(player){this.daily.prepare();return this.tx(()=>{for(const id of this.stakes.pendingRounds())this.current(id);const totals=this.stakes.totals(),name=(p,h)=>this.displayName(p,h);
   return {wallet:this.stakes.peek(player),rules:{...STAKES},totals,invariant:this.stakes.invariant(totals),history:this.stakes.history(12,name),demo:true,realFunds:false};});}
  balance(player){return this.db.prepare('SELECT COALESCE(sum(amount),0) as total FROM awards WHERE player=?').get(player).total;}
  close(){this.db.close();}

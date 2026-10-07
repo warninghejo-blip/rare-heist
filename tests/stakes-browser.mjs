@@ -1,8 +1,8 @@
 // DEMO STAKE ROUNDS in the real UI against the real server (in-memory SQLite, controlled clock). Play money only.
 //  - two guest sessions (Friends #7730 and #5555) stake on the opening stake round through the API; #7730 clears it;
-//  - the browser sees the pot, the DEMO badge, the 70/30 bar and the entrants as Friends, then stakes 50 DEMO RF
-//    from the stake sheet, raids, clears and keeps the vault: pot 150, would burn 45, wallet 150;
-//  - the clock passes the deadline: settlement card "Friend #<you> took 105 DEMO RF · 45 DEMO RF burned", wallet 255,
+//  - the browser sees the pot, the DEMO badge, the 80/10/10 bar and the entrants as Friends, then stakes 100 DEMO RF
+//    from the stake sheet, raids, clears and keeps the vault: pot 300, would burn 30, wallet 100;
+//  - the clock passes the deadline: settlement card "Friend #<you> took 240 DEMO RF · 30 DEMO RF burned", wallet 255,
 //    the live "would have burned" counter and the settled history;
 //  - NEW STAKE ROUND with a single clearing session refunds the stake at the end;
 //  - RF ECONOMY: the dashed stake pipe, the DEMO ledger line from the server and the optional calculator term;
@@ -39,50 +39,50 @@ try{
  const me=await p.evaluate(()=>RareHeistView().hero);
  await nav('last');await p.locator('.roundlist button.stake').first().click();await until(()=>!!document.getElementById('stakePanel'));await p.waitForTimeout(400);
  const panel=await txt('#stakePanel');
- ok('stake tab is labelled STAKE ROUND: '+(await txt('.roundlist button.stake')),/^STAKE ROUND, 10 MIN \/ V0 \/ OPEN$/.test(await txt('.roundlist button.stake')));
- ok('pot of two stakes with the DEMO badge: '+panel.slice(0,90),/2 × 50 DEMO RF STAKES/.test(panel)&&/Pot 100 DEMO RF/.test(panel)&&/DEMO, PLAY MONEY/.test(panel)&&(await txt('#stakePot'))==='100');
- ok('70/30 bar if it ended now: 70 to the winner, 30 burns ('+(await txt('.potbar'))+')',/70 70% TO THE WINNER/.test(await txt('.potbar'))&&(await txt('#stakeWouldBurn'))==='30');
+ ok('stake tab is labelled with its tier: '+(await txt('.roundlist button.stake')),/^STREET STAKE 100 RF \/ V0 \/ OPEN$/.test(await txt('.roundlist button.stake')));
+ ok('pot of two stakes with the DEMO badge: '+panel.slice(0,90),/2 × 100 DEMO RF STAKES/.test(panel)&&/Pot 200 DEMO RF/.test(panel)&&/DEMO, PLAY MONEY/.test(panel)&&(await txt('#stakePot'))==='200');
+ ok('80/10/10 bar if it ended now: 70 to the winner, 30 burns ('+(await txt('.potbar'))+')',/160 80% TO THE WINNER/.test(await txt('.potbar'))&&(await txt('#stakeWouldBurn'))==='20');
  ok('entrants appear as Friends with their sprites: '+(await txt('.entrants')),/Friend #7730/.test(await txt('.entrants'))&&/Friend #5555/.test(await txt('.entrants'))&&(await p.locator('.entrants canvas[data-fid]').count())===2);
  ok('wallet shows the 200 DEMO RF daily allowance',(await txt('#stakeWallet'))==='200');
  ok('the panel says nothing real moves',/No real RF is staked, paid or burned/.test(panel)&&(await p.locator('.stakes').evaluate(e=>getComputedStyle(e).borderTopStyle))==='dashed');
- ok('raid button asks for the stake: '+(await txt('#raidShared')),(await txt('#raidShared'))==='STAKE 50 DEMO RF AND RAID');
+ ok('raid button asks for the stake: '+(await txt('#raidShared')),(await txt('#raidShared'))==='STAKE 100 DEMO RF AND RAID');
  await p.locator('#stakePanel').screenshot({path:path.join(shots,'stake-panel-open.png')});
  await p.locator('#raidShared').click();await p.waitForTimeout(300);
- ok('stake sheet explains the rules before anything moves: '+(await txt('#dialogContent')).slice(0,80),/STAKE 50 DEMO RF/.test(await txt('#dialogContent'))&&/200 now, 150 after this stake/.test(await txt('#dialogContent'))&&/70% of the pot and 30% is burned/.test(await txt('#dialogContent')));
+ ok('stake sheet explains the rules before anything moves: '+(await txt('#dialogContent')).slice(0,80),/STAKE 100 DEMO RF/.test(await txt('#dialogContent'))&&/200 now, 100 after this stake/.test(await txt('#dialogContent'))&&/80% of the pot and 10% is burned/.test(await txt('#dialogContent')));
  await p.screenshot({path:path.join(shots,'stake-sheet.png')});
  await p.locator('#stakeYes').click();await p.waitForTimeout(2600);
  ok('staking starts the raid',await p.evaluate(()=>RareHeistView().screen)==='play');
  await play(route);ok('cleared the stake vault',await p.evaluate(()=>RareHeistView().state.status)==='won');
  await p.locator('#submitShared').click();await p.waitForTimeout(1500);await p.locator('#skipChange').click();await p.waitForTimeout(1200);
- ok('after my clear: pot 150, would burn 45, wallet 150, me listed as an entrant ('+(await txt('#stakeHead'))+', pot '+(await txt('#stakePot'))+')',(await txt('#stakeHead'))==='3 × 50 DEMO RF STAKES'&&(await txt('#stakePot'))==='150'&&(await txt('#stakeWouldBurn'))==='45'&&(await txt('#stakeWallet'))==='150'&&/\(you\)/.test(await txt('.entrants')));
+ ok('after my clear: pot 300, would burn 30, wallet 100, me listed as an entrant ('+(await txt('#stakeHead'))+', pot '+(await txt('#stakePot'))+')',(await txt('#stakeHead'))==='3 × 100 DEMO RF STAKES'&&(await txt('#stakePot'))==='300'&&(await txt('#stakeWouldBurn'))==='30'&&(await txt('#stakeWallet'))==='100'&&/\(you\)/.test(await txt('.entrants')));
  ok('no sponsor CLAIM button on a stake round',(await p.locator('#claimPrize').count())===0);
  await p.locator('.shared-layout aside').screenshot({path:path.join(shots,'stake-lobby-live.png')});
  // The clock passes the quiet window: the round settles on the next poll.
  now+=11*60*1000;await until(()=>!!document.getElementById('stakeSettlement'),null,12000);await p.waitForTimeout(300);
  const settle=await txt('#stakeSettlement');
- ok('settlement card: Friend #'+me+' took 105 DEMO RF · 45 DEMO RF burned ('+settle.slice(0,120)+')',new RegExp('Friend #'+me+' took 105 DEMO RF · 45 DEMO RF burned').test(settle)&&/That is you/.test(settle)&&(await p.locator('#stakeSettlement canvas[data-fid="'+me+'"]').count())===1);
- ok('wallet credited: 150 + 105 = 255; no "retries are free" on a settled round',(await txt('#stakeWallet'))==='255'&&!/Retries are free/.test(await txt('#stakePanel')));
- ok('live counter: with real RF, stake rounds would have burned 45 RF ('+(await txt('.stakes-counter'))+')',(await txt('#stakeBurnedAll'))==='45 RF');
- ok('settled history lists the round: '+(await txt('.stakehist')),/took 105 DEMO RF · 45 DEMO RF burned/.test(await txt('.stakehist')));
+ ok('settlement card: Friend #'+me+' took 240 DEMO RF · 30 DEMO RF burned ('+settle.slice(0,120)+')',new RegExp('Friend #'+me+' took 240 DEMO RF · 30 DEMO RF burned').test(settle)&&/That is you/.test(settle)&&(await p.locator('#stakeSettlement canvas[data-fid="'+me+'"]').count())===1);
+ ok('wallet credited: 150 + 105 = 255; no "retries are free" on a settled round',(await txt('#stakeWallet'))==='340'&&!/Retries are free/.test(await txt('#stakePanel')));
+ ok('live counter: with real RF, stake rounds would have burned 45 RF ('+(await txt('.stakes-counter'))+')',(await txt('#stakeBurnedAll'))==='30 RF');
+ ok('settled history lists the round: '+(await txt('.stakehist')),/took 240 DEMO RF · 30 DEMO RF burned/.test(await txt('.stakehist')));
  await p.locator('.shared-layout aside').screenshot({path:path.join(shots,'stake-settled.png')});
- const server=await B('GET','/api/stakes');ok('server ledger: 150 staked = 105 paid + 45 burned, invariant passes',server.totals.stakes===150&&server.totals.paid===105&&server.totals.burned===45&&server.invariant.ok===true);
+ const server=await B('GET','/api/stakes');ok('server ledger: 150 staked = 105 paid + 45 burned, invariant passes',server.totals.stakes===300&&server.totals.paid===240&&server.totals.burned===30&&server.totals.rewards===30&&server.invariant.ok===true);
  // A new stake round with only one clearing session refunds.
  await p.locator('#newStake').click();await p.waitForTimeout(1200);
- ok('NEW STAKE ROUND opens an empty pot',(await txt('#stakePot'))==='0'&&(await txt('#stakeHead'))==='0 × 50 DEMO RF STAKES'&&/No stakes yet/.test(await txt('#stakePanel')));
+ ok('NEW STAKE ROUND opens an empty pot',(await txt('#stakePot'))==='0'&&(await txt('#stakeHead'))==='0 × 100 DEMO RF STAKES'&&/No stakes yet/.test(await txt('#stakePanel')));
  await p.locator('#raidShared').click();await p.waitForTimeout(300);await p.locator('#stakeYes').click();await p.waitForTimeout(2600);await play(route);
  await p.locator('#submitShared').click();await p.waitForTimeout(1500);await p.locator('#skipChange').click();await p.waitForTimeout(1200);
- ok('staked again: wallet 205',(await txt('#stakeWallet'))==='205');
+ ok('staked again: wallet 205',(await txt('#stakeWallet'))==='240');
  now+=11*60*1000;await until(()=>!!document.getElementById('stakeSettlement'),null,12000);await p.waitForTimeout(300);
- ok('uncontested round refunds: '+(await txt('#stakeSettlement')).slice(0,120),/Every stake refunded: 50 DEMO RF back to 1 entrant/.test(await txt('#stakeSettlement'))&&/A payout needs two/.test(await txt('#stakeSettlement')));
- ok('wallet back to 255 after the refund',(await txt('#stakeWallet'))==='255');
+ ok('uncontested round refunds: '+(await txt('#stakeSettlement')).slice(0,120),/Every stake refunded: 100 DEMO RF back to 1 entrant/.test(await txt('#stakeSettlement'))&&/A payout needs two/.test(await txt('#stakeSettlement')));
+ ok('wallet back to 255 after the refund',(await txt('#stakeWallet'))==='340');
  await p.locator('#stakePanel').screenshot({path:path.join(shots,'stake-refund.png')});
  // RF ECONOMY page.
  await nav('studio');await p.locator('[data-mode="economy"]').click();await until(()=>/Ledger check/.test(document.getElementById('ecStakes')?.textContent||''));
- ok('diagram: a dashed STAKE ROUNDS pipe (simulated)',(await p.locator('.pipe.sim',{hasText:'STAKE ROUNDS'}).count())===1&&(await p.locator('.pipe.sim').evaluate(e=>getComputedStyle(e).borderTopStyle))==='dashed');
- ok('DEMO ledger line from the server: '+(await txt('#ecStakes')),/2 settled, 45 DEMO RF burned, 105 paid to winners, 50 refunded, 0 in live pots/.test(await txt('#ecStakes'))&&/Ledger check passes/.test(await txt('#ecStakes')));
- ok('calculator: stake term first, by default 10 rounds a day × 6 entrants × 50 × 80% × 30% × 30 days = 21,600 RF of 27,000 RF ('+(await txt('#calcStakes'))+' / '+(await txt('#calcMonth'))+')',(await txt('#calcStakes'))==='21,600 RF'&&(await txt('#calcMonth'))==='27,000 RF');
- await p.fill('#calc-stakeRounds','20');ok('20 stake rounds a day doubles the stake term: 43,200 RF ('+(await txt('#calcStakes'))+')',(await txt('#calcStakes'))==='43,200 RF'&&(await txt('#calcMonth'))==='48,600 RF');
- ok('RF ECONOMY headline: settled stake totals and the last winner from the server ('+(await txt('#ecStakeBurned'))+')',(await txt('#ecStakeBurned'))==='45 DEMO RF'&&(await txt('#ecSettled'))==='2'&&/took 105 DEMO RF · 45 DEMO RF burned/.test(await txt('#ecWinners')));
+ ok('diagram: a dashed STAKE ROUNDS pipe (simulated)',(await p.locator('.pipe.sim',{hasText:'STAKE ROUNDS'}).count())===1&&(await p.locator('.pipe.sim',{hasText:'STAKE ROUNDS'}).evaluate(e=>getComputedStyle(e).borderTopStyle))==='dashed');
+ ok('DEMO ledger line from the server: '+(await txt('#ecStakes')),/2 settled, 30 DEMO RF burned, 240 paid to winners, 100 refunded, 0 in live pots/.test(await txt('#ecStakes'))&&/Ledger check passes/.test(await txt('#ecStakes')));
+ ok('calculator: by default 10 rounds a day × 6 players × 100 × 80% × 10% × 30 days = 14,400 RF of 59,400 RF ('+(await txt('#calcStakes'))+' / '+(await txt('#calcMonth'))+')',(await txt('#calcStakes'))==='14,400 RF'&&(await txt('#calcMonth'))==='59,400 RF');
+ await p.fill('#calc-stakeRounds','20');ok('20 stake rounds a day doubles the stake term: 28,800 RF ('+(await txt('#calcStakes'))+')',(await txt('#calcStakes'))==='28,800 RF'&&(await txt('#calcMonth'))==='73,800 RF');
+ ok('RF ECONOMY headline: settled stake totals and the last winner from the server ('+(await txt('#ecStakeBurned'))+')',(await txt('#ecStakeBurned'))==='30 DEMO RF'&&(await txt('#ecSettled'))==='2'&&/took 240 DEMO RF · 30 DEMO RF burned/.test(await txt('#ecWinners')));
  await p.locator('.econmap').screenshot({path:path.join(shots,'rf-economy-stakes-flow.png')});await p.locator('.calc').screenshot({path:path.join(shots,'rf-economy-stakes-calc.png')});
  // Phone: a guest opens a fresh stake round and stakes on it.
  {const made=await C('POST','/api/rounds',{profile:'standard',stake:true});await C('POST','/api/rounds/'+made.id+'/stake',{heroId:'5555'});}

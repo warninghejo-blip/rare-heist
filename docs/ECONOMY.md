@@ -2,21 +2,23 @@
 
 Rare Heist follows the Vibeathon rule that purchases and rewards stay simulated: **DEMO is the default and all you need to play.** The economy has two parts:
 
-1. **Stake rounds in Last Heist: the core loop.** Every entrant stakes 50, the last thief standing takes 70% of the pot and 30% is burned. Playable now in **DEMO RF** (play money on the game server). The real-RF version is designed ([STAKES.md](STAKES.md)), not built.
+1. **Stake rounds in Last Heist: the core loop.** Every entrant stakes 100 (Street) or 1,000 (Vault); the winner takes 80%, 10% is burned and 10% is reserved for Friend rewards. Playable now in **DEMO RF** (play money on the game server). The real-RF version is designed ([STAKES.md](STAKES.md)), not built.
 2. **The shop: real RF, 100% burned.** Four items, bought with a plain RF transfer to `0x…dEaD` (**LIVE BURN, beta**). Nobody is paid.
 
-Rare Heist pays out no RF: no faucets, no play-to-earn, no minting, no real prize. The in-game version of this page is **Studio → RF ECONOMY**.
+Daily Heist uses the shared DEMO wallet: 150 entry for three attempts, no extra purchases. The server verifies clean runs, closes each UTC day once and settles 80/10/10; fewer than two entrants or no clean win refunds all fees. See [DAILY.md](DAILY.md). Shop DEMO prices match LIVE BURN prices; the local studio starts with its existing 100 DEMO RF balance. Existing Last Heist rounds retain 70/30.
+
+Rare Heist pays out no real RF: no faucets, no play-to-earn, no minting, no real prize. The in-game version of this page is **Studio → RF ECONOMY**.
 
 ## Where RF goes
 
 ```
- YOUR WALLET ──┬── SHOP, 100% BURNED   Black Archive 50 · Golden Trail 25 · textures 10 each ──┬──► 0x…dEaD
+ YOUR WALLET ──┬── SHOP, 100% BURNED   Black Archive 2,500 · Golden Trail 500 · textures 250 each ──┬──► 0x…dEaD
  (you sign     │                       LIVE on Robinhood Chain                               │    (nobody holds
-  every burn)  └╌╌ STAKE ROUNDS        30% of every contested pot                  ╌╌╌╌╌╌╌╌┘     this key)
+  every burn)  └╌╌ STAKE ROUNDS        10% of every contested pot                  ╌╌╌╌╌╌╌╌┘     this key)
                                        DEMO RF today; with real RF it would land here
 
  FAUCETS LIVE TODAY   none
- DEMO RF TODAY        stake rounds: 50 per entry from a 200-a-day wallet → 70% winner / 30% burned; no contest → refund
+ DEMO RF TODAY        stake rounds: 100 or 1,000 per entry from a 200-a-day wallet → 80% winner / 10% burned / 10% Friend rewards; no contest → refund
                       free rounds: 20,000 DEMO RF sponsor pool → 1,000 to each round's verified winner
                       DEMO studio: play-money versions of the shop items
  DESIGNED, NOT BUILT  real-RF stake escrow: one Friend one entry, 70% to the winning Friend's token-bound wallet,
@@ -25,7 +27,7 @@ Rare Heist pays out no RF: no faucets, no play-to-earn, no minting, no real priz
 
 | Part | State |
 |---|---|
-| **Last Heist stake rounds** | **DEMO RF, playable.** 50 DEMO RF per entry from a 200 DEMO RF daily wallet, 70% to the winner, 30% burned, every stake refunded when fewer than two sessions clear. Invariant: stakes = paid + burned + refunded + held. See [STAKES.md](STAKES.md). |
+| **Last Heist stake rounds** | **DEMO RF, playable.** 100 or 1,000 DEMO RF per entry from a 200 DEMO RF daily wallet, 80% to the winner, 10% burned, 10% Friend rewards, every stake refunded when fewer than two sessions clear. Invariant: stakes = paid + burned + rewards + refunded + held. See [STAKES.md](STAKES.md). |
 | **Shop (LIVE BURN, beta)** | **Real RF, opt-in.** Four items, 100% to `0x…dEaD`. |
 | **Burn ledger** | Every tagged Rare Heist burn read from chain logs, with its item, amount, Friend and transaction. |
 | **Real RF balances and supply** | Read-only: your wallet, your Friend's token-bound wallet, `totalSupply` and the `0x…dEaD` balance. |
@@ -36,7 +38,7 @@ Rare Heist pays out no RF: no faucets, no play-to-earn, no minting, no real priz
 
 Rules, the numbers (when entering pays, why self-dealing always loses), the server ledger and the production escrow design are in [STAKES.md](STAKES.md). In the game:
 
-- **Last Heist opens on the stake round.** It is the first tab: pot, a 70/30 bar of what the winner would take and what would burn if the round ended now, entrants as their Friends, your DEMO wallet, and the settled stake rounds.
+- **Last Heist opens on the stake round.** It is the first tab: pot, an 80/10/10 split of what the winner would take and what would burn if the round ended now, entrants as their Friends, your DEMO wallet, and the settled stake rounds.
 - **Studio → RF ECONOMY leads with stake rounds:** DEMO RF in live pots, entrants, DEMO RF burned so far, settled rounds, the last winners and the server's ledger check. Every stake surface carries a **DEMO, PLAY MONEY** badge.
 - **Road to real RF** (a card on the same page, all but step 1 unbuilt): DEMO stake rounds (now) → escrow contract, audited → one Friend one entry (on-chain stake, signed Friend sign-in) → results anyone can check (proof bundle, guardian veto) → legal review → real-RF stake rounds.
 
@@ -44,10 +46,10 @@ Rules, the numbers (when entering pays, why self-dealing always loses), the serv
 
 | Item | Tag code | Cost | What it does |
 |---|---|---|---|
-| The Black Archive | 4 | 50 RF | Three extra heists. Harder, not stronger |
-| Golden Trail | 1 | 25 RF | Lime footprints behind your Friend. LIVE only |
-| Hatchwork | 2 | 10 RF | Black-and-white paper texture around the interface |
-| Signal Paper | 3 | 10 RF | Lime stipple around the interface |
+| The Black Archive | 4 | 2,500 RF | Three extra heists. Harder, not stronger |
+| Golden Trail | 1 | 500 RF | Lime footprints behind your Friend. LIVE only |
+| Hatchwork | 2 | 250 RF | Black-and-white paper texture around the interface |
+| Signal Paper | 3 | 250 RF | Lime stipple around the interface |
 
 | Rule | Value |
 |---|---|
@@ -80,7 +82,7 @@ Studio → LIVE BURN shows **RF burned through Rare Heist: N** and the list of t
 Studio → RF ECONOMY asks "What would Rare Heist burn per month with real RF?" and labels the answer **PROJECTION, NOT A RESULT**. Every assumption is editable.
 
 ```
-RF per month = 30 × stake rounds a day × entrants × 50 × share of rounds with a winner × 30%
+RF per month = 30 × stake rounds a day × entrants × 100 × share of rounds with a winner × 10%
              + 30 × players a day × share who buy a shop item × average RF per item
 share of supply = RF per month ÷ (totalSupply − balanceOf(0x…dEaD)), both read from the RF token
 ```
@@ -92,13 +94,13 @@ share of supply = RF per month ÷ (totalSupply − balanceOf(0x…dEaD)), both r
 | Share of stake rounds that end with a winner (the rest refund) | 80% |
 | Players a day | 300 |
 | Share who buy a shop item that day | 3% |
-| Average RF per shop item (items cost 10 to 50) | 20 |
+| Average RF per shop item (items cost 250 to 2,500) | 20 |
 
-With the defaults: 21,600 from stake rounds + 5,400 from the shop = **27,000 RF a month**. Stake rounds run in DEMO RF today, so their term is what they would burn with real RF. Read from Robinhood Chain on 2026-09-28 (block 74,666,714): `totalSupply` ≈ 949,574,971 RF and `0x…dEaD` holds ≈ 27.94 RF from five transfers ever. 27,000 RF is about 0.003% of supply a month.
+With the defaults: 14,400 from Street stake rounds + 5,400 from the shop = **19,800 RF a month**. Stake rounds run in DEMO RF today, so their term is what they would burn with real RF. Read from Robinhood Chain on 2026-09-28 (block 74,666,714): `totalSupply` ≈ 949,574,971 RF and `0x…dEaD` holds ≈ 27.94 RF from five transfers ever. 19,800 RF is about 0.002% of supply a month.
 
 ## Why this has economy potential
 
-- **A sink driven by competition.** Every contested stake round burns 30% of its pot, and playing against yourself only burns your own stake. The loop is playable in DEMO RF now, with the same rules and ledger invariants the escrow would enforce.
+- **A sink driven by competition.** Every contested stake round burns 10% of its pot, and playing against yourself only burns your own stake. The loop is playable in DEMO RF now, with the same rules and ledger invariants the escrow would enforce.
 - **A shop sink that is live today** on real RF, 100% burned, verifiable from chain logs, and never selling an advantage.
 - **Recurring content.** Every clear changes the shared vault, so each round is new content made by players.
 - **Friends stay central.** Real-RF rounds would take one entry per owned Friend and pay into the Friend's own wallet.

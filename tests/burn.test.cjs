@@ -4,6 +4,27 @@ const I=require('../src/identity.js'),B=require('../src/burn.js');
 const P='0x1111111111111111111111111111111111111111',w=v=>BigInt(v).toString(16).padStart(64,'0'),E18=10n**18n;
 const log=(from,to,amount,address=I.RF_TOKEN)=>({address,topics:[I.TRANSFER,'0x'+w(from),'0x'+w(to)],data:'0x'+w(amount)});
 
+test('real legacy Hatchwork purchase survives RESTORE; cutoff applies only to subsequent burns',async()=>{
+ const cutoff=82106237,owner='0x7201409762fe82a6c02e2bd27eb0430ac93432db',tx='0xcf6bfaab4be51e170cdadbe54d4a6316015e4026327a705377124c4163143957';
+ const block='0x4790ff2',amount=10n*E18,transfer={...log(owner,B.DEAD,amount),transactionHash:tx,blockNumber:block};
+ // Receipt and transaction fields verified from the public RPC on 2026-10-07.
+ const input=B.calldata(amount,'lilac',null,21449),provider={request:async({method})=>{
+  if(method==='eth_blockNumber')return '0x'+cutoff.toString(16);
+  if(method==='eth_getLogs')return [transfer];
+  if(method==='eth_getTransactionByHash')return {from:owner,to:I.RF_TOKEN,input};
+  throw Error('Unexpected RPC '+method);
+ }};
+ const restored=await B.history(provider,{player:owner});
+ assert.equal(restored.burns.length,1,'paid legacy receipt must remain in RESTORE');
+ assert.deepEqual(B.unlocked(restored.burns),['lilac']);
+ assert.deepEqual(B.unlocked([{tx,block,item:'lilac',from:owner,amount}]),['lilac']);
+ assert.deepEqual(B.unlocked([{item:'lilac',block:cutoff-1,amount}]),['lilac']);
+ assert.deepEqual(B.unlocked([{item:'lilac',block:cutoff,amount}]),[]);
+ assert.deepEqual(B.unlocked([{item:'lilac',block:cutoff,amount:250n*E18}]),['lilac']);
+ assert.deepEqual(B.unlocked([{item:'lilac',amount}]),[],'missing block needs the current price');
+ assert.deepEqual(B.unlocked([{item:'lilac',amount,receipt:{blockNumber:'0x'+cutoff.toString(16)}}]),[],'receipt block takes precedence over missing cached block');
+});
+
 test('calldata is a standard transfer to 0x…dEaD with a trailing tag',()=>{
  const d=B.calldata(25n*E18,'trail','7730');
  assert.equal(d.slice(0,10),'0xa9059cbb');
@@ -43,9 +64,9 @@ test('receipt must show Transfer(player → dEaD) from the RF contract',()=>{
  assert.throws(()=>B.checkReceipt({...ok,logs:[log('0x4444444444444444444444444444444444444444',B.DEAD,10n*E18)]},{from:P}),/does not show/,'someone else\'s burn does not count');
 });
 test('unlocks need a tagged burn of at least the price; the ledger lists each burn once, newest first',()=>{
- const burns=[{tx:'0x01',block:'0x10',item:'trail',amount:25n*E18,from:P,friendId:'7730'},{tx:'0x02',block:'0x12',item:'lilac',amount:9n*E18,from:P,friendId:'7730'},{tx:'0x03',block:'0x11',item:'ash',amount:3n*E18,from:P,friendId:'3412'},{tx:'0X01',block:'0x10',item:'trail',amount:25n*E18,from:P,friendId:'7730'}];
- assert.deepEqual(B.unlocked(burns),['trail'],'9 RF does not unlock a 10 RF theme; a legacy tribute unlocks nothing');
- const l=B.ledger(burns);assert.equal(l.total,37n*E18,'a duplicate receipt counts once');
+ const burns=[{tx:'0x01',block:'0x10',item:'trail',amount:500n*E18,from:P,friendId:'7730'},{tx:'0x02',block:'0x12',item:'lilac',amount:9n*E18,from:P,friendId:'7730'},{tx:'0x03',block:'0x11',item:'ash',amount:3n*E18,from:P,friendId:'3412'},{tx:'0X01',block:'0x10',item:'trail',amount:500n*E18,from:P,friendId:'7730'}];
+ assert.deepEqual(B.unlocked(burns),['trail'],'9 RF does not unlock a 250 RF theme; a legacy tribute unlocks nothing');
+ const l=B.ledger(burns);assert.equal(l.total,512n*E18,'a duplicate receipt counts once');
  assert.deepEqual(l.rows.map(r=>r.tx),['0x02','0x03','0x01']);
  assert.equal('rows' in l&&!('who' in l.rows[0]),true,'plain rows: no ranking or per-Friend aggregation');
 });
@@ -62,7 +83,7 @@ test('burn refuses when the wallet lacks RF and never sends',async()=>{
 
 // ---- SHOP: four fixed-price items, 100% burned. Tribute (9) and Vault Bounty (10) are retired: not sold, still decoded. ----
 test('only the four shop items are purchasable; tribute and bounty are retired but their old tags still decode',()=>{
- assert.deepEqual(B.ITEMS.map(x=>[x.id,x.code,x.rf,!!x.any]),[['trail',1,25,false],['lilac',2,10,false],['citrus',3,10,false],['archive-pack',4,50,false]]);
+ assert.deepEqual(B.ITEMS.map(x=>[x.id,x.code,x.rf,!!x.any]),[['trail',1,500,false],['lilac',2,250,false],['citrus',3,250,false],['archive-pack',4,2500,false]]);
  for(const id of ['ash','bounty']){assert.equal(B.forSale(id),undefined,id+' is not for sale');assert.equal(B.ITEMS.some(x=>x.id===id),false);assert.equal(B.byId(id).retired,true);}
  assert.deepEqual(B.RETIRED.map(x=>[x.id,x.code]),[['ash',9],['bounty',10]],'codes are kept, never reused');
  // Exact bytes of a burn made before the retirement: 'RHST' v1, item 09 / 0a, nonce, Friend.
@@ -94,9 +115,9 @@ test('a shop burn is one tagged transfer to dEaD for the exact price, proven by 
  const {p,sent}=mockWallet();
  const r=await B.burn(p,{account:P,item:'citrus',amount:'37',friendId:'3412',nonce:0x0a0b,poll:0});
  assert.equal(sent.length,1);assert.equal(sent[0].to,I.RF_TOKEN);assert.equal(sent[0].value,'0x0');
- assert.deepEqual(B.parseInput(sent[0].data),{amount:10n*E18,tag:{item:'citrus',friendId:'3412',nonce:0x0a0b}});
- assert.equal(r.item,'citrus');assert.equal(r.amount,10n*E18);assert.equal(r.friendId,'3412');
- assert.throws(()=>B.checkReceipt({status:'0x1',transactionHash:'0x1',blockNumber:'0x1',logs:[log(P,B.DEAD,9n*E18)]},{from:P,min:10n*E18}),/does not show/,'a smaller logged burn does not prove a 10 RF item');
+ assert.deepEqual(B.parseInput(sent[0].data),{amount:250n*E18,tag:{item:'citrus',friendId:'3412',nonce:0x0a0b}});
+ assert.equal(r.item,'citrus');assert.equal(r.amount,250n*E18);assert.equal(r.friendId,'3412');
+ assert.throws(()=>B.checkReceipt({status:'0x1',transactionHash:'0x1',blockNumber:'0x1',logs:[log(P,B.DEAD,9n*E18)]},{from:P,min:250n*E18}),/does not show/,'a smaller logged burn does not prove a 250 RF item');
 });
 test('read-only chain helpers: supply read; block reads (only bounties used them) and signing are forbidden',async()=>{
  const p={request:async()=>'0x'};
@@ -109,8 +130,8 @@ test('read-only chain helpers: supply read; block reads (only bounties used them
 });
 test('RF ECONOMY calculator: shop items plus the stake-round burn share, plain arithmetic',()=>{
  const X=require('../src/economy.js');
- // UI defaults. Shop: 30 days x 300 players x 3% x 20 RF. Stakes: 30 days x 10 rounds x 6 entrants x 50 RF x 80% with a winner x 30% burned.
- assert.deepEqual(X.project({players:300,burnPct:3,avgBurn:20,stakeRounds:10,stakeEntrants:6,stakeWinPct:80}),{items:5400,stakes:21600,total:27000});
+ // UI defaults. Shop: 30 days x 300 players x 3% x 20 RF. Stakes: 30 days x 10 rounds x 6 entrants x 100 RF x 80% with a winner x 10% burned.
+ assert.deepEqual(X.project({players:300,burnPct:3,avgBurn:20,stakeRounds:10,stakeEntrants:6,stakeWinPct:80}),{items:5400,stakes:14400,total:19800});
  assert.deepEqual(X.project({players:-5,burnPct:'x',avgBurn:15}),{items:0,stakes:0,total:0});
  assert.equal(X.project({players:10,burnPct:250,avgBurn:1,days:1}).total,10,'a share is capped at 100%');
  assert.equal(X.project({stakeRounds:10,stakeEntrants:6,stakeWinPct:0}).stakes,0,'refunded rounds burn nothing');

@@ -1,88 +1,38 @@
 # Last Heist stake rounds
 
-Every entrant puts a stake into the pot. When the clock runs out, the last thief standing takes **70%** and **30% is burned**. Everyone has a reason to care about the round, and every contested round removes tokens.
-
-| | State |
-|---|---|
-| **Stake rounds in DEMO RF** | **Playable now** on the Last Heist server. Play money: the stakes, the pot, the payout and the burn are entries in a SQLite ledger. No token moves. |
-| **Stake rounds in real RF** | **Designed, not built.** Section 2 is the escrow specification for Robinhood Chain. Nothing is written as a deployable contract, compiled, audited or deployed. |
-
-The Vibeathon rules ask for simulated rewards, so the game ships the DEMO version and the production design next to it.
+Standalone rounds use DEMO RF only. New STANDARD rounds have two tiers: **100 RF (Street)** and **1,000 RF (Vault)**. The last clean solver wins if at least two different sessions cleared. Settlement pays **80% to the winner, burns 10%, and reserves 10% for Friend rewards**. No chain transaction occurs.
 
 ## 1. What ships today (DEMO RF)
 
-### Rules
+- The shared server wallet tops up to **200 DEMO RF once per UTC day**, preserving balances above 200. Daily Heist uses the same wallet.
+- One stake per session per round, before the first raid. Retries in that round are free.
+- Uncontested, no-clear and never-started rounds refund every stake. Free rounds retain their sponsor budget and prize.
+- Example: three Street stakes create a 300 RF pot: 240 paid, 30 burned, 30 retained for Friend rewards.
+- Friend rewards are a recorded DEMO reserve; no real tokens or automatic distribution to NFT accounts.
+- New rounds save their split in rounds.state.stakeRules. Existing rounds without that field keep their original **70/30**, including unfinished rounds. Saved stakes, awards and settlements are preserved.
 
-| Rule | Value | Why |
-|---|---|---|
-| Round type | A STANDARD round (10-minute quiet window, 60-minute cap) created with **NEW STAKE ROUND**. A fresh server also opens `opening-stakes`. | The longer round gives other players time to join and stake. |
-| Stake | **50 DEMO RF**, fixed per round, one stake per session per round | A fixed stake means everyone risks the same amount, so no one can buy a bigger share of the pot. |
-| When | Any time before the round ends: waiting, open or while the leader edits. You stake before your first raid; retries in the same round are free. | Staking is the entry fee, not a fee per attempt. |
-| DEMO wallet | Each guest session gets **200 DEMO RF a day**: once per UTC day the wallet is topped up to 200. It is never lowered, so winnings above 200 are kept. | That is four stake rounds a day. Topping up instead of adding means idle sessions don't pile up free play money. |
-| Winner | Unchanged Last Heist rule: the last accepted clean solver when the clock ends, and **at least two different sessions** must have cleared the vault in that round. | Stakes don't change who wins. |
-| Split | Winner **70%** (rounded down), burned **30%** (the remainder). The 70% is credited to the winner's DEMO wallet at settlement. There is nothing to claim. | See "The numbers" below. |
-| Refunds | **Every stake is refunded** if only one session cleared the vault (`uncontested`), if nobody cleared it (`no-clear`), or if nobody ever started the round (it closes after 24 hours). | Nobody loses a stake in a round that had no contest. |
-| Sponsor pool | Stake rounds reserve nothing from the 20,000 DEMO RF sponsor pool, and there is no sponsor top-up. Free rounds keep their 1,000 DEMO RF prize. | The pot is only what players staked, so every number on screen adds up. |
+### API
 
-Example: 7 entrants make a 350 DEMO RF pot. `#7730 took 245 DEMO RF · 105 DEMO RF burned`.
+Same session cookie, origin and CSRF header as Last Heist.
 
-### The numbers
-
-- **Is it worth entering?** In an `n`-entrant round, a player who wins with probability `p` expects `p × 0.7 × 50n − 50`. It pays when `p > 1 / (0.7n)`: with 5 entrants a player who wins more than 29% of the time comes out ahead. Stronger players are paid by weaker ones, and the 30% burn is the cost of a contested round.
-- **Self-dealing always loses.** A payout needs two clearing sessions. One person running two sessions to fake a contest stakes 100 and gets back 70, losing 30 every time. Without a real opponent the round is uncontested and the stakes simply come back. The burn makes collusion cost money; it can't be avoided by playing against yourself.
-- **The burn only grows with real contests.** Refunded rounds burn nothing. The RF ECONOMY calculator's stake term is `days × stake rounds a day × entrants × 50 × share of rounds with a winner × 30%` (defaults: 10 rounds a day, 6 entrants, 80% with a winner: 21,600 RF a month if the stakes were real RF).
-
-### In the game
-
-- **Last Heist opens on the stake round.** Its tab comes first and is selected by default (dashed outline, the RF ECONOMY key for "simulated"): the pot, a 70/30 bar showing what the winner would take and what would burn if the round ended now, entrants as their Friends (#ID and sprite), your DEMO wallet, and a live counter: *"With real RF, stake rounds would have burned N RF so far."* Every stake surface carries a **DEMO, PLAY MONEY** badge.
-- **STAKE 50 DEMO RF AND RAID** opens a sheet with the rules and your wallet before and after, then stakes and starts the raid.
-- **Settlement card** when the round ends: `Friend #7730 took 245 DEMO RF · 105 DEMO RF burned`, or `Every stake refunded: 100 DEMO RF back to 2 entrants.` The lobby also lists the last settled stake rounds.
-- **Studio → RF ECONOMY leads with stake rounds**: DEMO RF in live pots, entrants, DEMO RF burned so far, settled rounds, the last winners, the server ledger line with its invariant check, and a **From DEMO RF to real RF** roadmap card (the steps in section 2 and "Why the MVP stays simulated"). Below: a dashed STAKE ROUNDS pipe next to the live shop pipe, and the calculator's stake term.
-
-### Server ledger
-
-Code: `server/stakes.mjs` (ledger), `server/store.mjs` (round integration), `src/economy.js` (`STAKES`, `stakeSplit`, shared by server and UI).
-
-```
-stake_wallets(player PK, balance ≥ 0, granted ≥ 0, grant_day)          one DEMO wallet per guest session
-stakes(round_id, player, hero, amount > 0, at, status held|settled|refunded, PRIMARY KEY(round_id, player))
-stake_settlements(round_id PK, outcome, pot, paid, burned, refunded, winner, hero, entrants, revision, at,
-                  CHECK(pot = paid + burned + refunded))
-```
-
-- **One stake per session per round** is enforced by the primary key, not only by the check in code.
-- **No negative balances.** The debit is `UPDATE … SET balance = balance − 50 WHERE balance ≥ 50`, and the column has `CHECK(balance >= 0)`.
-- **Idempotent settlement.** A round settles once, inside the same transaction that advances it past its deadline. After that, a row in `stake_settlements` blocks any repeat, and only `held` stakes ever move to `settled` or `refunded`.
-- **Concurrency.** Every write runs in `BEGIN IMMEDIATE` (`ArenaStore.tx`). The test suite races four worker threads on one SQLite file and sends 20 parallel HTTP stakes from one session: each session is charged exactly once.
-- **Invariants**, reported by `GET /api/stakes` and on the RF ECONOMY page:
-  - `stakes = paid + burned + refunded + held`
-  - `wallets = granted − stakes + paid + refunded`
-  - every settlement row satisfies `pot = paid + burned + refunded`, and no balance is below zero.
-
-API (same session cookie and CSRF header as the rest of Last Heist):
-
-| Request | Effect |
+| Request | Result |
 |---|---|
-| `POST /api/rounds {"profile":"standard","stake":true}` | Opens a stake round. Other lengths are refused with `STAKE_PROFILE`. |
-| `POST /api/rounds/:id/stake {"heroId":"7730"}` | Stakes 50. Errors: `ALREADY_STAKED`, `INSUFFICIENT_DEMO`, `NOT_STAKE_ROUND`, `ROUND_FINISHED`. |
-| `POST /api/rounds/:id/enter` | On a stake round without a stake: `STAKE_REQUIRED`. |
-| `GET /api/stakes` | Your wallet, the rules, totals, the invariant check and the last 12 settled rounds. `GET /api/rounds` carries the same object as `stakes`. |
-| `GET /api/rounds/:id` | `stakes`: amount, pot, entrants (Friend #ID, name), `projected` 70/30, `settlement`. `null` on free rounds. |
+| POST /api/rounds {"profile":"standard","stake":100} | Street round |
+| POST /api/rounds {"profile":"standard","stake":1000} | Vault round |
+| POST /api/rounds {"profile":"standard","stake":true} | Compatibility alias for Street; false or omitted means free |
+| POST /api/rounds/:id/stake {"heroId":"7730"} | Debit that round's saved amount |
+| GET /api/rounds/:id | stakes includes saved winnerPct, burnPct, rewardsPct; projected and settlement include rewards |
+| GET /api/stakes | Wallet, rules.tiers, Last Heist totals, daily totals, combined wallet invariant and settled history |
 
-### VPS migration (existing database)
+### Additive migration and ledger
 
-The schema change is additive: three `CREATE TABLE IF NOT EXISTS` statements and one index. No existing table or row is altered. Old rounds have no `stake` field and stay free rounds. The sponsor pool and its reservations are untouched, and stake rounds reserve nothing from it.
+Existing tables remain intact. Daily adds daily_rounds, daily_entries, daily_attempts and daily_settlements. Last Heist adds stake_reward_allocations(round_id PRIMARY KEY, rewards >= 0). Startup creates tables and indexes with CREATE IF NOT EXISTS; no data is deleted or table rebuilt.
 
-1. Stop the service. Copy `last-heist.sqlite` together with its `-wal` and `-shm` files, for example `cp $DATA_DIR/last-heist.sqlite* /root/backup-pre-stakes/`.
-2. Deploy the new code. The new file is `server/stakes.mjs`; the changed files are `server/store.mjs`, `server/app.mjs`, `server/funding.mjs`, `src/last-heist.js`, `src/last-client.js`, `src/economy.js`, `src/ui.js`, `src/style.css` and the rebuilt `index.html`.
-3. Start the service. On first open the server creates `stake_wallets`, `stakes` and `stake_settlements`, and adds one waiting round, `opening-stakes`, if no round has that id. Restarting again does nothing further.
-4. Check:
-   - `GET /healthz` shows `"stakes":"demo"`.
-   - `GET /api/economy` still has `"invariant":true` with the same `paid` and `reserved` as before, since stake rounds reserve nothing.
-   - In a browser session, `GET /api/stakes` returns `"invariant":{"ok":true,…}`.
-5. To roll back, stop the service and restore the backup from step 1. Older code would read `opening-stakes` as a free round with a 0 prize, so restore the backup rather than running the old code on the new file.
+The original stake_settlements CHECK requires pot = paid + burned + refunded. For compatibility its stored burned column includes both withheld shares; stake_reward_allocations records the Friends component separately. All public views report net burned and rewards separately. Old rows have zero rewards.
 
-Tested by `tests/stakes.test.mjs` ("migration"): a database in the previous release's schema, with a claimed award and a live reservation, opens with its data, awards and sponsor invariant intact, gains the stake round once, and takes stakes.
+Invariants: Last Heist stakes = paid + burned + rewards + refunded + held; Daily spent = paid + burned + rewards + refunded + held. Shared wallets = granted − Last Heist stakes + Last Heist paid/refunded − Daily spent + Daily paid/refunded. Settlement is once per round/day, inside BEGIN IMMEDIATE; wallets cannot go negative.
+
+Daily rules and HTTP contract: [DAILY.md](DAILY.md). The historical real-RF design below is unbuilt and has not been updated to the new DEMO economics.
 
 ## 2. Production design: stake rounds in real RF
 

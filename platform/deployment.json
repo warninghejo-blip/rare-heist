@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.2.3",
+  "sdkCommit": "885772d",
+  "chainId": 4663,
+  "deploymentBlock": "FOUNDATION_TO_FILL",
+  "registry": "FOUNDATION_TO_FILL",
+  "treasury": "FOUNDATION_TO_FILL",
+  "drawModule": "FOUNDATION_TO_FILL",
+  "roundModule": "FOUNDATION_TO_FILL",
+  "generations": "FOUNDATION_TO_FILL",
+  "rf": "FOUNDATION_TO_FILL",
+  "developer": "DEVELOPER_TO_FILL",
+  "funder": "FOUNDATION_TO_FILL",
+  "operator": "FOUNDATION_TO_FILL",
+  "settler": "FOUNDATION_TO_FILL",
+  "backend": null,
+  "shop": {
+    "gameId": "FOUNDATION_TO_FILL",
+    "items": "FOUNDATION_TO_FILL",
+    "split": { "freeBps": "TO_AGREE", "developerBps": "TO_AGREE", "operatorBps": "TO_AGREE", "burnBps": "TO_AGREE", "rewardsBps": "TO_AGREE" },
+    "classes": [{ "value": "0", "reserve": "0" }, { "value": "0", "reserve": "0" }, { "value": "0", "reserve": "0" }, { "value": "0", "reserve": "0" }],
+    "actions": [
+      { "actionId": 1, "item": "lilac", "name": "Hatchwork", "priceRF": 250, "input": 1, "inputClass": 0, "inputCount": 0, "price": "250000000000000000000", "draws": 1, "maxUnits": 1, "perGeneration": false, "tables": [[{ "weightBps": 10000, "classId": 1, "value": "0" }]] },
+      { "actionId": 2, "item": "citrus", "name": "Signal Paper", "priceRF": 250, "input": 1, "inputClass": 0, "inputCount": 0, "price": "250000000000000000000", "draws": 1, "maxUnits": 1, "perGeneration": false, "tables": [[{ "weightBps": 10000, "classId": 2, "value": "0" }]] },
+      { "actionId": 3, "item": "trail", "name": "Golden Trail", "priceRF": 500, "input": 1, "inputClass": 0, "inputCount": 0, "price": "500000000000000000000", "draws": 1, "maxUnits": 1, "perGeneration": false, "tables": [[{ "weightBps": 10000, "classId": 3, "value": "0" }]] },
+      { "actionId": 4, "item": "archive-pack", "name": "The Black Archive", "priceRF": 2500, "input": 1, "inputClass": 0, "inputCount": 0, "price": "2500000000000000000000", "draws": 1, "maxUnits": 1, "perGeneration": false, "tables": [[{ "weightBps": 10000, "classId": 4, "value": "0" }]] }
+    ]
+  },
+  "daily": {
+    "gameId": "FOUNDATION_TO_FILL",
+    "terms": { "entryPrice": "150000000000000000000", "potBps": 8000, "burnBps": 1000, "rewardsBps": 1000, "spendBurnBps": "TO_AGREE", "spendRewardsBps": "TO_AGREE", "minEntries": 2, "maxEntries": "FOUNDATION_TO_FILL" },
+    "attemptsPerEntry": 3,
+    "epochUTC": "2026-10-08T00:00:00Z",
+    "extraAttemptsEnabled": false
+  },
+  "lastHeist": {
+    "streetGameId": "FOUNDATION_TO_FILL",
+    "vaultGameId": "FOUNDATION_TO_FILL",
+    "streetTerms": { "entryPrice": "100000000000000000000", "potBps": 8000, "burnBps": 1000, "rewardsBps": 1000, "spendBurnBps": "TO_AGREE", "spendRewardsBps": "TO_AGREE", "minEntries": 2, "maxEntries": "FOUNDATION_TO_FILL" },
+    "vaultTerms": { "entryPrice": "1000000000000000000000", "potBps": 8000, "burnBps": 1000, "rewardsBps": 1000, "spendBurnBps": "TO_AGREE", "spendRewardsBps": "TO_AGREE", "minEntries": 2, "maxEntries": "FOUNDATION_TO_FILL" },
+    "kindPrices": ["50000000000000000000"]
+  }
+}

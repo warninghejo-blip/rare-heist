@@ -9,7 +9,7 @@ test('built index contains the current LIVE BURN sources',()=>{
 });
 
 test('RESTORE finds an older tagged player burn after 200 unrelated dEaD transfers and splits RPC range errors',async()=>{
- const tx='0x'+w(1),logs=[{address:I.RF_TOKEN,transactionHash:tx,blockNumber:'0x1',logIndex:'0x0',topics:[I.TRANSFER,'0x'+w(P),'0x'+w(B.DEAD)],data:'0x'+w(10n*E)}],txs=new Map([[tx,{from:P,to:I.RF_TOKEN,input:B.calldata(10n*E,'lilac')}]]);
+ const tx='0x'+w(1),logs=[{address:I.RF_TOKEN,transactionHash:tx,blockNumber:'0x1',logIndex:'0x0',topics:[I.TRANSFER,'0x'+w(P),'0x'+w(B.DEAD)],data:'0x'+w(250n*E)}],txs=new Map([[tx,{from:P,to:I.RF_TOKEN,input:B.calldata(250n*E,'lilac')}]]);
  for(let i=0;i<200;i++){
   const hash='0x'+w(i+2),block=BigInt(i+2);logs.push({address:I.RF_TOKEN,transactionHash:hash,blockNumber:'0x'+block.toString(16),logIndex:'0x0',topics:[I.TRANSFER,'0x'+w(Q),'0x'+w(B.DEAD)],data:'0x'+w(E)});
   txs.set(hash,{from:Q,to:I.RF_TOKEN,input:'0xa9059cbb'+w(B.DEAD)+w(E)});
@@ -52,12 +52,12 @@ test('a direct burn of a retired item (Tribute, Bounty) is refused before callin
 });
 
 test('player RESTORE still decodes legacy bounty (10) and tribute (9) receipts next to purchases, never as unlocks',async()=>{
- const rows=[['0x'+w(1),'bounty',37n*E],['0x'+w(2),'trail',25n*E],['0x'+w(3),'ash',2n*E]];
+ const rows=[['0x'+w(1),'bounty',37n*E],['0x'+w(2),'trail',500n*E],['0x'+w(3),'ash',2n*E]];
  const logs=rows.map(([tx,,amount],i)=>({address:I.RF_TOKEN,transactionHash:tx,blockNumber:'0x'+(i+1).toString(16),logIndex:'0x0',topics:[I.TRANSFER,'0x'+w(P),'0x'+w(B.DEAD)],data:'0x'+w(amount)}));
  const txs=new Map(rows.map(([tx,item,amount])=>[tx,{from:P,to:I.RF_TOKEN,input:B.calldata(amount,item,'3412',1)}]));
  const provider={request:async({method,params})=>method==='eth_blockNumber'?'0x10':method==='eth_getLogs'?logs:method==='eth_getTransactionByHash'?txs.get(params[0]):null};
  const r=await B.history(provider,{player:P});
  assert.deepEqual(r.burns.map(b=>b.item).sort(),['ash','bounty','trail']);
  assert.deepEqual(B.unlocked(r.burns),['trail']);
- assert.equal(B.ledger(r.burns).total,64n*E,'the ledger counts legacy burns');
+ assert.equal(B.ledger(r.burns).total,539n*E,'the ledger counts legacy burns');
 });
