@@ -904,23 +904,29 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 .sealed span{background:var(--signal);color:#000;padding:2px 8px;font-size:12px;letter-spacing:.5px}
 .board h3{font-size:13px;letter-spacing:1px;margin-bottom:6px}
 .leaders{list-style:none;margin:0;padding:0;display:grid}
-.leaders li{display:grid;grid-template-columns:22px auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--haze);font-size:12px}
+.leaders li{display:grid;grid-template-columns:22px auto minmax(0,1fr) auto 44px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--haze);font-size:12px}
 .leaders li:first-child .lr{background:var(--signal);color:#000}
 .leaders .lr{width:22px;height:22px;display:grid;place-items:center;background:var(--dusk);color:#fff;font-size:11px}
 .leaders .fchip canvas{width:24px;height:24px}
 .leaders .ln{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.leaders b{font-size:15px;color:#fff}
+.leaders b{font-size:15px;color:#fff;text-align:right}
+.leaders .lt{font-size:10px;color:var(--mist);text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+.tieline{font-size:11px;color:var(--muted);margin:-2px 0 6px}
 .leaders li.you{background:var(--dusk)}
 .leaders-none,.empty-line{font-size:12px;color:var(--muted);border:2px dashed var(--haze);padding:12px}
 .daily-lower{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px}
 .dayrows{list-style:none;margin:0;padding:0}
-.dayrows li{display:grid;grid-template-columns:62px minmax(0,1fr) 80px 76px auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--haze);font-size:12px}
+.dayrows li{display:grid;grid-template-columns:62px minmax(0,1fr) auto 70px auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--haze);font-size:12px}
 .dayrows .dd{color:#fff}
 .dayrows .dw{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .dayrows .dw.muted{color:var(--muted)}
 .dayrows .fchip canvas{width:24px;height:24px}
 .dayrows .dp{text-align:right;color:var(--muted)}
 .dayrows button{min-height:32px;padding:4px 10px;font-size:11px}
+.dayrows .dt small{color:var(--mist);font-size:10px;margin-left:4px;font-variant-numeric:tabular-nums}
+.dayrows .db{display:flex;gap:6px;justify-content:flex-end}
+.dayrows .solwatch{background:#000;color:var(--signal);border-color:var(--signal)}
+.dayrows .solwatch:hover:not(:disabled){background:var(--signal);color:#000}
 .practicegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .practicegrid button{display:grid;gap:2px;text-align:left;background:var(--dusk);color:var(--wall);padding:8px 10px}
 .practicegrid small{font-size:10px;color:var(--mist)}
@@ -933,6 +939,12 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 .daily-verdict{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
 .daily-verdict>div{border:2px solid var(--haze);padding:8px 10px;background:var(--night)}
 .daily-verdict>div:nth-child(2) strong{color:var(--signal)}
+.solvable{border:3px solid var(--signal);background:#000;padding:12px 14px;display:grid;gap:4px;box-shadow:4px 4px 0 var(--haze);justify-self:stretch}
+.solvable small{font-size:10px;letter-spacing:1px;color:var(--mist)}
+.solvable strong{font-size:24px;line-height:1.1;color:var(--signal);text-transform:uppercase}
+.solvable p{font-size:12px;color:var(--wall)}
+.solvable .solclock{color:#fff;font-variant-numeric:tabular-nums}
+#dailyResult .solvable{margin:0 0 12px}
 .daily-sending{margin:14px 0;font-size:12px;color:var(--muted)}
 
 /* RF ECONOMY: two pots side by side */
@@ -977,7 +989,8 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .dayrows .dt,.dayrows .dp{grid-column:2;text-align:left}
  .dayrows .dt{grid-row:2}
  .dayrows .dp{display:none}
- .dayrows button{grid-column:3;grid-row:1 / span 2}
+ .dayrows .db{grid-column:3;grid-row:1 / span 2;flex-direction:column;align-items:stretch}
+ .solvable strong{font-size:20px}
  .splitbar.big b{font-size:18px}
  .splitbar span{padding:4px 6px;font-size:9px;overflow-wrap:normal}
  .splitbar .ash,.splitbar .gift,.potbar .ash,.potbar .gift{flex:0 0 80px!important;min-width:0}

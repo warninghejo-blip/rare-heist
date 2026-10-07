@@ -12,8 +12,10 @@
   async init(){this.me=await this.request('POST','/api/session');return this.me;}
   state(){return this.request('GET','/api/daily');}
   enter(heroId){return this.request('POST','/api/daily/enter',{heroId});}
+  start(){return this.request('POST','/api/daily/start');}
   submit(actions){return this.request('POST','/api/daily/submit',{actions});}
   history(limit=7){return this.request('GET','/api/daily/history?limit='+encodeURIComponent(limit));}
+  solution(day){return this.request('GET','/api/daily/solution/'+encodeURIComponent(day));}
   replay(day,rank=1){return this.request('GET','/api/daily/replay/'+encodeURIComponent(day)+'/'+encodeURIComponent(rank));}
  }
  return {Network};

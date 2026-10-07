@@ -58,8 +58,11 @@ export function createApp({dbFile=path.join(root,'data/last-heist.sqlite'),clock
    if(p==='/api/daily'&&req.method==='GET')return json(res,200,store.daily.state(s.player));
    if(p==='/api/daily/enter'&&req.method==='POST')return json(res,200,store.daily.enter(s.player,b.heroId));
    if(p==='/api/daily/attempt'&&req.method==='POST')return json(res,200,store.daily.extra(s.player));
+   if(p==='/api/daily/start'&&req.method==='POST')return json(res,200,store.daily.start(s.player));
    if(p==='/api/daily/submit'&&req.method==='POST')return json(res,200,store.daily.submit(s.player,b.actions));
    if(p==='/api/daily/history'&&req.method==='GET')return json(res,200,store.daily.history(u.searchParams.get('limit')??7));
+   const dailySolution=p.match(/^\/api\/daily\/solution\/(\d{4}-\d{2}-\d{2})$/);
+   if(dailySolution&&req.method==='GET')return json(res,200,store.daily.solution(dailySolution[1]));
    const dailyReplay=p.match(/^\/api\/daily\/replay\/(\d{4}-\d{2}-\d{2})\/([1-9][0-9]*)$/);
    if(dailyReplay&&req.method==='GET')return json(res,200,store.daily.replay(dailyReplay[1],Number(dailyReplay[2])));
    if(p==='/api/economy'&&req.method==='GET')return json(res,200,store.economy());

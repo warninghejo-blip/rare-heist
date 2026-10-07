@@ -904,23 +904,29 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 .sealed span{background:var(--signal);color:#000;padding:2px 8px;font-size:12px;letter-spacing:.5px}
 .board h3{font-size:13px;letter-spacing:1px;margin-bottom:6px}
 .leaders{list-style:none;margin:0;padding:0;display:grid}
-.leaders li{display:grid;grid-template-columns:22px auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--haze);font-size:12px}
+.leaders li{display:grid;grid-template-columns:22px auto minmax(0,1fr) auto 44px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--haze);font-size:12px}
 .leaders li:first-child .lr{background:var(--signal);color:#000}
 .leaders .lr{width:22px;height:22px;display:grid;place-items:center;background:var(--dusk);color:#fff;font-size:11px}
 .leaders .fchip canvas{width:24px;height:24px}
 .leaders .ln{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.leaders b{font-size:15px;color:#fff}
+.leaders b{font-size:15px;color:#fff;text-align:right}
+.leaders .lt{font-size:10px;color:var(--mist);text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+.tieline{font-size:11px;color:var(--muted);margin:-2px 0 6px}
 .leaders li.you{background:var(--dusk)}
 .leaders-none,.empty-line{font-size:12px;color:var(--muted);border:2px dashed var(--haze);padding:12px}
 .daily-lower{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px}
 .dayrows{list-style:none;margin:0;padding:0}
-.dayrows li{display:grid;grid-template-columns:62px minmax(0,1fr) 80px 76px auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--haze);font-size:12px}
+.dayrows li{display:grid;grid-template-columns:62px minmax(0,1fr) auto 70px auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--haze);font-size:12px}
 .dayrows .dd{color:#fff}
 .dayrows .dw{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .dayrows .dw.muted{color:var(--muted)}
 .dayrows .fchip canvas{width:24px;height:24px}
 .dayrows .dp{text-align:right;color:var(--muted)}
 .dayrows button{min-height:32px;padding:4px 10px;font-size:11px}
+.dayrows .dt small{color:var(--mist);font-size:10px;margin-left:4px;font-variant-numeric:tabular-nums}
+.dayrows .db{display:flex;gap:6px;justify-content:flex-end}
+.dayrows .solwatch{background:#000;color:var(--signal);border-color:var(--signal)}
+.dayrows .solwatch:hover:not(:disabled){background:var(--signal);color:#000}
 .practicegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .practicegrid button{display:grid;gap:2px;text-align:left;background:var(--dusk);color:var(--wall);padding:8px 10px}
 .practicegrid small{font-size:10px;color:var(--mist)}
@@ -933,6 +939,12 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
 .daily-verdict{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
 .daily-verdict>div{border:2px solid var(--haze);padding:8px 10px;background:var(--night)}
 .daily-verdict>div:nth-child(2) strong{color:var(--signal)}
+.solvable{border:3px solid var(--signal);background:#000;padding:12px 14px;display:grid;gap:4px;box-shadow:4px 4px 0 var(--haze);justify-self:stretch}
+.solvable small{font-size:10px;letter-spacing:1px;color:var(--mist)}
+.solvable strong{font-size:24px;line-height:1.1;color:var(--signal);text-transform:uppercase}
+.solvable p{font-size:12px;color:var(--wall)}
+.solvable .solclock{color:#fff;font-variant-numeric:tabular-nums}
+#dailyResult .solvable{margin:0 0 12px}
 .daily-sending{margin:14px 0;font-size:12px;color:var(--muted)}
 
 /* RF ECONOMY: two pots side by side */
@@ -977,7 +989,8 @@ body[data-screen="play"] #toast{bottom:auto;top:calc(var(--bar) + 60px)}
  .dayrows .dt,.dayrows .dp{grid-column:2;text-align:left}
  .dayrows .dt{grid-row:2}
  .dayrows .dp{display:none}
- .dayrows button{grid-column:3;grid-row:1 / span 2}
+ .dayrows .db{grid-column:3;grid-row:1 / span 2;flex-direction:column;align-items:stretch}
+ .solvable strong{font-size:20px}
  .splitbar.big b{font-size:18px}
  .splitbar span{padding:4px 6px;font-size:9px;overflow-wrap:normal}
  .splitbar .ash,.splitbar .gift,.potbar .ash,.potbar .gift{flex:0 0 80px!important;min-width:0}
@@ -4367,8 +4380,10 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   async init(){this.me=await this.request('POST','/api/session');return this.me;}
   state(){return this.request('GET','/api/daily');}
   enter(heroId){return this.request('POST','/api/daily/enter',{heroId});}
+  start(){return this.request('POST','/api/daily/start');}
   submit(actions){return this.request('POST','/api/daily/submit',{actions});}
   history(limit=7){return this.request('GET','/api/daily/history?limit='+encodeURIComponent(limit));}
+  solution(day){return this.request('GET','/api/daily/solution/'+encodeURIComponent(day));}
   replay(day,rank=1){return this.request('GET','/api/daily/replay/'+encodeURIComponent(day)+'/'+encodeURIComponent(rank));}
  }
  return {Network};
@@ -4525,7 +4540,7 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  function refreshInspection(){if(!game||!inspectMode)return;const d=F.describe(game.level,game.state,inspectCell);$('inspectTitle').textContent=d?(d.title+' / '+d.at):'TACTICAL SCAN';$('inspectBody').textContent=d?.body||'Tap an object to understand it.';const v=inspectAction?F.preview(game.level,game.state,inspectAction):d?.preview;$('inspectRisk').textContent=v?(v.heading?v.heading+' — ':'')+v.text:'Arrow buttons preview one action. Scan does not spend a turn; shared timers continue.';$('inspectRisk').dataset.tone=v?.tone||'neutral';$('inspectCycle').innerHTML=(d?.signals||[]).map(t=>'<span class="beat '+(t.on?'on':'')+'" title="'+(t.on?'Laser ON':'Laser OFF')+' at +'+(t.label==='NOW'?'0':t.label)+'">'+t.label+'<b>'+(t.on?'ON':'OFF')+'</b></span>').join('');}
  function scanAction(action){inspectAction=action;refreshInspection();}
  function checkpoint(){if(!game||game.type==='replay'||editor?.active)return;write(ATTEMPT,{v:1,level:game.level,actions:game.actions,mode:game.state.mode,type:game.type,practice:game.practice,shared:game.shared||null,daily:game.daily&&!game.daily.sent?game.daily:null,mutation:game.mutation||null,fortifyRoundId:game.type==='fortify'?editor?.round?.id:null,hero:hero.tokenId});}
- function start(l,{mode='operative',type='solo',practice=false,context=null,actions=[],mutation=null,daily=null}={}){l=C.normalize(l);let s=E.create(l,mode);if(actions.length){const r=E.replay(l,actions,mode);if(!r.state||r.error?.startsWith('Invalid'))throw Error('Saved route no longer validates');s=r.state;}game={level:l,state:s,actions:[...actions],type,practice,shared:context,mutation,recorded:false,daily:daily?{...daily}:null};if(editor)editor.active=false;show('play');$('editor').hidden=true;$('replayBar').hidden=true;$('sharedBanner').hidden=!context&&!game.daily;if(game.daily)$('sharedBanner').textContent=game.daily.practice?'DAILY PRACTICE / '+dayLabel(game.daily.day)+' / FREE, NOT RANKED':'DAILY HEIST / '+dayLabel(game.daily.day)+' / TRY '+((game.daily.total||game.daily.left)-game.daily.left+1)+' OF '+(game.daily.total||game.daily.left)+' / NO REWINDS';anim=null;hover=null;hud();checkpoint();$('gameCanvas').focus({preventScroll:true});}
+ function start(l,{mode='operative',type='solo',practice=false,context=null,actions=[],mutation=null,daily=null}={}){l=C.normalize(l);let s=E.create(l,mode);if(actions.length){const r=E.replay(l,actions,mode);if(!r.state||r.error?.startsWith('Invalid'))throw Error('Saved route no longer validates');s=r.state;}game={level:l,state:s,actions:[...actions],type,practice,shared:context,mutation,recorded:false,daily:daily?{...daily}:null};if(editor)editor.active=false;show('play');$('editor').hidden=true;$('replayBar').hidden=true;$('sharedBanner').hidden=!context&&!game.daily;if(game.daily)$('sharedBanner').textContent=dailyBanner(game);anim=null;hover=null;hud();checkpoint();$('gameCanvas').focus({preventScroll:true});}
  function clearCheckpoint(){try{localStorage.removeItem(ATTEMPT);}catch{}}
  function errorMessage(code){return {blocked:'A wall, locked door or fixed device blocks that step. Use a ladder to change floors.',crate:'No room to push the crate. Crates cannot be pulled.',vent:'Stand on a vent before pressing E',heavy:'The trophy is too heavy for this vent. Use the stairs.',light:'Move next to the wall switch marked L',empty:'No EMP remaining',finished:'This attempt has ended'}[code]||'That action is not available';}
  // CLICK-TO-TRAVEL: walk to a clicked cell one real turn at a time. Before every step the
@@ -5071,7 +5086,8 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  // DAILY HEIST (docs/DAILY.md). One vault per UTC day on the game server; DEMO RF on the standalone site.
  // The level stays sealed until you enter. Every finished (or abandoned) attempt is sent to the server, which replays it
  // with the same engine and ranks clean wins by turns. Practice on past days is free, local and never sent.
- // Client: DailyHeistClient.Network (src/daily-client.js): state(), enter(heroId), submit(actions), history(limit), replay(day, rank).
+ // Client: DailyHeistClient.Network (src/daily-client.js): state(), enter(heroId), start(), submit(actions), history(limit), replay(day, rank), solution(day).
+ // Turns rank first; equal turns go to the faster run (server time from start() to the accepted submit).
  // Entry is one bundle: a fixed price for a fixed number of tries, all into the pot; no extra tries are sold.
  // Contract numbers below are only shown until the server answers; the server's prices and split always win.
  const DAILY_DEFAULT={prices:{entry:150,attempts:3},split:{winner:80,burn:10,rewards:10}};
@@ -5085,6 +5101,13 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  // The countdown runs on the server's clock: serverNow from the Daily state if present, otherwise from a Last Heist round view.
  const dailyNow=()=>Date.now()+(dailyOffset||0);
  function clockText(ms){if(ms<=0)return '00:00:00';const s=Math.floor(ms/1000),p=n=>String(n).padStart(2,'0');return p(Math.floor(s/3600))+':'+p(Math.floor(s/60)%60)+':'+p(s%60);}
+ // Run time for the tie-break: 1:42, or 1:02:05 past an hour. Empty when the server sent no time.
+ function runTime(ms){if(ms==null||ms===''||!Number.isFinite(+ms)||+ms<0)return '';const s=Math.floor(+ms/1000),p=n=>String(n).padStart(2,'0');return s>=3600?Math.floor(s/3600)+':'+p(Math.floor(s/60)%60)+':'+p(s%60):Math.floor(s/60)+':'+p(s%60);}
+ const withTime=(turns,ms)=>escape(turns)+' turns'+(runTime(ms)?' · '+runTime(ms):'');
+ // Ranked try banner: the clock shown is the server's (start() → now), the same clock that breaks ties.
+ function dailyBanner(g){const d=g.daily;if(d.practice)return 'DAILY PRACTICE / '+dayLabel(d.day)+' / FREE, NOT RANKED';const total=d.total||d.left,t=Number.isFinite(d.startedAt)?runTime(Math.max(0,(d.endedAt??dailyNow())-d.startedAt)):'';
+  return 'DAILY HEIST / '+dayLabel(d.day)+' / TRY '+(total-d.left+1)+' OF '+total+' / NO REWINDS'+(t?' / '+t:'');}
+ const solvableCard=(turns,id='')=>'<div class="solvable"'+(id?' id="'+id+'"':'')+'><small>NO CLEAN RUN TODAY</small><strong>Solvable in '+escape(turns)+' turns</strong><p>Solution unlocks at 00:00 UTC · <b class="solclock">'+clockText(dailyCloses()-dailyNow())+'</b></p></div>';
  const dailyHero=()=>owned||!previewing?hero.tokenId:'3412';
  // Tries left as pips: lime = still to play, hollow = spent.
  const triesPips=(left,total)=>'<span class="pips" role="img" aria-label="'+left+' of '+total+' tries left">'+Array.from({length:total},(_,i)=>'<i'+(i<left?' class="on"':'')+'></i>').join('')+'</span>';
@@ -5114,47 +5137,54 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   let act='';
   if(closed)act='<p class="daily-state">Closed. Settling the pot</p>';
   else if(!m){const short=bal!=null&&bal<P.entry;act='<button id="dailyEnter" class="primary big"'+(short?' disabled':'')+'>ENTER — '+P.entry+' RF · '+total+' TRIES</button><p class="daily-sub">'+(short?'Not enough DEMO RF. Refills at 00:00 UTC':'The vault opens when you enter')+'</p>';}
-  else if(left>0)act='<button id="dailyPlay" class="primary big">PLAY TRY '+(total-left+1)+' OF '+total+'</button><p class="daily-sub">Every run counts. No rewinds</p>';
-  else act='<p class="daily-state" id="dailyDone">All '+total+' tries played. '+(best?'Best '+escape(best.turns)+' turns'+(rank?', rank '+rank:''):'No clean run today')+'</p>';
-  const leaders=(st.leaders||[]).slice(0,10),board=leaders.length?'<ol class="leaders">'+leaders.map((x,i)=>'<li'+(x.you?' class="you"':'')+'><span class="lr">'+(i+1)+'</span>'+chip(x.heroId,'')+'<span class="ln">'+escape(x.name||'Friend #'+x.heroId)+'</span><b>'+escape(x.turns)+'</b></li>').join('')+'</ol>':'<p class="leaders-none">No clean runs yet. First clear leads</p>';
+  else if(left>0)act='<button id="dailyPlay" class="primary big">PLAY TRY '+(total-left+1)+' OF '+total+'</button><p class="daily-sub">The clock starts at PLAY. No rewinds</p>';
+  else act=!best&&m.solvable?.turns!=null?solvableCard(m.solvable.turns,'dailySolvable'):'<p class="daily-state" id="dailyDone">All '+total+' tries played. '+(best?'Best '+withTime(best.turns,best.ms)+(rank?', rank '+rank:''):'No clean run today')+'</p>';
+  const leaders=(st.leaders||[]).slice(0,10),board=leaders.length?'<ol class="leaders">'+leaders.map((x,i)=>'<li'+(x.you?' class="you"':'')+'><span class="lr">'+(i+1)+'</span>'+chip(x.heroId,'')+'<span class="ln">'+escape(x.name||'Friend #'+x.heroId)+'</span><b>'+escape(x.turns)+'</b><small class="lt">'+(runTime(x.ms)||'—')+'</small></li>').join('')+'</ol>':'<p class="leaders-none">No clean runs yet. First clear leads</p>';
   const hist=(dailyHist||[]).filter(h=>h&&h.day&&h.day!==st.day);
-  const histHtml=hist.length?'<ul class="dayrows">'+hist.slice(0,7).map(h=>'<li><span class="dd">'+dayLabel(h.day)+'</span>'+(h.winner?'<span class="dw">'+chip(h.winner.heroId,'')+'<span>'+escape(h.winner.name||'Friend #'+h.winner.heroId)+'</span></span><span class="dt">'+escape(h.winner.turns)+' TURNS</span><span class="dp">'+num(h.pot)+' RF</span><button data-dwatch="'+escape(h.day)+'">WATCH</button>':'<span class="dw muted">'+(h.refunded?'No winner, refunded':'No winner')+'</span><span class="dt"></span><span class="dp">'+num(h.pot)+' RF</span><span></span>')+'</li>').join('')+'</ul>':'<p class="empty-line">The first day closes at 00:00 UTC. Winners show here</p>';
-  const open=hist.filter(h=>h.winner||h.level),practice=open.length?'<div class="practicegrid">'+open.map(h=>'<button data-dpractice="'+escape(h.day)+'"><b>'+dayLabel(h.day)+'</b><small>'+(h.winner?'BEST '+escape(h.winner.turns):'UNBEATEN')+'</small></button>').join('')+'</div>':'<p class="empty-line">Past vaults with a winning run open here for free practice</p>';
+  const solBtn=h=>h.solutionTurns!=null?'<button class="solwatch" data-dsol="'+escape(h.day)+'" title="The stored route, '+escape(h.solutionTurns)+' turns">WATCH SOLUTION</button>':'';
+  const histHtml=hist.length?'<ul class="dayrows">'+hist.slice(0,7).map(h=>'<li><span class="dd">'+dayLabel(h.day)+'</span>'+(h.winner?'<span class="dw">'+chip(h.winner.heroId,'')+'<span>'+escape(h.winner.name||'Friend #'+h.winner.heroId)+'</span></span><span class="dt">'+escape(h.winner.turns)+' TURNS'+(runTime(h.winner.ms)?' <small>'+runTime(h.winner.ms)+'</small>':'')+'</span>':'<span class="dw muted">'+(h.refunded?'No winner, refunded':'No winner')+'</span><span class="dt">'+(h.solutionTurns!=null?'<small>SOLVABLE IN '+escape(h.solutionTurns)+'</small>':'')+'</span>')+'<span class="dp">'+num(h.pot)+' RF</span><span class="db">'+(h.winner?'<button data-dwatch="'+escape(h.day)+'">WATCH</button>':'')+solBtn(h)+'</span></li>').join('')+'</ul>':'<p class="empty-line">The first day closes at 00:00 UTC. Winners show here</p>';
+  const open=hist.filter(h=>h.level||h.winner),practice=open.length?'<div class="practicegrid">'+open.map(h=>'<button data-dpractice="'+escape(h.day)+'"><b>'+dayLabel(h.day)+'</b><small>'+(h.winner?'BEST '+escape(h.winner.turns):'UNBEATEN')+'</small></button>').join('')+'</div>':'<p class="empty-line">Past vaults open here for free practice</p>';
   const sealed=st.level&&m?'<canvas id="dailyThumb" width="400" height="250" aria-label="Today\'s vault"></canvas>':'<div class="sealed" aria-label="Level sealed until you enter"><i aria-hidden="true"></i><span>SEALED UNTIL YOU ENTER</span></div>';
   $('dailyPage').innerHTML=head
    +'<section class="dailycard" aria-labelledby="dailyToday"><div class="daily-main"><div class="daily-top"><h2 id="dailyToday">'+dayLabel(st.day)+' <small>UTC</small></h2><p class="daily-clock"><small>CLOSES IN</small><strong id="dailyClock">'+clockText(dailyCloses()-dailyNow())+'</strong></p></div>'
-   +'<div class="daily-stats"><div><small>POT</small><strong id="dailyPot">'+num(st.pot)+'</strong><i>DEMO RF</i></div><div><small>ENTRIES</small><strong id="dailyEntries">'+num(st.entries)+'</strong></div><div><small>TRIES</small><strong id="dailyTries">'+(m?left:total)+'</strong>'+triesPips(m?left:total,total)+'</div><div><small>YOUR BEST</small><strong id="dailyBest">'+(best?escape(best.turns):'—')+'</strong><i>'+(best?(rank?'RANK '+rank:'TURNS'):m?'NO CLEAN RUN YET':'NOT ENTERED')+'</i></div></div>'
+   +'<div class="daily-stats"><div><small>POT</small><strong id="dailyPot">'+num(st.pot)+'</strong><i>DEMO RF</i></div><div><small>ENTRIES</small><strong id="dailyEntries">'+num(st.entries)+'</strong></div><div><small>TRIES</small><strong id="dailyTries">'+(m?left:total)+'</strong>'+triesPips(m?left:total,total)+'</div><div><small>YOUR BEST</small><strong id="dailyBest">'+(best?escape(best.turns):'—')+'</strong><i>'+(best?(rank?'RANK '+rank:'TURNS')+(runTime(best.ms)?' · '+runTime(best.ms):''):m?(left?'NO CLEAN RUN YET':'NO CLEAN RUN'):'NOT ENTERED')+'</i></div></div>'
    +splitBar(S,st.pot>0?st.pot:null,{id:'dailySplit'})
    +'<div class="daily-act">'+act+'</div><p class="daily-meta">'+(bal!=null?'Wallet <b id="dailyBalance">'+num(bal)+'</b> DEMO RF / ':'')+P.entry+' RF buys '+total+' tries, all into the pot</p></div>'
-   +'<div class="daily-side">'+sealed+'<div class="board"><h3>TOP 10</h3>'+board+'</div></div></section>'
+   +'<div class="daily-side">'+sealed+'<div class="board"><h3>TOP 10</h3><p class="tieline">Fewest turns wins · ties go to the faster run</p>'+board+'</div></div></section>'
    +'<div class="daily-lower"><section aria-labelledby="dailyHistT"><div class="section-title"><h2 id="dailyHistT">LAST 7 DAYS</h2></div>'+histHtml+'</section>'
    +'<section aria-labelledby="dailyPracT"><div class="section-title"><h2 id="dailyPracT">PRACTICE</h2><p>Past vaults, free, not ranked</p></div>'+practice+'</section></div>';
   if(st.level&&m&&$('dailyThumb'))try{drawThumb($('dailyThumb'),C.normalize(st.level));}catch{}
   drawChips($('dailyPage'));
-  if($('dailyEnter'))$('dailyEnter').onclick=dailyEnter;if($('dailyPlay'))$('dailyPlay').onclick=dailyPlay;
+  if($('dailyEnter'))$('dailyEnter').onclick=dailyEnter;if($('dailyPlay'))$('dailyPlay').onclick=()=>dailyPlay($('dailyPlay'));
   $('dailyPage').querySelectorAll('[data-dwatch]').forEach(b=>b.onclick=()=>dailyWatch(b.dataset.dwatch));
+  $('dailyPage').querySelectorAll('[data-dsol]').forEach(b=>b.onclick=()=>dailySolution(b.dataset.dsol));
   $('dailyPage').querySelectorAll('[data-dpractice]').forEach(b=>b.onclick=()=>dailyPractice(b.dataset.dpractice));}
  async function dailyCall(fn,btn){if(dailyBusy)return null;dailyBusy=true;if(btn)btn.disabled=true;try{const api=await dailyClient();return await fn(api);}catch(e){toast(dailyErrorText(e));if(['INSUFFICIENT','CLOSED','ALREADY_ENTERED','NO_ATTEMPTS','NOT_ENTERED'].includes(e.code)){dailyBusy=false;await loadDaily(false);}return null;}finally{dailyBusy=false;if(btn&&btn.isConnected)btn.disabled=false;}}
- function dailyEnter(){const P=dPrices(),bal=dailyState?.balance;modal('ENTER TODAY\'S HEIST','<p>'+demoStamp+'</p><ul class="burnfacts"><li>'+P.entry+' DEMO RF for '+P.attempts+' tries, all into the pot'+(Number.isFinite(+bal)?'. Wallet '+num(bal)+' now':'')+'</li><li>The vault opens now. Fewest turns at 00:00 UTC wins</li><li>Every finished run counts. No rewinds</li></ul><div class="toolbar"><button id="dailyYes" class="primary">ENTER — '+P.entry+' RF · '+P.attempts+' TRIES</button><button id="dailyNo">CANCEL</button></div>');
+ function dailyEnter(){const P=dPrices(),bal=dailyState?.balance;modal('ENTER TODAY\'S HEIST','<p>'+demoStamp+'</p><ul class="burnfacts"><li>'+P.entry+' DEMO RF for '+P.attempts+' tries, all into the pot'+(Number.isFinite(+bal)?'. Wallet '+num(bal)+' now':'')+'</li><li>The vault opens now. Fewest turns at 00:00 UTC wins, ties go to the faster run</li><li>Every finished run counts. The clock starts at PLAY</li></ul><div class="toolbar"><button id="dailyYes" class="primary">ENTER — '+P.entry+' RF · '+P.attempts+' TRIES</button><button id="dailyNo">CANCEL</button></div>');
   $('dailyNo').onclick=()=>$('modal').close();$('dailyYes').onclick=async()=>{const v=await dailyCall(api=>api.enter(dailyHero()),$('dailyYes'));if(!v)return;setDaily(v);$('modal').close();dailyPlay();};}
- function dailyPlay(){const st=dailyState,l=st?.level;if(!l){toast('Today\'s vault did not arrive. Refreshing');loadDaily(false);return;}if(!(st.myEntry?.attemptsLeft>0)){renderDaily();return;}
+ // PLAY starts the server clock first (start() is idempotent while a try is open). A server without /start still plays:
+ // it times the try from the entry or the previous submit.
+ async function dailyPlay(btn){let st=dailyState,l=st?.level;if(!l){toast('Today\'s vault did not arrive. Refreshing');loadDaily(false);return;}if(!(st.myEntry?.attemptsLeft>0)){renderDaily();return;}
   let level;try{level=C.normalize(l);}catch{toast('Today\'s vault did not validate');return;}
-  start(level,{type:'daily',mode:'ghost',daily:{day:st.day,left:st.myEntry.attemptsLeft,total:Math.max(dPrices().attempts|0,st.myEntry.attemptsLeft)}});toast('Try started. Every run counts');}
+  let missing=false;const v=await dailyCall(async api=>{try{return typeof api.start==='function'?await api.start():await api.request('POST','/api/daily/start',{});}catch(e){if(e.code==='NOT_FOUND'){missing=true;return {};}throw e;}},btn||null);if(!v)return;
+  if(v.day===st.day){setDaily(v);st=dailyState;}const at=Number(v.attempt?.startedAt),left=st.myEntry?.attemptsLeft;if(!(left>0)){renderDaily();return;}
+  start(level,{type:'daily',mode:'ghost',daily:{day:st.day,left,total:Math.max(dPrices().attempts|0,left),startedAt:Number.isFinite(at)&&at>0?at:missing?undefined:dailyNow()}});toast('Try started. The clock is running');}
  // An attempt is spent once it is sent: on the result sheet, or when a running try is given up.
  async function dailySubmit(g){if(!g?.daily||g.daily.practice||g.daily.sent)return;g.daily.sent='sending';const box=()=>$('dailyResult');
   try{const api=await dailyClient(),v=await api.submit([...g.actions]);g.daily.sent='done';g.daily.reply=v;setDaily(v);if(v?.rank)dailyRank=v.rank;clearCheckpoint();if(game===g)dailyResultBox(g);}
   catch(e){g.daily.sent=null;if(game===g&&box())box().innerHTML='<p class="statusline">Not sent: '+escape(dailyErrorText(e))+'</p><button id="dailyResend" class="primary">SEND AGAIN</button>';if($('dailyResend'))$('dailyResend').onclick=()=>{box().innerHTML='<p class="daily-sending">Sending your run...</p>';dailySubmit(g);};}}
  function dailyResultBox(g){const b=$('dailyResult');if(!b)return;const v=g.daily.reply||{},st=dailyState||{},m=st.myEntry||{},P=dPrices(),left=Math.max(0,m.attemptsLeft|0),total=Math.max(P.attempts|0,left,1),won=g.state.status==='won';
   const rankNow=v.rank||(m.best&&Array.isArray(st.leaders)?(st.leaders.findIndex(x=>x.turns===m.best.turns&&String(x.heroId)===String(m.heroId))+1)||null:null);
-  b.innerHTML='<div class="daily-verdict"><div><small>THIS RUN</small><strong>'+(won&&v.accepted!==false?escape(v.turns??g.state.turn):'—')+'</strong><i>'+(won?(v.accepted===false?'NOT COUNTED':'TURNS'):'NOT CLEAN')+'</i></div><div><small>RANK NOW</small><strong id="dailyRankNow">'+(rankNow?escape(rankNow):'—')+'</strong><i>'+num(st.entries)+' ENTRIES</i></div><div><small>YOUR BEST</small><strong>'+(m.best?escape(m.best.turns):'—')+'</strong><i>'+num(st.pot)+' RF POT</i></div><div><small>TRIES LEFT</small><strong>'+left+'</strong>'+triesPips(left,total)+'</div></div>'
-   +'<div class="resultmain">'+(left>0?'<button id="resultDailyNext" class="primary">NEXT TRY — '+left+' LEFT</button>':'<p class="daily-state">All tries played. '+(m.best?'Best '+escape(m.best.turns)+' turns'+(rankNow?', rank '+rankNow:''):'No clean run today')+'</p>')+'<button id="resultDailyLobby">DAILY LOBBY</button></div>';
+  b.innerHTML='<div class="daily-verdict"><div><small>THIS RUN</small><strong>'+(won&&v.accepted!==false?escape(v.turns??g.state.turn):'—')+'</strong><i>'+(won?(v.accepted===false?'NOT COUNTED':'TURNS'+(runTime(v.ms)?' · '+runTime(v.ms):'')):'NOT CLEAN')+'</i></div><div><small>RANK NOW</small><strong id="dailyRankNow">'+(rankNow?escape(rankNow):'—')+'</strong><i>'+num(st.entries)+' ENTRIES</i></div><div><small>YOUR BEST</small><strong>'+(m.best?escape(m.best.turns):'—')+'</strong><i>'+(m.best?'TURNS'+(runTime(m.best.ms)?' · '+runTime(m.best.ms):''):num(st.pot)+' RF POT')+'</i></div><div><small>TRIES LEFT</small><strong>'+left+'</strong>'+triesPips(left,total)+'</div></div>'
+   +(left===0&&!m.best&&m.solvable?.turns!=null?solvableCard(m.solvable.turns,'resultSolvable'):'')
+   +'<div class="resultmain">'+(left>0?'<button id="resultDailyNext" class="primary">NEXT TRY — '+left+' LEFT</button>':m.best||m.solvable?.turns==null?'<p class="daily-state">All tries played. '+(m.best?'Best '+withTime(m.best.turns,m.best.ms)+(rankNow?', rank '+rankNow:''):'No clean run today')+'</p>':'')+'<button id="resultDailyLobby">DAILY LOBBY</button></div>';
   if($('resultDailyNext'))$('resultDailyNext').onclick=()=>{$('modal').close();dailyPlay();};$('resultDailyLobby').onclick=()=>{$('modal').close();navigate('daily');};}
  // RETRY during a ranked try gives it up: the run so far is sent and the try is spent.
  function dailyGiveUp(){const g=game;if(!g?.daily||g.daily.practice)return;if(g.state.status!=='playing'){result();return;}if(!g.actions.length){toast('This try starts with your first move');return;}
   modal('GIVE UP THIS TRY?','<p>The run so far is sent and the try is spent</p><div class="toolbar"><button id="giveUpYes" class="primary">GIVE UP</button><button id="giveUpNo">KEEP PLAYING</button></div>');$('giveUpNo').onclick=()=>$('modal').close();
   $('giveUpYes').onclick=()=>{$('modal').close();stopTravel();g.gaveUp=true;g.state={...g.state,status:'lost',failure:null};hud();result();};}
  // Ranked result: one verdict, the server's answer (turns, rank, best) and the next try.
- function dailyResultSheet(){const g=game,s=g.state,won=s.status==='won',analysis=F.summary(g.level,g.actions,s.mode);record();beep(won?'win':'alarm');
+ function dailyResultSheet(){const g=game,s=g.state;if(g.daily.endedAt==null){g.daily.endedAt=dailyNow();$('sharedBanner').textContent=dailyBanner(g);}const won=s.status==='won',analysis=F.summary(g.level,g.actions,s.mode);record();beep(won?'win':'alarm');
   const title=won?'CLEAN RUN':g.gaveUp?'TRY GIVEN UP':s.failure?.kind==='lockdown'?'LOCKED IN':'SPOTTED',why=won?'Out unseen in '+s.turn+' turns':g.gaveUp?'Given up on turn '+s.turn:failureText(s.failure,analysis.source).replace(/\.$/,'');
   modal(title,'<div class="verdict"><div class="stamp'+(won?'':' lost')+'">'+(won?'DAILY':'SPENT')+'</div><p>'+escape(why)+'</p></div><div class="res-friend '+(won?'out':'caught')+'"><canvas class="res-stage" aria-hidden="true"></canvas><span><b>#'+escape(hero.tokenId)+'</b>'+(won?'got out':g.gaveUp?'walked away':'was spotted')+'<br>Daily Heist, '+dayLabel(g.daily.day)+'</span></div>'
    +'<div id="dailyResult" aria-live="polite"><p class="daily-sending">Sending your run...</p></div><div class="resultmore"><button id="resultReplay">WATCH THIS RUN</button>'+(!won&&!g.gaveUp?'<button id="resultCause">SHOW WHAT SAW ME</button>':'')+'</div>');
@@ -5167,6 +5197,10 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
  async function dailyWatch(day){try{const api=await dailyClient(),v=await api.replay(day,1),row=(dailyHist||[]).find(h=>h.day===day),level=v?.level||row?.level;if(!level||!Array.isArray(v?.actions))throw Error('No winning run to watch');
   const heroId=String(v.heroId||row?.winner?.heroId||'3412');watch({level,actions:v.actions,mode:v.mode||'ghost',heroId},0,{fromDaily:true,dailyWatch:{day,name:v.name||row?.winner?.name||'Friend #'+heroId,turns:v.turns??row?.winner?.turns}});
   $('sharedBanner').hidden=false;$('sharedBanner').textContent='DAILY HEIST / '+dayLabel(day)+' / WINNING RUN BY '+String(game.dailyWatch.name).toUpperCase()+(game.dailyWatch.turns!=null?' / '+game.dailyWatch.turns+' TURNS':'');}catch(e){toast(dailyErrorText(e));}}
+ // WATCH SOLUTION: the stored route of a closed day, played by your Friend through the replay machinery, badged SOLUTION.
+ async function dailySolution(day){try{const api=await dailyClient(),v=typeof api.solution==='function'?await api.solution(day):await api.request('GET','/api/daily/solution/'+encodeURIComponent(day)),row=(dailyHist||[]).find(h=>h.day===day),level=v?.level||row?.level;if(!level||!Array.isArray(v?.actions))throw Error('The solution is not available');
+  const turns=v.turns??row?.solutionTurns;watch({level,actions:v.actions,mode:v.mode||'ghost',heroId:dailyHero()},0,{solution:true,fromDaily:true,dailyWatch:{day,solution:true,turns}});replay.playing=true;$('replayToggle').textContent='PAUSE';
+  $('sharedBanner').hidden=false;$('sharedBanner').textContent='DAILY HEIST / '+dayLabel(day)+' / THE SOLUTION'+(turns!=null?' / '+turns+' TURNS':'');}catch(e){toast(e.code==='NOT_CLOSED'?'The solution unlocks at 00:00 UTC':dailyErrorText(e));}}
  function help(){modal('HOW TO PLAY','<p>Take the trophy and reach the exit unseen. You step, then every guard, camera and laser steps</p><div class="helpgrid"><section><h3>MOVE</h3><div class="keys"><kbd>'+(isTouch()?'TAP':'CLICK')+' A CELL</kbd><span>walk there, stops before danger</span><kbd>&larr; &rarr; / A D</kbd><span>walk</span><kbd>&uarr; &darr; / W S</kbd><span>climb a ladder</span><kbd>SPACE</kbd><span>wait a turn</span></div></section><section><h3>ACT</h3><div class="keys"><kbd>E</kbd><span>vent</span><kbd>L</kbd><span>lights, at a switch</span><kbd>Q</kbd><span>EMP, 4 turns</span><kbd>Z</kbd><span>rewind (practice)</span><kbd>R</kbd><span>retry</span></div></section><section><h3>READ THE BUILDING</h3><p>Lime is danger now. Dashed boxes are danger next turn (F). INSPECT (I) reads any device for free. The INTEL folder draws every patrol</p></section><section><h3>DEVICES</h3><p>Cards open doors A and B. Switches flip circuits 1 and 2. Crates hold plates down. The exit relay R needs the trophy</p></section></div><p class="note">Daily and Last Heist runs: no rewinds. Last Heist: no EMP, and its clock keeps running</p><div class="toolbar"><button class="primary" data-route="learn">LEARN BY PLAYING</button><button data-route="about">ABOUT THE GAME</button></div>');}
  // ABOUT: every long explanation in one place, seven short sections. Numbers come from the same sources the game uses.
  function stakeRules(){const S=HeistEconomy.STAKES||{},names=['STREET','VAULT'],tiers=Array.isArray(S.tiers)&&S.tiers.length?S.tiers.map((t,i)=>typeof t==='object'?{amount:+t.amount,name:String(t.name||names[i]||'').toUpperCase()}:{amount:+t,name:names[i]||''}):[{amount:100,name:'STREET'},{amount:1000,name:'VAULT'}];
@@ -5176,7 +5210,7 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   const sec=(id,title,lines)=>'<section class="aboutsec" id="about-'+id+'" aria-labelledby="about-'+id+'-t"><h2 id="about-'+id+'-t">'+title+'</h2><ul>'+lines.map(x=>'<li>'+x+'</li>').join('')+'</ul></section>';
   $('aboutPage').innerHTML='<div class="pagehead"><div><h1>ABOUT</h1><p class="lede">The rules, the money and the limits, in short</p></div><div class="side"><span class="tag">BUILD 1.9</span></div></div><div class="aboutlist">'
    +sec('play','How to play',['You step, then every guard, camera and laser steps','Take the trophy, reach the exit, stay unseen','Dashed boxes show next turn. INSPECT is free','<button class="linkbtn" data-route="learn">Five one-minute lessons</button> teach the rest'])
-   +sec('daily','Daily Heist',['One vault a day for everyone, sealed until you enter',P.entry+' RF buys '+P.attempts+' tries, all into the pot. Best run counts','Fewest turns at 00:00 UTC wins: '+D.winner+'% winner, '+D.burn+'% burned, '+D.rewards+'% Friend rewards','Fewer than 2 players, or no clean run: everyone is refunded'])
+   +sec('daily','Daily Heist',['One vault a day for everyone, sealed until you enter',P.entry+' RF buys '+P.attempts+' tries, all into the pot. Best run counts','Fewest turns at 00:00 UTC wins: '+D.winner+'% winner, '+D.burn+'% burned, '+D.rewards+'% Friend rewards','Same turns: the faster run wins. The clock starts at PLAY','Fewer than 2 players, or no clean run: everyone is refunded'])
    +sec('last','Last Heist',['One shared vault. Clear it, add one obstacle, hold it','Stake rounds: '+tiers+' RF per player','Last clean thief takes '+R.split.winner+'%. '+R.split.burn+'% burned, '+R.split.rewards+'% Friend rewards','Fewer than two clearing players: every stake comes back'])
    +sec('shop','Shop and RF',['<span class="tag demo">DEMO</span> Daily, stakes and the Studio use play money on this site. Nothing real moves','<span class="tag tape">LIVE BURN</span> Opt-in. Real RF goes to 0x…dEaD for cosmetics: 100% burned, nobody is paid',escape(shopLine()),'Nothing you buy changes the rules or your odds'])
    +sec('friend','Your Friend',['Your Rare Friend is the thief, drawn from its on-chain pixels','Guests play #7730 or #3412 free, no wallet','Connect a wallet to play your own. Preview any Friend for solo play','Pixels are never redrawn or recoloured'])
@@ -5208,7 +5242,7 @@ window.RF_ART=[{"tokenId":"7730","familyId":5,"familyName":"Hoverer","seed":7730
   // Editing on a phone: draw the whole building at full cell size and let the board scroll sideways, instead of following the entrance.
   const need=editing&&narrow?game.level.map[0].length*40+12:0,want=need>wrap.clientWidth?need+'px':'';if(canvas.style.width!==want)canvas.style.width=want;
   if(editing&&!narrow){const ed=$('editor'),mh=Math.max(300,Math.floor(innerHeight-(ed.getBoundingClientRect().top+scrollY)-chrome-2))+'px';if(ed.style.maxHeight!==mh)ed.style.maxHeight=mh;}}
- function frame(now){const dt=Math.min(.06,(now-rafTime)/1000||.016);rafTime=now;tickStages(now);if(screen==='daily'&&dailyState){const c=$('dailyClock'),t=clockText(dailyCloses()-dailyNow());if(c&&c.textContent!==t)c.textContent=t;if(now-dailyPollAt>15000&&!dailyBusy&&!$('modal').open)loadDaily(dailyCloses()<=dailyNow());}if(screen==='street'&&!SDK&&now-portraitAt>150){portraitAt=now;if(!save.reduced)portraitFrame++;drawPortrait();}if(screen==='street'&&!$('modal').open){const d=HeistStreet.districts.find(x=>x.id===street.district);let delta=moveHeld*140*dt;if(street.target!=null){let dist=street.target-street.x;delta=Math.sign(dist)*Math.min(Math.abs(dist),190*dt);if(Math.abs(dist)<2){street.target=null;street.walking=false;persist();if(street.autoEnter){street.autoEnter=false;enterDoor();}}}street.x=Math.max(60,Math.min(d.width-60,street.x+delta));street.walking=Math.abs(delta)>.01;if(delta)street.facing=delta>0?'right':'left';streetRenderer.render(street,hero,now,{reduced:save.reduced,hover:street.hover});updateDoor();}
+ function frame(now){const dt=Math.min(.06,(now-rafTime)/1000||.016);rafTime=now;tickStages(now);if(screen==='daily'&&dailyState){const c=$('dailyClock'),t=clockText(dailyCloses()-dailyNow());if(c&&c.textContent!==t)c.textContent=t;if(now-dailyPollAt>15000&&!dailyBusy&&!$('modal').open)loadDaily(dailyCloses()<=dailyNow());}if(dailyState){const sc=document.getElementsByClassName('solclock');if(sc.length){const t=clockText(dailyCloses()-dailyNow());for(const c of sc)if(c.textContent!==t)c.textContent=t;}}if(screen==='play'&&game?.daily&&!game.daily.practice&&game.daily.endedAt==null&&game.state.status==='playing'&&Number.isFinite(game.daily.startedAt)&&!replay){const t=dailyBanner(game),b=$('sharedBanner');if(b.textContent!==t)b.textContent=t;}if(screen==='street'&&!SDK&&now-portraitAt>150){portraitAt=now;if(!save.reduced)portraitFrame++;drawPortrait();}if(screen==='street'&&!$('modal').open){const d=HeistStreet.districts.find(x=>x.id===street.district);let delta=moveHeld*140*dt;if(street.target!=null){let dist=street.target-street.x;delta=Math.sign(dist)*Math.min(Math.abs(dist),190*dt);if(Math.abs(dist)<2){street.target=null;street.walking=false;persist();if(street.autoEnter){street.autoEnter=false;enterDoor();}}}street.x=Math.max(60,Math.min(d.width-60,street.x+delta));street.walking=Math.abs(delta)>.01;if(delta)street.facing=delta>0?'right':'left';streetRenderer.render(street,hero,now,{reduced:save.reduced,hover:street.hover});updateDoor();}
   if(screen==='play'&&game){fitBoard();const cw=$('gameCanvas').clientWidth,ch=$('gameCanvas').clientHeight,w=Math.max(SDK?200:360,Math.min(1440,Math.round(cw))),h=Math.max(SDK?100:320,Math.round(w*ch/Math.max(1,cw)));if(replay){if(replay.playing&&now-replay.at>220){replay.at=now;replay.index++;if(replay.index>=replay.states.length){replay.index=replay.states.length-1;replay.playing=false;$('replayToggle').textContent='PLAY';}game.state=replay.states[replay.index];hud();}$('replayPosition').value=replay.index;$('replayCount').textContent=replay.index+' / '+(replay.states.length-1);}
    const trace=replay?replay.states.slice(0,replay.index+1):editor?.active&&editor.kind==='fortify'?E.replay(editor.round.level,editor.reference,'ghost').states:null;
    renderer.render(game.level,game.state,{sample:game.replayHero||hero,trail:game.type!=='replay'&&save.trail!==false&&hasItem('trail')?game.trail:null,time:now,width:w,height:h,forecast:!editor?.active&&forecast,anim:paused?null:anim,reduced:save.reduced||paused,editor:editor?.active,hover:editor?.active&&editor.kind!=='fortify'?hover:null,...fortifyView(),reach:!editor?.active&&!replay&&!inspectMode,touch:isTouch(),focus:!editor?.active&&!replay&&!inspectMode&&!travel?focusOf(hover):null,trace:trace||(travel?null:travelPreview),mutation:editor?.kind==='fortify'?editor.change:game.mutation,guide:travel?travel.target:game.type==='training'&&!inspectMode?F.lesson(game.level,game.state,game.actions).guide:null,guideLabel:travel?'GO':game.level.id==='drill-pulse'&&!game.state.relic?'SCAN':'GO',inspection:inspectMode?inspectCell:null,incident});
