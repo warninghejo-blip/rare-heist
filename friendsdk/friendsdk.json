@@ -1,0 +1,23 @@
+{
+  "id": "rare-heist",
+  "title": "Rare Heist",
+  "version": "1.0.0",
+  "client": "client.ts",
+  "server": "server.ts",
+  "display": { "minAspectRatio": "9:16", "maxAspectRatio": "21:9", "maxWidth": 1920 },
+  "currency": "RF",
+  "items": {
+    "hatchwork": { "name": "Hatchwork", "description": "Hatchwork paper theme" },
+    "signalPaper": { "name": "Signal Paper", "description": "Signal Paper theme" },
+    "goldenTrail": { "name": "Golden Trail", "description": "Cosmetic movement trail" },
+    "blackArchive": { "name": "The Black Archive", "description": "Three extra heists" }
+  },
+  "actions": {
+    "buyHatchwork": { "type": "purchase", "label": "Hatchwork", "price": "250", "gives": { "hatchwork": 1 } },
+    "buySignalPaper": { "type": "purchase", "label": "Signal Paper", "price": "250", "gives": { "signalPaper": 1 } },
+    "buyGoldenTrail": { "type": "purchase", "label": "Golden Trail", "price": "500", "gives": { "goldenTrail": 1 } },
+    "buyBlackArchive": { "type": "purchase", "label": "The Black Archive", "price": "2500", "gives": { "blackArchive": 1 } },
+    "enterDaily": { "type": "external", "lane": "daily", "label": "Daily Heist / 3 attempts", "price": "150", "description": "One entry per Friend per UTC day. 80% winner, 10% burned, 10% Friend rewards. Refund with fewer than two entrants or no clean win." }
+  },
+  "dev": { "external": { "rare-heist-round-v1": { "stub": "dev-round.ts", "lanes": ["daily"] } } }
+}
