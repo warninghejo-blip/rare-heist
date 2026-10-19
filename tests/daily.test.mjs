@@ -6,17 +6,44 @@ import {DailyHeist} from '../server/daily.mjs';
 import {createApp} from '../server/app.mjs';
 const require=createRequire(import.meta.url),solutions=require('../src/daily-solutions.js'),E=require('../src/engine.js');
 
+test('Daily fairness: reveal at start and archive only the last seven closed UTC days',()=>{
+ let now=Date.UTC(2026,9,8,12);
+ const s=new ArenaStore(':memory:',{clock:()=>now,minActionMs:0,seed:false});
+ const outcome=fn=>{try{return fn()?'available':'missing';}catch(e){return e.code;}};
+ try{
+  const before=s.daily.state('a'),entered=s.daily.enter('a','3412'),waiting=s.daily.state('a');
+  now+=5000;const started=s.daily.start('a');
+  const active=s.daily.state('a');now+=250;
+  const submitted=s.daily.submit('a',solutions[started.levelId].actions),after=s.daily.state('a');
+  const next=s.daily.start('a');
+  s.daily.enter('unstarted','5555');s.daily.submit('unstarted',[]);
+  const implicit=s.daily.state('unstarted');
+  now=Date.UTC(2026,9,15,23,59);s.daily.state('a');
+  const seven=outcome(()=>s.daily.solution('2026-10-08'));
+  now=Date.UTC(2026,9,16);s.daily.state('a');
+  assert.deepEqual({before:!!before.level,entered:!!entered.level,waiting:!!waiting.level,
+   enteredId:entered.levelId,implicit:!!implicit.level,started:!!started.level,active:!!active.level,after:!!after.level,
+   startedAt:started.attempt.startedAt,ms:submitted.ms,next:!!next.level,nextAt:next.attempt.startedAt,
+   seven,oldSolution:outcome(()=>s.daily.solution('2026-10-08')),oldReplay:outcome(()=>s.daily.replay('2026-10-08',1)),
+   oldHistory:s.daily.history(30).some(x=>x.day==='2026-10-08')},
+  {before:false,entered:false,waiting:false,enteredId:null,implicit:false,started:true,active:true,after:true,
+   startedAt:Date.UTC(2026,9,8,12)+5000,ms:250,next:true,nextAt:Date.UTC(2026,9,8,12)+5250,
+   seven:'available',oldSolution:'NOT_FOUND',oldReplay:'NOT_FOUND',oldHistory:false});
+ }finally{s.close();}
+});
+
 test('Daily: 150 RF bundle, three attempts then refusal, UTC settlement 80/10/10 and single-player refund',()=>{
  let now=Date.UTC(2026,9,8,12),s=new ArenaStore(':memory:',{clock:()=>now,minActionMs:0,seed:false});
  try{
   assert.ok(s.daily instanceof DailyHeist);
   assert.equal(s.daily.state('a').levelId,null);
   const entered=s.daily.enter('a','3412');
-  assert.equal(entered.levelId,'daily-01');assert.ok(entered.level.map);assert.equal(entered.balance,50);
+  assert.equal(entered.levelId,null);assert.equal(entered.level,undefined);assert.equal(entered.balance,50);
+  const started=s.daily.start('a');assert.equal(started.levelId,'daily-01');assert.ok(started.level.map);
   assert.equal(entered.myEntry.attemptsLeft,3);assert.deepEqual(entered.prices,{entry:150,attempts:3});
   assert.throws(()=>s.daily.enter('a','3412'),{code:'ALREADY_ENTERED'});
   // Walk into the guarded gallery and stay there until the watchman catches us.
-  const level=E.normalize(entered.level),lostActions=['E','S','S'];let lostState=E.replay(level,lostActions,'ghost').state;
+  const level=E.normalize(started.level),lostActions=['E','S','S'];let lostState=E.replay(level,lostActions,'ghost').state;
   while(lostState.status==='playing'&&lostActions.length<100){lostActions.push('WAIT');lostState=E.step(level,lostState,'WAIT').state;}
   assert.equal(lostState.status,'lost');assert.equal(s.daily.submit('a',lostActions).accepted,false);
   assert.equal(s.daily.state('a').myEntry.attemptsLeft,2);
@@ -62,9 +89,9 @@ test('Daily v3: server-timed ties, failed attempts reveal turns, closed solution
  try{
   const a=client(),b=client(),failed=client();
   await a.init();await b.init();await failed.init();
-  const entry=await a.enter('3412'),route=solutions[entry.levelId].actions;
+  await a.enter('3412');const entry=await a.start(),route=solutions[entry.levelId].actions;
   now+=5000;const slow=await a.submit(route);
-  await b.enter('7730');now+=200;const fast=await b.submit(route);
+  await b.enter('7730');await b.start();now+=200;const fast=await b.submit(route);
   assert.equal(fast.rank,1,'same turns: the later but faster run must lead');
   assert.equal(slow.ms,5000);assert.equal(fast.ms,200);
   assert.equal(fast.myEntry.best.ms,200);assert.equal(fast.leaders[0].heroId,'7730');assert.equal(fast.leaders[0].ms,200);
@@ -81,7 +108,7 @@ test('Daily v3: server-timed ties, failed attempts reveal turns, closed solution
   assert.equal((await a.start()).attempt.startedAt,now,'a submitted attempt closes its clock');
   assert.equal((await a.submit([])).myEntry.solvable,null,'a prior clean win suppresses solution hints');
   await assert.rejects(a.start(),{code:'NO_ATTEMPTS'});
-  const lostEntry=await failed.enter('5555'),level=E.normalize(lostEntry.level),lost=['E','S','S'];
+  await failed.enter('5555');const lostEntry=await failed.start(),level=E.normalize(lostEntry.level),lost=['E','S','S'];
   let state=E.replay(level,lost,'ghost').state;
   while(state.status==='playing'&&lost.length<100){lost.push('WAIT');state=E.step(level,state,'WAIT').state;}
   assert.equal(state.status,'lost');

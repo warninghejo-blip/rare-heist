@@ -12,7 +12,7 @@ try{
  const page=await browser.newPage({viewport:{width:1440,height:1050},reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(15000);
  await page.goto(process.env.RARE_HEIST_DEV_URL??'http://127.0.0.1:4173');
- await page.getByText('SIMULATED',{exact:true}).waitFor();
+ await page.getByText(/^simulated$/i).waitFor();
  const game=page.frameLocator('iframe');await game.locator('[data-rh-lesson="cut-00"]').waitFor();
  assert.equal(await game.locator('[data-rh-lesson]').count(),5);
  assert.equal(await game.locator('[data-rh-job]').count(),14);
@@ -21,7 +21,10 @@ try{
  await game.locator('#inspect').click();assert.equal(await frame.evaluate(()=>RareHeistView().inspect),true);await game.locator('#inspect').click();
  await game.locator('[data-action="E"]').click();await game.locator('#undo').click();assert.equal((await frame.evaluate(()=>RareHeistView().actions)).length,0);await game.locator('#retry').click();
  const actions=await frame.evaluate(()=>HEIST_SOLUTIONS['cut-00'].actions);
+ // Retry preserves the input debounce from the preceding INSPECT/UNDO probe.
+ await page.waitForTimeout(115);
  for(const action of actions){await game.locator('[data-action="'+action+'"]').click();await page.waitForTimeout(115);}
+ assert.deepEqual(await frame.evaluate(()=>RareHeistView().actions),actions);
  await game.getByText('LESSON CLEARED',{exact:true}).waitFor();
  await game.getByRole('status').filter({hasText:'Progress saved by the game server.'}).waitFor();
  await page.screenshot({path:path.join(out,'lesson-cleared.png')});

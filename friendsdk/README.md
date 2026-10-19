@@ -44,8 +44,8 @@ Friend per UTC day; three attempts, no top-ups; ghost-mode server replay with EM
 allowed; fewest turns, then elapsed server time, then earlier accepted run.
 Starting an attempt spends it; Retry submits/abandons it before starting another.
 An open attempt can be resumed after a reload with its original server start
-time. Current plans are returned only to entrants. Past plans and stored routes
-are public after close. All three failed attempts reveal the route's turn count.
+time. Current plans are revealed when your try starts. Past plans and stored routes
+are public only for the last 7 closed UTC days. All three failed attempts reveal the route's turn count.
 
 ### Platform registration needed for Daily
 
@@ -98,6 +98,6 @@ publishes these source files there before platform review. Platform maintainers
 deploy the server rules and register the five paid actions after review.
 
 For the Windows task workspace, `.friendsdk` is an ignored junction into
-`D:/Rare-Heist-Vibeathon/_tmp/sdk1/sdk-state`, keeping builds, emulated storage,
+`D:/Rare-Heist-Vibeathon/_tmp/daily-fair/sdk-state`, keeping builds, emulated storage,
 logs and screenshots in the authorized temporary directory. This junction is
 local only and is not committed.

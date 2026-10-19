@@ -23,6 +23,7 @@ export class DailyHeist{
   });
  }
  today(){return new Date(this.store.clock()).toISOString().slice(0,10);}
+ archiveSince(){return new Date(Date.parse(this.today()+'T00:00:00Z')-7*DAY).toISOString().slice(0,10);}
  level(day){const index=Math.floor((Date.parse(day+'T00:00:00Z')-EPOCH)/DAY);return levels[((index%30)+30)%30];}
  round(){const day=this.today(),level=this.level(day);
   this.db.prepare('INSERT OR IGNORE INTO daily_rounds(day,level_id,closes_at) VALUES(?,?,?)').run(day,level.id,Date.parse(day+'T00:00:00Z')+DAY);
@@ -52,7 +53,8 @@ export class DailyHeist{
    (b.turns,b.ms IS NULL,COALESCE(b.ms,0),b.at,b.id)<(a.turns,a.ms IS NULL,COALESCE(a.ms,0),a.at,a.id))
   ORDER BY a.turns,a.ms IS NULL,a.ms,a.at,a.id`).all(day);}
  view(r,player){const e=this.entry(r.day,player),leaders=this.leaders(r.day),best=leaders.find(x=>x.player===player&&x.hero===e?.hero),pot=this.db.prepare('SELECT COALESCE(sum(amount),0) pot,count(*) entries FROM daily_entries WHERE day=?').get(r.day);
-  return {day:r.day,closesAt:r.closes_at,serverNow:this.store.clock(),levelId:e?r.level_id:null,...(e?{level:this.level(r.day)}:{}),pot:pot.pot,entries:pot.entries,
+  const revealed=e&&(e.started_at!==null||this.db.prepare('SELECT 1 FROM daily_attempts WHERE day=? AND player=? AND hero=? AND started_at IS NOT NULL LIMIT 1').get(r.day,player,e.hero));
+  return {day:r.day,closesAt:r.closes_at,serverNow:this.store.clock(),levelId:revealed?r.level_id:null,...(revealed?{level:this.level(r.day)}:{}),pot:pot.pot,entries:pot.entries,
    myEntry:e?{heroId:e.hero,attemptsLeft:1+e.extra-e.used,best:best?{turns:best.turns,ms:best.ms,at:best.at}:null,
     solvable:1+e.extra-e.used===0&&!best?{turns:solutions[r.level_id].turns}:null}:null,
    leaders:leaders.slice(0,10).map(x=>({name:this.store.displayName(x.player,x.hero),heroId:x.hero,turns:x.turns,ms:x.ms,at:x.at})),prices:{...PRICES},split:{...SPLIT},balance:this.store.stakes.peek(player).balance};
@@ -82,22 +84,25 @@ export class DailyHeist{
   const accepted=state.status==='won'&&state.alarms===0,at=this.store.clock();
   const startedAt=e.started_at??this.db.prepare('SELECT at FROM daily_attempts WHERE day=? AND player=? AND hero=? ORDER BY id DESC LIMIT 1').get(r.day,player,e.hero)?.at??e.at,ms=Math.max(0,at-startedAt);
   this.db.prepare('UPDATE daily_entries SET used=used+1,started_at=NULL WHERE day=? AND player=? AND hero=?').run(r.day,player,e.hero);
-  this.db.prepare('INSERT INTO daily_attempts(day,player,hero,actions,accepted,turns,at,started_at,ms) VALUES(?,?,?,?,?,?,?,?,?)').run(r.day,player,e.hero,JSON.stringify(actions),Number(accepted),state.turn,at,startedAt,ms);
+  // Legacy submit without start keeps its timing fallback, but cannot reveal a never-started level.
+  this.db.prepare('INSERT INTO daily_attempts(day,player,hero,actions,accepted,turns,at,started_at,ms) VALUES(?,?,?,?,?,?,?,?,?)').run(r.day,player,e.hero,JSON.stringify(actions),Number(accepted),state.turn,at,e.started_at,ms);
   const index=this.leaders(r.day).findIndex(x=>x.player===player&&x.hero===e.hero);
   return {accepted,turns:state.turn,ms,rank:accepted?index+1:null,...this.view(r,player)};
  });}
- history(limit=7){return this.run(()=>{limit=Number(limit);if(!Number.isInteger(limit)||limit<1||limit>30)limit=7;
-  return this.db.prepare('SELECT s.*,r.level_id FROM daily_settlements s JOIN daily_rounds r ON r.day=s.day ORDER BY s.day DESC LIMIT ?').all(limit).map(s=>({day:s.day,levelId:s.level_id,pot:s.pot,winner:s.winner?{name:this.store.displayName(s.winner,s.hero),heroId:s.hero,turns:s.turns,ms:s.ms}:null,burned:s.burned,refunded:s.refunded,level:this.level(s.day),solutionTurns:solutions[s.level_id].turns}));
+ history(limit=7){return this.run(()=>{limit=Number(limit);if(!Number.isInteger(limit)||limit<1)limit=7;limit=Math.min(limit,7);
+  return this.db.prepare('SELECT s.*,r.level_id FROM daily_settlements s JOIN daily_rounds r ON r.day=s.day WHERE s.day>=? AND s.day<? ORDER BY s.day DESC LIMIT ?').all(this.archiveSince(),this.today(),limit).map(s=>({day:s.day,levelId:s.level_id,pot:s.pot,winner:s.winner?{name:this.store.displayName(s.winner,s.hero),heroId:s.hero,turns:s.turns,ms:s.ms}:null,burned:s.burned,refunded:s.refunded,level:this.level(s.day),solutionTurns:solutions[s.level_id].turns}));
  });}
  solution(day){return this.run(()=>{
   if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(Date.parse(day+'T00:00:00Z'))||new Date(day+'T00:00:00Z').toISOString().slice(0,10)!==day)fail('REPLAY_INVALID','Invalid day');
   if(day>=this.today())fail('NOT_CLOSED','Solutions unlock after the day closes');
+  if(day<this.archiveSince())fail('NOT_FOUND','Daily archive keeps only the last 7 closed days');
   const level=this.level(day),solution=solutions[level.id];
   return {day,levelId:level.id,level,actions:solution.actions,turns:solution.turns};
  });}
  replay(day,rank){return this.run(()=>{
   if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isInteger(Number(rank))||Number(rank)<1)fail('REPLAY_INVALID','Invalid replay');
   if(day>=this.today())fail('CLOSED','Replays unlock after the day closes');
+  if(day<this.archiveSince())fail('NOT_FOUND','Daily archive keeps only the last 7 closed days');
   if(!this.db.prepare('SELECT 1 FROM daily_settlements WHERE day=?').get(day))fail('REPLAY_INVALID','Replay not found');
   const best=this.leaders(day)[Number(rank)-1];if(!best)fail('REPLAY_INVALID','Replay not found');
   return {day,rank:Number(rank),levelId:this.level(day).id,level:this.level(day),name:this.store.displayName(best.player,best.hero),heroId:best.hero,turns:best.turns,at:best.at,actions:JSON.parse(best.actions)};

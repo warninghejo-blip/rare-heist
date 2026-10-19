@@ -58,12 +58,12 @@ async function main(){
    for(const l of [...ui.lessons,...ui.jobs]){const o=document.createElement('option');o.value=l.id;o.textContent=l.name;select.append(o);}box.append(select);
    button('WATCH SOLUTION',()=>{const l=[...ui.lessons,...ui.jobs].find(x=>x.id===select.value),s=globalThis.HEIST_SOLUTIONS[l.id];if(s)ui.watch(l,s.actions);});
    heading('DAILY HEIST / '+state.daily.day);
-   text('150 RF = 3 attempts. 80% winner / 10% burn / 10% Friend rewards. Fewest turns, then server time. Closes 00:00 UTC. Refund with fewer than two entrants or no clean win.');
+   text('Revealed when your try starts. 150 RF = 3 attempts. 80% winner / 10% burn / 10% Friend rewards. Fewest turns, then server time. Closes 00:00 UTC. Refund with fewer than two entrants or no clean win.');
    text(state.daily.entries+' entrants / '+state.daily.pot+' RF pot'+(state.daily.myEntry?' / '+state.daily.myEntry.attemptsLeft+' tries left':''));
    if(state.daily.myEntry){button(state.daily.myEntry.active?'RESUME DAILY ATTEMPT':'PLAY DAILY',startDaily);if(state.daily.myEntry.solvable)text('Solvable in '+state.daily.myEntry.solvable.turns+' turns. Solution unlocks at 00:00 UTC.');}
    else{const a=game.actions.enterDaily;button('ENTER DAILY / 150 RF'+(!a?.enabled?' / NOT YET AVAILABLE':''),()=>transact('enterDaily'));}
    if(state.daily.leaders.length)text(state.daily.leaders.map((e,i)=>(i+1)+'. Friend #'+e.friendId+' / '+e.turns+' turns / '+e.ms+' ms').join(' · '));
-   const archive=document.createElement('details'),summary=document.createElement('summary');summary.textContent='DAILY ARCHIVE / FREE PRACTICE + SOLUTIONS';archive.append(summary);box.append(archive);
+   const archive=document.createElement('details'),summary=document.createElement('summary');summary.textContent='DAILY ARCHIVE / LAST 7 CLOSED DAYS / FREE PRACTICE + SOLUTIONS';archive.append(summary);box.append(archive);
    for(const day of state.archive){button('PRACTICE / '+day,async()=>{const a:any=await game.call('dailyArchive',{day});ui.start(a.level,{type:'solo',practice:true});},archive);button('WATCH SOLUTION / '+day,async()=>{const a:any=await game.call('dailyArchive',{day});ui.watch(a.level,a.actions);},archive);}
    heading('LAST HEIST / FREE SHARED CHALLENGE');
    text('Revision '+state.last.revision+' / '+(state.last.holder?'held by Friend #'+state.last.holder:'unclaimed')+'. Clear it cleanly to hold it, then add one wall and prove the new route. No RF stakes.');

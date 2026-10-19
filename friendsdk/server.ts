@@ -29,13 +29,14 @@ function dailyState(ctx){
  const day=utcDay(ctx.now),r=close(ctx,round(ctx,day)),e=r.entries[ctx.friend.id];
  return {day,closesAt:closeAt(day),serverNow:ctx.now,entries:Object.keys(r.entries).length,pot:Object.keys(r.entries).length*150,
   myEntry:e?{attemptsLeft:3-e.used,best:e.best,active:e.active,solvable:e.used===3&&!e.best?{turns:dailySolutions[dayLevel(day).id].turns}:null}:null,
-  level:e?dayLevel(day):null,leaders:ordered(r).slice(0,10).map((x:any)=>({friendId:x.friendId,...x.best,actions:undefined})),split:{winner:80,burn:10,rewards:10}};
+  ...(e&&(e.active||e.used>0)?{level:dayLevel(day)}:{}),leaders:ordered(r).slice(0,10).map((x:any)=>({friendId:x.friendId,...x.best,actions:undefined})),split:{winner:80,burn:10,rewards:10}};
 }
 function load(ctx){
  const today=utcDay(ctx.now),past=Math.min(30,Math.max(0,Math.floor((ctx.now-epoch)/DAY))),archive=[];
- for(let i=1;i<=past;i++)archive.push(utcDay(Date.parse(today+'T00:00:00Z')-i*DAY));
+ const closedDays=[];for(let i=1;i<=past;i++)closedDays.push(utcDay(Date.parse(today+'T00:00:00Z')-i*DAY));
+ archive.push(...closedDays.slice(0,7));
  // A returning Friend also asks the keeper to settle their closed entries.
- for(const day of archive){const r=close(ctx,round(ctx,day)),e=r.entries[ctx.friend.id];if(e&&!e.resolved)resolveEntry(ctx,r,e);}
+ for(const day of closedDays){const r=close(ctx,round(ctx,day)),e=r.entries[ctx.friend.id];if(e&&!e.resolved)resolveEntry(ctx,r,e);}
  return {progress:progress(ctx),items:items(ctx),daily:dailyState(ctx),archive,last:ctx.shared.get('last')??{revision:0,holder:null,level:official.get('last-cutaway')}};
 }
 function dailyTx(ctx,tx){
@@ -73,6 +74,7 @@ export default defineGame({
    const accepted=q.state.status==='won'&&q.state.alarms===0,best={turns:q.state.turn,ms,at:ctx.now,actions:p.actions};
    if(accepted&&(!e.best||best.turns<e.best.turns||best.turns===e.best.turns&&best.ms<e.best.ms))e.best=best;e.active=null;ctx.shared.set('daily:'+day,r);return {accepted,turns:q.state.turn,ms,...dailyState(ctx)};},
   dailyArchive(ctx,input){const p=check.object(input,['day']),day=check.string(p.day,10,'day',/^\d{4}-\d{2}-\d{2}$/);if(closeAt(day)>ctx.now)throw new GameError('The solution unlocks at 00:00 UTC.');
+   if(!Number.isFinite(closeAt(day))||day<utcDay(Date.parse(utcDay(ctx.now)+'T00:00:00Z')-7*DAY))throw new GameError('NOT_FOUND');
    const level=dayLevel(day),r=close(ctx,round(ctx,day));resolveEntry(ctx,r,r.entries[ctx.friend.id]);return {day,level,actions:dailySolutions[level.id].actions,winner:r.winner,refunded:r.refunded};},
   lastStart(ctx){const r=ctx.shared.get('last')??{revision:0,holder:null,level:official.get('last-cutaway')};ctx.shared.set('last',r);ctx.data.set('lastAttempt',{revision:r.revision});return r;},
   lastPrepare(ctx,input){const p=check.object(input,['x','y']),r=ctx.shared.get('last');if(!r||r.holder!==ctx.friend.id||r.fortified)throw new GameError('Clear the shared vault before adding one obstacle.');
